@@ -1,0 +1,65 @@
+# Dependencies
+node_modules/
+vendor/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+out/
+*.o
+*.class
+*.jar
+*.war
+*.ear
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# Package manager lock files (uncomment if needed)
+# package-lock.json
+# yarn.lock
+
+# Compiled files
+*.pyc
+__pycache__/
+*.pyo
+
+# Temporary files
+tmp/
+temp/
+*.tmp
