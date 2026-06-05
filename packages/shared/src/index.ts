@@ -1,2 +1,2 @@
 // @mineral-chain/shared - Shared types and utilities
-export { };
+export * from './types/index.js';
