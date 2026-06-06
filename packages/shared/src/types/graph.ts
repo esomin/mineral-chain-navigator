@@ -49,3 +49,26 @@ export interface SupplyChainEdge {
     createdAt: Date;
     updatedAt: Date;
 }
+
+// Input types for creation
+export interface CreateNodeInput {
+    id: string;
+    type: string;
+    name: string;
+    coordinates: GeoCoordinates;
+    metadata?: NodeMetadata;
+}
+
+export interface CreateEdgeInput {
+    id: string;
+    type: string;
+    sourceNodeId: string;
+    targetNodeId: string;
+    attributes?: EdgeAttributes;
+}
+
+// Validation result
+export interface ValidationResult {
+    valid: boolean;
+    errors: string[];
+}
