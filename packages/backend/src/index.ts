@@ -1,2 +1,2 @@
 // @mineral-chain/backend - Backend API server
-export { };
+export { normalizeRecord } from './ingestion/index.js';
