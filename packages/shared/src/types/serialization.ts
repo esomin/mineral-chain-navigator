@@ -4,8 +4,10 @@ export interface SerializedNode {
     id: string;
     type: string;
     name: string;
+    country: string;
     coordinates: { lat: number; lng: number };
     metadata: Record<string, unknown>;
+    description: string;
     created_at: string;   // ISO 8601
     updated_at: string;   // ISO 8601
 }

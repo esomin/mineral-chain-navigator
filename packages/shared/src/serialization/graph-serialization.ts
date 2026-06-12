@@ -10,11 +10,13 @@ export function serializeNode(node: SupplyChainNode): SerializedNode {
         id: node.id,
         type: node.type,
         name: node.name,
+        country: node.country,
         coordinates: {
             lat: node.coordinates.latitude,
             lng: node.coordinates.longitude,
         },
         metadata: { ...node.metadata } as Record<string, unknown>,
+        description: node.description,
         created_at: node.createdAt.toISOString(),
         updated_at: node.updatedAt.toISOString(),
     };
@@ -29,11 +31,13 @@ export function deserializeNode(json: SerializedNode): SupplyChainNode {
         id: json.id,
         type: json.type as SupplyChainNode['type'],
         name: json.name,
+        country: json.country as SupplyChainNode['country'],
         coordinates: {
             latitude: json.coordinates.lat,
             longitude: json.coordinates.lng,
         },
-        metadata: { ...json.metadata },
+        metadata: { ...json.metadata } as SupplyChainNode['metadata'],
+        description: json.description,
         createdAt: new Date(json.created_at),
         updatedAt: new Date(json.updated_at),
     };

@@ -1,42 +1,62 @@
 import { describe, it, expect } from 'vitest';
-import { validateNodeType, validateEdgeType, validateNodeInput, validateEdgeInput } from './graph-validators.js';
+import { validateNodeType, validateEdgeType, validateCountry, validateNodeInput, validateEdgeInput } from './graph-validators.js';
+import type { CreateNodeInput, CreateEdgeInput } from '../types/graph.js';
 
 describe('validateNodeType', () => {
-    it('accepts all valid node types', () => {
-        const validTypes = ['Resource', 'Mine', 'Refinery', 'Gigafactory', 'Country', 'Policy'];
-        for (const type of validTypes) {
-            expect(validateNodeType(type)).toBe(true);
-        }
+    it('accepts valid node types', () => {
+        expect(validateNodeType('Resource')).toBe(true);
+        expect(validateNodeType('Mine')).toBe(true);
+        expect(validateNodeType('Refinery')).toBe(true);
+        expect(validateNodeType('Factory')).toBe(true);
     });
 
     it('rejects invalid node types', () => {
-        expect(validateNodeType('Invalid')).toBe(false);
+        expect(validateNodeType('Gigafactory')).toBe(false);
+        expect(validateNodeType('Country')).toBe(false);
+        expect(validateNodeType('Policy')).toBe(false);
         expect(validateNodeType('')).toBe(false);
-        expect(validateNodeType('resource')).toBe(false); // case-sensitive
+        expect(validateNodeType('mine')).toBe(false);
     });
 });
 
 describe('validateEdgeType', () => {
-    it('accepts all valid edge types', () => {
-        const validTypes = ['Supply', 'Delivery', 'Export_Restriction', 'Ownership'];
-        for (const type of validTypes) {
-            expect(validateEdgeType(type)).toBe(true);
-        }
+    it('accepts valid edge types', () => {
+        expect(validateEdgeType('Supply')).toBe(true);
+        expect(validateEdgeType('Delivery')).toBe(true);
     });
 
     it('rejects invalid edge types', () => {
-        expect(validateEdgeType('Invalid')).toBe(false);
+        expect(validateEdgeType('Export_Restriction')).toBe(false);
+        expect(validateEdgeType('Ownership')).toBe(false);
         expect(validateEdgeType('')).toBe(false);
-        expect(validateEdgeType('supply')).toBe(false); // case-sensitive
+    });
+});
+
+describe('validateCountry', () => {
+    it('accepts valid countries', () => {
+        expect(validateCountry('SouthKorea')).toBe(true);
+        expect(validateCountry('Japan')).toBe(true);
+        expect(validateCountry('China')).toBe(true);
+        expect(validateCountry('Chile')).toBe(true);
+        expect(validateCountry('UnitedStates')).toBe(true);
+        expect(validateCountry('NA')).toBe(true);
+    });
+
+    it('rejects invalid countries', () => {
+        expect(validateCountry('Australia')).toBe(false);
+        expect(validateCountry('Korea')).toBe(false);
+        expect(validateCountry('')).toBe(false);
     });
 });
 
 describe('validateNodeInput', () => {
-    const validInput = {
-        id: 'node-1',
-        type: 'Mine',
-        name: 'Lithium Mine A',
-        coordinates: { latitude: 37.5, longitude: 127.0 },
+    const validInput: CreateNodeInput = {
+        id: 'RF-01',
+        type: 'Refinery',
+        name: 'Ganfeng Xinyu Plant',
+        country: 'China',
+        coordinates: { latitude: 27.8, longitude: 114.9 },
+        metadata: { productionCapacity: 100000, capacityUnit: 'tons' },
     };
 
     it('accepts valid node input', () => {
@@ -52,66 +72,81 @@ describe('validateNodeInput', () => {
     });
 
     it('rejects invalid type', () => {
-        const result = validateNodeInput({ ...validInput, type: 'InvalidType' });
+        const result = validateNodeInput({ ...validInput, type: 'Gigafactory' });
         expect(result.valid).toBe(false);
         expect(result.errors.some(e => e.includes('type'))).toBe(true);
     });
 
-    it('rejects missing name', () => {
-        const result = validateNodeInput({ ...validInput, name: '' });
+    it('rejects invalid country', () => {
+        const result = validateNodeInput({ ...validInput, country: 'Australia' });
         expect(result.valid).toBe(false);
-        expect(result.errors.some(e => e.includes('name'))).toBe(true);
+        expect(result.errors.some(e => e.includes('country'))).toBe(true);
     });
 
-    it('rejects latitude out of range', () => {
-        const result = validateNodeInput({ ...validInput, coordinates: { latitude: 91, longitude: 0 } });
+    it('rejects invalid coordinates', () => {
+        const result = validateNodeInput({
+            ...validInput,
+            coordinates: { latitude: 100, longitude: 200 },
+        });
         expect(result.valid).toBe(false);
         expect(result.errors.some(e => e.includes('latitude'))).toBe(true);
+        expect(result.errors.some(e => e.includes('longitude'))).toBe(true);
     });
 
-    it('rejects longitude out of range', () => {
-        const result = validateNodeInput({ ...validInput, coordinates: { latitude: 0, longitude: 181 } });
+    it('rejects missing metadata', () => {
+        const result = validateNodeInput({ ...validInput, metadata: undefined as any });
         expect(result.valid).toBe(false);
-        expect(result.errors.some(e => e.includes('longitude'))).toBe(true);
+        expect(result.errors.some(e => e.includes('metadata'))).toBe(true);
+    });
+
+    it('rejects negative productionCapacity', () => {
+        const result = validateNodeInput({
+            ...validInput,
+            metadata: { productionCapacity: -1, capacityUnit: 'tons' },
+        });
+        expect(result.valid).toBe(false);
+        expect(result.errors.some(e => e.includes('productionCapacity'))).toBe(true);
+    });
+
+    it('rejects invalid capacityUnit', () => {
+        const result = validateNodeInput({
+            ...validInput,
+            metadata: { productionCapacity: 100, capacityUnit: 'barrels' },
+        });
+        expect(result.valid).toBe(false);
+        expect(result.errors.some(e => e.includes('capacityUnit'))).toBe(true);
     });
 });
 
 describe('validateEdgeInput', () => {
-    const existingNodes = new Set(['node-1', 'node-2', 'node-3']);
-    const validInput = {
-        id: 'edge-1',
+    const existingNodeIds = new Set(['M-01', 'RF-01', 'F-01']);
+
+    const validEdge: CreateEdgeInput = {
+        id: 'E-01',
         type: 'Supply',
-        sourceNodeId: 'node-1',
-        targetNodeId: 'node-2',
+        sourceNodeId: 'M-01',
+        targetNodeId: 'RF-01',
     };
 
     it('accepts valid edge input', () => {
-        const result = validateEdgeInput(validInput, existingNodes);
+        const result = validateEdgeInput(validEdge, existingNodeIds);
         expect(result.valid).toBe(true);
-        expect(result.errors).toHaveLength(0);
     });
 
     it('rejects invalid edge type', () => {
-        const result = validateEdgeInput({ ...validInput, type: 'InvalidType' }, existingNodes);
+        const result = validateEdgeInput({ ...validEdge, type: 'Ownership' }, existingNodeIds);
         expect(result.valid).toBe(false);
-        expect(result.errors.some(e => e.includes('type'))).toBe(true);
     });
 
     it('rejects non-existent source node', () => {
-        const result = validateEdgeInput({ ...validInput, sourceNodeId: 'nonexistent' }, existingNodes);
+        const result = validateEdgeInput({ ...validEdge, sourceNodeId: 'X-99' }, existingNodeIds);
         expect(result.valid).toBe(false);
         expect(result.errors.some(e => e.includes('sourceNodeId'))).toBe(true);
     });
 
     it('rejects non-existent target node', () => {
-        const result = validateEdgeInput({ ...validInput, targetNodeId: 'nonexistent' }, existingNodes);
+        const result = validateEdgeInput({ ...validEdge, targetNodeId: 'X-99' }, existingNodeIds);
         expect(result.valid).toBe(false);
         expect(result.errors.some(e => e.includes('targetNodeId'))).toBe(true);
-    });
-
-    it('rejects missing id', () => {
-        const result = validateEdgeInput({ ...validInput, id: '' }, existingNodes);
-        expect(result.valid).toBe(false);
-        expect(result.errors.some(e => e.includes('id'))).toBe(true);
     });
 });

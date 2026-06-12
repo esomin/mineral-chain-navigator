@@ -1,19 +1,31 @@
-import type { NodeType, EdgeType, CreateNodeInput, CreateEdgeInput, ValidationResult } from '../types/graph.js';
+import type { NodeType, EdgeType, Country, CreateNodeInput, CreateEdgeInput, ValidationResult } from '../types/graph.js';
 
 const VALID_NODE_TYPES: ReadonlySet<string> = new Set<NodeType>([
     'Resource',
     'Mine',
     'Refinery',
-    'Gigafactory',
-    'Country',
-    'Policy',
+    'Factory',
 ]);
 
 const VALID_EDGE_TYPES: ReadonlySet<string> = new Set<EdgeType>([
     'Supply',
     'Delivery',
-    'Export_Restriction',
-    'Ownership',
+]);
+
+const VALID_COUNTRIES: ReadonlySet<string> = new Set<Country>([
+    'SouthKorea',
+    'Japan',
+    'China',
+    'Chile',
+    'UnitedStates',
+    'NA',
+]);
+
+const VALID_CAPACITY_UNITS: ReadonlySet<string> = new Set([
+    'tons_lce',
+    'tons',
+    'gwh',
+    'tons_cathode',
 ]);
 
 /**
@@ -31,7 +43,14 @@ export function validateEdgeType(type: string): boolean {
 }
 
 /**
- * Validates node creation input: required attributes and coordinate ranges.
+ * Validates whether the given string is a valid Country.
+ */
+export function validateCountry(country: string): boolean {
+    return VALID_COUNTRIES.has(country);
+}
+
+/**
+ * Validates node creation input: required attributes, country, coordinates, productionCapacity.
  */
 export function validateNodeInput(input: CreateNodeInput): ValidationResult {
     const errors: string[] = [];
@@ -41,11 +60,15 @@ export function validateNodeInput(input: CreateNodeInput): ValidationResult {
     }
 
     if (!input.type || !validateNodeType(input.type)) {
-        errors.push('type is required and must be a valid NodeType');
+        errors.push(`type is required and must be one of: ${[...VALID_NODE_TYPES].join(', ')}`);
     }
 
     if (!input.name || typeof input.name !== 'string' || input.name.trim() === '') {
         errors.push('name is required and must be a non-empty string');
+    }
+
+    if (!input.country || !validateCountry(input.country)) {
+        errors.push(`country is required and must be one of: ${[...VALID_COUNTRIES].join(', ')}`);
     }
 
     if (!input.coordinates) {
@@ -57,6 +80,17 @@ export function validateNodeInput(input: CreateNodeInput): ValidationResult {
         }
         if (typeof longitude !== 'number' || longitude < -180 || longitude > 180) {
             errors.push('coordinates.longitude must be a number between -180 and 180');
+        }
+    }
+
+    if (!input.metadata) {
+        errors.push('metadata is required');
+    } else {
+        if (typeof input.metadata.productionCapacity !== 'number' || input.metadata.productionCapacity < 0) {
+            errors.push('metadata.productionCapacity is required and must be a non-negative number');
+        }
+        if (!input.metadata.capacityUnit || !VALID_CAPACITY_UNITS.has(input.metadata.capacityUnit)) {
+            errors.push(`metadata.capacityUnit is required and must be one of: ${[...VALID_CAPACITY_UNITS].join(', ')}`);
         }
     }
 
@@ -74,7 +108,7 @@ export function validateEdgeInput(input: CreateEdgeInput, existingNodeIds: Set<s
     }
 
     if (!input.type || !validateEdgeType(input.type)) {
-        errors.push('type is required and must be a valid EdgeType');
+        errors.push(`type is required and must be one of: ${[...VALID_EDGE_TYPES].join(', ')}`);
     }
 
     if (!input.sourceNodeId || typeof input.sourceNodeId !== 'string' || input.sourceNodeId.trim() === '') {

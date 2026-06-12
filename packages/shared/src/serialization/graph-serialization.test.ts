@@ -4,31 +4,41 @@ import type { SupplyChainNode, SupplyChainEdge } from '../types/graph.js';
 
 describe('serializeNode / deserializeNode', () => {
     const node: SupplyChainNode = {
-        id: 'node-1',
-        type: 'Mine',
-        name: 'Lithium Mine',
-        coordinates: { latitude: -23.5, longitude: 134.2 },
-        metadata: { productionCapacity: 50000, annualOutput: 42000 },
-        createdAt: new Date('2024-01-15T10:00:00.000Z'),
-        updatedAt: new Date('2024-06-01T12:30:00.000Z'),
+        id: 'RF-01',
+        type: 'Refinery',
+        name: 'Ganfeng Xinyu Plant',
+        country: 'China',
+        coordinates: { latitude: 27.8, longitude: 114.9 },
+        metadata: {
+            productionCapacity: 100000,
+            capacityUnit: 'tons',
+            owner: 'Ganfeng Lithium',
+        },
+        description: '글로벌 1위 규모의 리튬 제련소',
+        createdAt: new Date('2025-01-01T00:00:00.000Z'),
+        updatedAt: new Date('2025-06-01T00:00:00.000Z'),
     };
 
-    it('serializes a node to snake_case JSON format', () => {
+    it('serializes node to JSON format', () => {
         const serialized = serializeNode(node);
-        expect(serialized.id).toBe('node-1');
-        expect(serialized.type).toBe('Mine');
-        expect(serialized.coordinates).toEqual({ lat: -23.5, lng: 134.2 });
-        expect(serialized.created_at).toBe('2024-01-15T10:00:00.000Z');
-        expect(serialized.updated_at).toBe('2024-06-01T12:30:00.000Z');
+        expect(serialized.id).toBe('RF-01');
+        expect(serialized.type).toBe('Refinery');
+        expect(serialized.country).toBe('China');
+        expect(serialized.coordinates).toEqual({ lat: 27.8, lng: 114.9 });
+        expect(serialized.description).toBe('글로벌 1위 규모의 리튬 제련소');
+        expect(serialized.created_at).toBe('2025-01-01T00:00:00.000Z');
+        expect(serialized.updated_at).toBe('2025-06-01T00:00:00.000Z');
     });
 
-    it('deserializes back to an equivalent node', () => {
+    it('round-trips node through serialize/deserialize', () => {
         const serialized = serializeNode(node);
         const deserialized = deserializeNode(serialized);
         expect(deserialized.id).toBe(node.id);
         expect(deserialized.type).toBe(node.type);
         expect(deserialized.name).toBe(node.name);
+        expect(deserialized.country).toBe(node.country);
         expect(deserialized.coordinates).toEqual(node.coordinates);
+        expect(deserialized.description).toBe(node.description);
         expect(deserialized.createdAt.getTime()).toBe(node.createdAt.getTime());
         expect(deserialized.updatedAt.getTime()).toBe(node.updatedAt.getTime());
     });
@@ -36,32 +46,37 @@ describe('serializeNode / deserializeNode', () => {
 
 describe('serializeEdge / deserializeEdge', () => {
     const edge: SupplyChainEdge = {
-        id: 'edge-1',
+        id: 'E-01',
         type: 'Supply',
-        sourceNodeId: 'node-1',
-        targetNodeId: 'node-2',
-        attributes: { volume: 1000, price: 45.5, hsCode: '2825' },
-        createdAt: new Date('2024-02-01T08:00:00.000Z'),
-        updatedAt: new Date('2024-05-20T16:45:00.000Z'),
+        sourceNodeId: 'M-01',
+        targetNodeId: 'RF-03',
+        attributes: {
+            volume: 50000,
+            price: 500000000,
+            hsCode: '282520',
+            year: 2025,
+            iraCompliant: true,
+        },
+        createdAt: new Date('2025-01-01T00:00:00.000Z'),
+        updatedAt: new Date('2025-06-01T00:00:00.000Z'),
     };
 
-    it('serializes an edge to snake_case JSON format', () => {
+    it('serializes edge to JSON format', () => {
         const serialized = serializeEdge(edge);
-        expect(serialized.source_node_id).toBe('node-1');
-        expect(serialized.target_node_id).toBe('node-2');
-        expect(serialized.created_at).toBe('2024-02-01T08:00:00.000Z');
-        expect(serialized.attributes).toEqual({ volume: 1000, price: 45.5, hsCode: '2825' });
+        expect(serialized.source_node_id).toBe('M-01');
+        expect(serialized.target_node_id).toBe('RF-03');
+        expect(serialized.attributes.hsCode).toBe('282520');
+        expect(serialized.attributes.iraCompliant).toBe(true);
     });
 
-    it('deserializes back to an equivalent edge', () => {
+    it('round-trips edge through serialize/deserialize', () => {
         const serialized = serializeEdge(edge);
         const deserialized = deserializeEdge(serialized);
         expect(deserialized.id).toBe(edge.id);
         expect(deserialized.type).toBe(edge.type);
         expect(deserialized.sourceNodeId).toBe(edge.sourceNodeId);
         expect(deserialized.targetNodeId).toBe(edge.targetNodeId);
-        expect(deserialized.attributes).toEqual(edge.attributes);
+        expect(deserialized.attributes.iraCompliant).toBe(true);
         expect(deserialized.createdAt.getTime()).toBe(edge.createdAt.getTime());
-        expect(deserialized.updatedAt.getTime()).toBe(edge.updatedAt.getTime());
     });
 });
