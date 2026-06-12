@@ -1,0 +1,90 @@
+[
+    {
+        "source": "MCS2026",
+        "country": "United States",
+        "type": "Mine production, lithium content",
+        "prod_t_2024": null,
+        "prod_t_est_2025": null,
+        "reserves_t": 4400000
+    },
+    {
+        "source": "MCS2026",
+        "country": "Argentina",
+        "type": "Mine production, lithium content",
+        "prod_t_2024": 513800,
+        "prod_t_est_2025": 23000,
+        "reserves_t": 4400000
+    },
+    {
+        "source": "MCS2026",
+        "country": "Australia",
+        "type": "Mine production, lithium content",
+        "prod_t_2024": 82700,
+        "prod_t_est_2025": 92000,
+        "reserves_t": 68400000
+    },
+    {
+        "source": "MCS2026",
+        "country": "Brazil",
+        "type": "Mine production, lithium content",
+        "prod_t_2024": 10200,
+        "prod_t_est_2025": 12000,
+        "reserves_t": 540000
+    },
+    {
+        "source": "MCS2026",
+        "country": "Canada",
+        "type": "Mine production, lithium content",
+        "prod_t_2024": 4820,
+        "prod_t_est_2025": 5600,
+        "reserves_t": 1600000
+    },
+    {
+        "source": "MCS2026",
+        "country": "Chile",
+        "type": "Mine production, lithium content",
+        "prod_t_2024": 548900,
+        "prod_t_est_2025": 56000,
+        "reserves_t": 9200000
+    },
+    {
+        "source": "MCS2026",
+        "country": "China",
+        "type": "Mine production, lithium content",
+        "prod_t_2024": 41400,
+        "prod_t_est_2025": 62000,
+        "reserves_t": 4600000
+    },
+    {
+        "source": "MCS2026",
+        "country": "Mali",
+        "type": "Mine production, lithium content",
+        "prod_t_2024": 770,
+        "prod_t_est_2025": 9400,
+        "reserves_t": 370000
+    },
+    {
+        "source": "MCS2026",
+        "country": "Portugal",
+        "type": "Mine production, lithium content",
+        "prod_t_2024": 380,
+        "prod_t_est_2025": 380,
+        "reserves_t": 60000
+    },
+    {
+        "source": "MCS2026",
+        "country": "Zimbabwe",
+        "type": "Mine production, lithium content",
+        "prod_t_2024": 20000,
+        "prod_t_est_2025": 28000,
+        "reserves_t": 500000
+    },
+    {
+        "source": "MCS2026",
+        "country": "World total (rounded)",
+        "type": "Mine production, lithium content",
+        "prod_t_2024": 8222000,
+        "prod_t_est_2025": 8290000,
+        "reserves_t": 37000000
+    }
+]
