@@ -13,7 +13,7 @@
         "test:watch": "vitest",
         "lint": "eslint 'packages/*/src/**/*.{ts,tsx}'",
         "format": "prettier --write 'packages/*/src/**/*.{ts,tsx}'",
-        "fetch:comtrade": "npx tsx packages/seed-data/scripts/fetch-comtrade-export.ts",
+        "fetch:comtrade": "npx tsx packages/seed-data/scripts/fetch-comtrade-export.ts && npx tsx packages/seed-data/scripts/fetch-comtrade-import.ts && npx tsx packages/seed-data/scripts/merge-comtrade-data.ts",
         "fetch:production": "npx tsx packages/seed-data/scripts/extract-lithium-production.ts"
     },
     "devDependencies": {

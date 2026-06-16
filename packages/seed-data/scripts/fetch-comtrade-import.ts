@@ -1,8 +1,9 @@
 /**
- * UN Comtrade API - 수산화리튬(HS 2825.20) 수출국 관점(X) 데이터 조회.
- * 결과를 seed-data/raw-export-{period}.json으로 저장.
+ * UN Comtrade API - 수산화리튬(HS 2825.20) 수입국 관점(M) 데이터 조회.
+ * 수출국 데이터 미보고 시 fallback으로 사용.
+ * 결과를 seed-data/raw-import-{period}.json으로 저장.
  *
- * 단독 실행: npx tsx packages/seed-data/scripts/fetch-comtrade-export.ts
+ * 단독 실행: npx tsx packages/seed-data/scripts/fetch-comtrade-import.ts
  */
 
 import { writeFileSync, readFileSync } from 'node:fs';
@@ -25,10 +26,10 @@ const COMTRADE_API_KEY = process.env['COMTRADE_API_KEY'] || '';
 const BASE_URL = 'https://comtradeapi.un.org/data/v1/get/C/A/HS';
 const HS_CODE = '282520';
 const PERIOD = '2025';
-const REPORTER_CODES = '156,152,842'; // 수출국: 중국, 칠레, 미국
-const PARTNER_CODES = '410,392';       // 수입국: 한국, 일본
+const REPORTER_CODES = '410,392';       // 수입국: 한국, 일본
+const PARTNER_CODES = '156,152,842';    // 수출국: 중국, 칠레, 미국
 
-export const OUTPUT_PATH = join(__dirname, '..', `raw-export-${PERIOD}.json`);
+export const OUTPUT_PATH = join(__dirname, '..', `raw-import-${PERIOD}.json`);
 
 async function main() {
     if (!COMTRADE_API_KEY) {
@@ -36,7 +37,7 @@ async function main() {
         process.exit(1);
     }
 
-    console.log(`[Export] HS=${HS_CODE}, period=${PERIOD}, flow=X`);
+    console.log(`[Import] HS=${HS_CODE}, period=${PERIOD}, flow=M`);
     console.log(`  Reporters: ${REPORTER_CODES.split(',').map((c) => countryNameMap.get(Number(c))).join(', ')}`);
     console.log(`  Partners: ${PARTNER_CODES.split(',').map((c) => countryNameMap.get(Number(c))).join(', ')}`);
 
@@ -45,7 +46,7 @@ async function main() {
         reporterCode: REPORTER_CODES,
         partnerCode: PARTNER_CODES,
         period: PERIOD,
-        flowCode: 'X',
+        flowCode: 'M',
         'subscription-key': COMTRADE_API_KEY,
     });
 
