@@ -169,8 +169,19 @@ export function parseTradeData(
         // volume: netWgt 우선, qty fallback
         const volume = record.netWgt || record.qty || 0;
 
-        // price: cifvalue 우선, primaryValue fallback
-        const price = record.cifvalue ?? record.primaryValue ?? 0;
+        // price: flowCode에 따라 fob/cif 선택
+        let price: number;
+        let priceType: 'fob' | 'cif';
+        if (record.flowCode === 'X') {
+            price = record.fobvalue ?? record.primaryValue ?? 0;
+            priceType = 'fob';
+        } else {
+            price = record.cifvalue ?? record.primaryValue ?? 0;
+            priceType = 'cif';
+        }
+
+        // unitPrice: 단가 (USD/kg)
+        const unitPrice = volume > 0 ? Math.round((price / volume) * 100) / 100 : 0;
 
         const year = record.refYear;
         const edgeId = generateEdgeId(sourceCountry, targetCountry, year);
@@ -185,6 +196,8 @@ export function parseTradeData(
             attributes: {
                 volume,
                 price,
+                unitPrice,
+                priceType,
                 hsCode: VALID_HS_CODE,
                 year,
                 ...(iraCompliant ? { iraCompliant: true } : {}),

@@ -24,6 +24,8 @@ export interface NodeMetadata {
 export interface EdgeAttributes {
     volume?: number;          // 물량 (kg 또는 톤)
     price?: number;           // 금액 (USD)
+    unitPrice?: number;       // 단가 (USD/kg)
+    priceType?: 'fob' | 'cif'; // 가격 기준 (FOB: 수출국 보고, CIF: 수입국 보고)
     hsCode?: string;          // HS 282520
     year?: number;            // 데이터 기준 연도
     iraCompliant?: boolean;   // IRA 준수 여부
