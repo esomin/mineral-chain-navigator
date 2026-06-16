@@ -12,12 +12,15 @@
         "test": "vitest --run",
         "test:watch": "vitest",
         "lint": "eslint 'packages/*/src/**/*.{ts,tsx}'",
-        "format": "prettier --write 'packages/*/src/**/*.{ts,tsx}'"
+        "format": "prettier --write 'packages/*/src/**/*.{ts,tsx}'",
+        "fetch:comtrade": "npx tsx packages/seed-data/scripts/fetch-comtrade-export.ts",
+        "fetch:production": "npx tsx packages/seed-data/scripts/extract-lithium-production.ts"
     },
     "devDependencies": {
         "@types/node": "^25.9.2",
         "@typescript-eslint/eslint-plugin": "^7.0.0",
         "@typescript-eslint/parser": "^7.0.0",
+        "dotenv": "^17.4.2",
         "eslint": "^8.57.0",
         "fast-check": "^3.15.0",
         "prettier": "^3.2.0",
