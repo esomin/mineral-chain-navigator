@@ -177,7 +177,7 @@ function main() {
     // 8. 출력 디렉터리 생성 및 파일 저장
     const outputDir = join(__dirname, '..', 'risk-factors');
     mkdirSync(outputDir, { recursive: true });
-    const outputPath = join(outputDir, 'production-shares.json');
+    const outputPath = join(outputDir, 'productionㅛ.json');
     writeFileSync(outputPath, JSON.stringify(output, null, 2), 'utf-8');
 
     console.log(`저장 완료: ${outputPath}\n`);
