@@ -28,6 +28,11 @@ export function computeNodeHHI(nodeId: string, inboundEdges: SupplyChainEdge[]):
     return Math.round(hhi);
 }
 
+/** 범용 리스크 점수 정규화. 임의의 raw score를 [0, 100] 범위로 클램프 */
+export function normalizeScore(rawScore: number): number {
+    return Math.max(0, Math.min(100, rawScore));
+}
+
 /** HHI 정규화. 0~10,000 → 0~100 리스크 */
 export function normalizeHHI(hhi: number): number {
     const clamped = Math.max(0, Math.min(10000, hhi));
@@ -96,6 +101,18 @@ export function computeNodeRisk(
         isHighRisk: false,
         computedAt: new Date(),
     };
+}
+
+/**
+ * 고위험 플래그 로직.
+ * score가 threshold를 초과(strictly exceeds)하면 isHighRisk = true로 설정.
+ * 입력 배열을 변형(mutate)하지 않고 새 배열을 반환한다.
+ */
+export function flagHighRisk(scores: RiskScore[], threshold: number): RiskScore[] {
+    return scores.map((s) => ({
+        ...s,
+        isHighRisk: s.score > threshold,
+    }));
 }
 
 /** 엣지 리스크 점수 계산 (무역 의존도 + 규제 리스크) */

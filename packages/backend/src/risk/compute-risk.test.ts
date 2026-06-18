@@ -3,6 +3,8 @@ import {
     computeNodeHHI,
     computeNodeRisk,
     computeEdgeRisk,
+    flagHighRisk,
+    normalizeScore,
     normalizeHHI,
     normalizeWGI,
     DEFAULT_HHI_WEIGHT,
@@ -45,6 +47,47 @@ const makeEdge = (overrides?: Partial<SupplyChainEdge>): SupplyChainEdge => ({
     createdAt: new Date('2025-01-01'),
     updatedAt: new Date('2025-01-01'),
     ...overrides,
+});
+
+describe('normalizeScore', () => {
+    it('should return 0 for score of 0', () => {
+        expect(normalizeScore(0)).toBe(0);
+    });
+
+    it('should return 100 for score of 100', () => {
+        expect(normalizeScore(100)).toBe(100);
+    });
+
+    it('should return 50 for score of 50', () => {
+        expect(normalizeScore(50)).toBe(50);
+    });
+
+    it('should clamp negative scores to 0', () => {
+        expect(normalizeScore(-10)).toBe(0);
+        expect(normalizeScore(-0.001)).toBe(0);
+    });
+
+    it('should clamp scores above 100 to 100', () => {
+        expect(normalizeScore(150)).toBe(100);
+        expect(normalizeScore(100.001)).toBe(100);
+    });
+
+    it('should handle boundary values just below 0', () => {
+        expect(normalizeScore(-0.0001)).toBe(0);
+        expect(normalizeScore(-Number.EPSILON)).toBe(0);
+    });
+
+    it('should handle boundary values just above 100', () => {
+        expect(normalizeScore(100 + Number.EPSILON)).toBe(100);
+        expect(normalizeScore(100.0001)).toBe(100);
+    });
+
+    it('should pass through normal values in range unchanged', () => {
+        expect(normalizeScore(25)).toBe(25);
+        expect(normalizeScore(73.5)).toBe(73.5);
+        expect(normalizeScore(99.99)).toBe(99.99);
+        expect(normalizeScore(0.01)).toBe(0.01);
+    });
 });
 
 describe('normalizeHHI', () => {
@@ -312,5 +355,113 @@ describe('computeEdgeRisk', () => {
 
         // score = 0.5 * 40 + 0.5 * 85 = 20 + 42.5 = 62.5
         expect(result.score).toBe(62.5);
+    });
+});
+
+import type { RiskScore } from '@mineral-chain/shared';
+
+describe('flagHighRisk', () => {
+    const makeRiskScore = (overrides?: Partial<RiskScore>): RiskScore => ({
+        entityId: 'RF-01',
+        entityType: 'node',
+        score: 50,
+        factors: [{
+            category: 'supply_concentration',
+            weight: 0.6,
+            rawValue: 5000,
+            normalizedValue: 50,
+        }],
+        isHighRisk: false,
+        computedAt: new Date('2025-01-01'),
+        ...overrides,
+    });
+
+    it('should flag scores above threshold as high-risk', () => {
+        const scores = [
+            makeRiskScore({ entityId: 'RF-01', score: 75 }),
+            makeRiskScore({ entityId: 'RF-02', score: 80 }),
+        ];
+        const result = flagHighRisk(scores, 60);
+
+        expect(result[0].isHighRisk).toBe(true);
+        expect(result[1].isHighRisk).toBe(true);
+    });
+
+    it('should NOT flag scores below threshold as high-risk', () => {
+        const scores = [
+            makeRiskScore({ entityId: 'RF-01', score: 30 }),
+            makeRiskScore({ entityId: 'RF-02', score: 45 }),
+        ];
+        const result = flagHighRisk(scores, 60);
+
+        expect(result[0].isHighRisk).toBe(false);
+        expect(result[1].isHighRisk).toBe(false);
+    });
+
+    it('should NOT flag scores exactly at threshold (strictly exceeds)', () => {
+        const scores = [makeRiskScore({ entityId: 'RF-01', score: 60 })];
+        const result = flagHighRisk(scores, 60);
+
+        expect(result[0].isHighRisk).toBe(false);
+    });
+
+    it('should return empty array for empty input', () => {
+        const result = flagHighRisk([], 50);
+        expect(result).toEqual([]);
+    });
+
+    it('should NOT mutate the original array', () => {
+        const scores = [
+            makeRiskScore({ entityId: 'RF-01', score: 75 }),
+            makeRiskScore({ entityId: 'RF-02', score: 30 }),
+        ];
+        const originalScores = scores.map(s => ({ ...s }));
+
+        flagHighRisk(scores, 60);
+
+        // Original array should remain unchanged
+        expect(scores[0].isHighRisk).toBe(originalScores[0].isHighRisk);
+        expect(scores[1].isHighRisk).toBe(originalScores[1].isHighRisk);
+    });
+
+    it('should handle mixed scores — some above, some below threshold', () => {
+        const scores = [
+            makeRiskScore({ entityId: 'RF-01', score: 75 }),
+            makeRiskScore({ entityId: 'RF-02', score: 30 }),
+            makeRiskScore({ entityId: 'RF-03', score: 60 }),
+            makeRiskScore({ entityId: 'RF-04', score: 61 }),
+        ];
+        const result = flagHighRisk(scores, 60);
+
+        expect(result[0].isHighRisk).toBe(true);  // 75 > 60
+        expect(result[1].isHighRisk).toBe(false); // 30 < 60
+        expect(result[2].isHighRisk).toBe(false); // 60 = 60 (not exceeding)
+        expect(result[3].isHighRisk).toBe(true);  // 61 > 60
+    });
+
+    it('should work for both node and edge risk scores', () => {
+        const scores = [
+            makeRiskScore({ entityId: 'RF-01', entityType: 'node', score: 70 }),
+            makeRiskScore({ entityId: 'E-01', entityType: 'edge', score: 80 }),
+        ];
+        const result = flagHighRisk(scores, 65);
+
+        expect(result[0].isHighRisk).toBe(true);
+        expect(result[0].entityType).toBe('node');
+        expect(result[1].isHighRisk).toBe(true);
+        expect(result[1].entityType).toBe('edge');
+    });
+
+    it('should flag RF-01 (Ganfeng Xinyu) with high HHI contribution as high-risk', () => {
+        // Real-world scenario: RF-01 has high HHI → high risk score
+        const node = makeNode({ id: 'RF-01', name: 'Ganfeng Xinyu', country: 'China' });
+        const riskScore = computeNodeRisk(node, { hhi: 7000, wgi: 58.51 });
+        // score ≈ 58.596
+
+        const result = flagHighRisk([riskScore], 50);
+
+        expect(result[0].entityId).toBe('RF-01');
+        expect(result[0].isHighRisk).toBe(true);
+        expect(result[0].score).toBeGreaterThan(50);
     });
 });

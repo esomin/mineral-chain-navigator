@@ -2,6 +2,8 @@ export {
     computeNodeHHI,
     computeNodeRisk,
     computeEdgeRisk,
+    flagHighRisk,
+    normalizeScore,
     normalizeHHI,
     normalizeWGI,
     DEFAULT_HHI_WEIGHT,
@@ -11,3 +13,10 @@ export {
 } from './compute-risk.js';
 
 export type { NodeRiskFactors, EdgeRiskFactors } from './compute-risk.js';
+
+export {
+    recalculateAffected,
+    getAffectedEntityIds,
+} from './recalculate-risk.js';
+
+export { getRiskColor } from './get-risk-color.js';
