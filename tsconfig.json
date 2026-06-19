@@ -28,7 +28,7 @@
             "path": "./packages/database"
         },
         {
-            "path": "./packages/backend"
+            "path": "./apps/backend"
         },
         {
             "path": "./packages/frontend"

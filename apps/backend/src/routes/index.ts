@@ -1,0 +1,66 @@
+// API 라우트 정의
+import { Router } from 'express';
+import type { Request, Response } from 'express';
+import { RiskController } from '../controllers/risk-controller.js';
+import { GraphController } from '../controllers/graph-controller.js';
+import { store } from '../store.js';
+
+const router = Router();
+const riskController = new RiskController(store);
+const graphController = new GraphController(store);
+
+// === 리스크 라우트 ===
+
+/** GET /api/risk/node/:nodeId - 특정 노드의 리스크 점수 조회 */
+router.get('/risk/node/:nodeId', (req: Request, res: Response) => {
+    const { nodeId } = req.params;
+    const result = riskController.getNodeRisk(nodeId);
+
+    if (!result) {
+        res.status(404).json({ error: `노드를 찾을 수 없습니다: ${nodeId}`, statusCode: 404 });
+        return;
+    }
+
+    res.json(result);
+});
+
+/** GET /api/risk/edge/:edgeId - 특정 엣지의 리스크 점수 조회 */
+router.get('/risk/edge/:edgeId', (req: Request, res: Response) => {
+    const { edgeId } = req.params;
+    const result = riskController.getEdgeRisk(edgeId);
+
+    if (!result) {
+        res.status(404).json({ error: `엣지를 찾을 수 없습니다: ${edgeId}`, statusCode: 404 });
+        return;
+    }
+
+    res.json(result);
+});
+
+/** POST /api/risk/recalculate - 모든 리스크 점수 재계산 */
+router.post('/risk/recalculate', (_req: Request, res: Response) => {
+    const results = riskController.recalculateAll();
+    res.json(results);
+});
+
+// === 그래프 라우트 ===
+
+/** GET /api/graph/nodes - 모든 노드 조회 */
+router.get('/graph/nodes', (_req: Request, res: Response) => {
+    const nodes = graphController.getNodes();
+    res.json(nodes);
+});
+
+/** GET /api/graph/edges - 모든 엣지 조회 */
+router.get('/graph/edges', (_req: Request, res: Response) => {
+    const edges = graphController.getEdges();
+    res.json(edges);
+});
+
+/** GET /api/graph - 전체 그래프 데이터(노드 + 엣지) 조회 */
+router.get('/graph', (_req: Request, res: Response) => {
+    const graph = graphController.getGraph();
+    res.json(graph);
+});
+
+export { router };

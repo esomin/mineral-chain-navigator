@@ -12,7 +12,13 @@
     ],
     "references": [
         {
-            "path": "../shared"
+            "path": "../../packages/shared"
+        },
+        {
+            "path": "../../packages/core"
+        },
+        {
+            "path": "../../packages/database"
         }
     ]
 }
