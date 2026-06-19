@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { recalculateAffected, getAffectedEntityIds } from './recalculate-risk.js';
-import type { SupplyChainNode, SupplyChainEdge, Country } from '@mineral-chain/shared';
+import type { SupplyChainNode, SupplyChainEdge, Country } from '@navigator/shared';
 
 const makeNode = (overrides?: Partial<SupplyChainNode>): SupplyChainNode => ({
     id: 'N-01',

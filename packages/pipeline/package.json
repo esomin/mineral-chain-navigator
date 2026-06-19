@@ -1,5 +1,5 @@
 {
-    "name": "@navigator/shared",
+    "name": "@navigator/pipeline",
     "version": "0.1.0",
     "private": true,
     "type": "module",
@@ -8,5 +8,9 @@
     "scripts": {
         "build": "tsc --build",
         "test": "vitest --run"
+    },
+    "dependencies": {
+        "@navigator/shared": "*",
+        "@navigator/database": "*"
     }
 }

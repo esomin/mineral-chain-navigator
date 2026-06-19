@@ -3,7 +3,7 @@ import type {
     SupplyChainNode,
     SupplyChainEdge,
     Country,
-} from '@mineral-chain/shared';
+} from '@navigator/shared';
 import { computeNodeHHI, computeNodeRisk, computeEdgeRisk } from './compute-risk.js';
 
 /**

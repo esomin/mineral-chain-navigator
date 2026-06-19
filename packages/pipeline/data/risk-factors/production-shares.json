@@ -1,0 +1,137 @@
+{
+  "source": "USGS Mineral Commodity Summaries 2025",
+  "mineral": "Lithium",
+  "type": "Mine production, lithium content",
+  "unit": "metric tons",
+  "year": 2023,
+  "worldTotal2023": 204000,
+  "worldTotalEst2024": 240000,
+  "worldReserves": 30000000,
+  "countries": [
+    {
+      "country": "Australia",
+      "production2023": 91700,
+      "productionEst2024": 88000,
+      "reserves2024": 7000000,
+      "share": 0.4495,
+      "reserveNotes": "For Australia, Joint Ore Reserves Committee-compliant or equivalent reserves were 4.8 million tons."
+    },
+    {
+      "country": "Chile",
+      "production2023": 41400,
+      "productionEst2024": 49000,
+      "reserves2024": 9300000,
+      "share": 0.2029,
+      "reserveNotes": ""
+    },
+    {
+      "country": "China",
+      "production2023": 35700,
+      "productionEst2024": 41000,
+      "reserves2024": 3000000,
+      "share": 0.175,
+      "reserveNotes": ""
+    },
+    {
+      "country": "Zimbabwe",
+      "production2023": 14900,
+      "productionEst2024": 22000,
+      "reserves2024": 480000,
+      "share": 0.073,
+      "reserveNotes": ""
+    },
+    {
+      "country": "Argentina",
+      "production2023": 8630,
+      "productionEst2024": 18000,
+      "reserves2024": 4000000,
+      "share": 0.0423,
+      "reserveNotes": ""
+    },
+    {
+      "country": "Brazil",
+      "production2023": 5260,
+      "productionEst2024": 10000,
+      "reserves2024": 390000,
+      "share": 0.0258,
+      "reserveNotes": ""
+    },
+    {
+      "country": "Canada",
+      "production2023": 3240,
+      "productionEst2024": 4300,
+      "reserves2024": 1200000,
+      "share": 0.0159,
+      "reserveNotes": ""
+    },
+    {
+      "country": "Namibia",
+      "production2023": 2700,
+      "productionEst2024": 2700,
+      "reserves2024": 14000,
+      "share": 0.0132,
+      "reserveNotes": ""
+    },
+    {
+      "country": "Portugal",
+      "production2023": 380,
+      "productionEst2024": 380,
+      "reserves2024": 60000,
+      "share": 0.0019,
+      "reserveNotes": ""
+    },
+    {
+      "country": "United States",
+      "production2023": null,
+      "productionEst2024": null,
+      "reserves2024": 1800000,
+      "share": 0,
+      "reserveNotes": ""
+    }
+  ],
+  "hhi2023": 2821,
+  "hhiInterpretation": "Highly concentrated",
+  "targetCountries": [
+    {
+      "country": "Australia",
+      "production2023": 91700,
+      "productionEst2024": 88000,
+      "reserves2024": 7000000,
+      "share": 0.4495,
+      "reserveNotes": "For Australia, Joint Ore Reserves Committee-compliant or equivalent reserves were 4.8 million tons."
+    },
+    {
+      "country": "Chile",
+      "production2023": 41400,
+      "productionEst2024": 49000,
+      "reserves2024": 9300000,
+      "share": 0.2029,
+      "reserveNotes": ""
+    },
+    {
+      "country": "China",
+      "production2023": 35700,
+      "productionEst2024": 41000,
+      "reserves2024": 3000000,
+      "share": 0.175,
+      "reserveNotes": ""
+    },
+    {
+      "country": "South Korea",
+      "production2023": null,
+      "productionEst2024": null,
+      "reserves2024": null,
+      "share": 0,
+      "reserveNotes": "No lithium mine production (consumer/refiner only)"
+    },
+    {
+      "country": "Japan",
+      "production2023": null,
+      "productionEst2024": null,
+      "reserves2024": null,
+      "share": 0,
+      "reserveNotes": "No lithium mine production (consumer/refiner only)"
+    }
+  ],
+  "fetchedAt": "2026-06-10T12:38:55.208Z"
+}

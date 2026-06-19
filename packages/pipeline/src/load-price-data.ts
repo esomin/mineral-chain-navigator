@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { SupplyChainNode, RawDataRecord } from '@mineral-chain/shared';
+import type { SupplyChainNode, RawDataRecord } from '@navigator/shared';
 import { normalizeRecord } from './normalize.js';
 
 /**
@@ -45,11 +45,11 @@ const REFINERY_NODE_IDS = ['RF-01', 'RF-02', 'RF-03', 'RF-04', 'RF-05'];
 const TARGET_NODE_IDS = [RESOURCE_NODE_ID, ...REFINERY_NODE_IDS];
 
 /**
- * seed-data 패키지 기준 상대 경로를 절대 경로로 변환한다.
+ * pipeline/data 기준 상대 경로를 절대 경로로 변환한다.
  */
 function getSeedDataPath(relativePath: string): string {
     const currentDir = dirname(fileURLToPath(import.meta.url));
-    return resolve(currentDir, '..', '..', '..', 'pipeline', 'data', relativePath);
+    return resolve(currentDir, '..', 'data', relativePath);
 }
 
 /**

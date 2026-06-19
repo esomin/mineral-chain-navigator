@@ -1,0 +1,58 @@
+{
+  "source": "Mining Database",
+  "product": "LiOH",
+  "spec": "56.5%min",
+  "impurityLimit": "Magnets 0.0001%max",
+  "incoterms": "FOB China",
+  "unit": "USD/kg",
+  "prices": [
+    {
+      "date": "202606",
+      "value": 21.18
+    },
+    {
+      "date": "202605",
+      "value": 22.11
+    },
+    {
+      "date": "202604",
+      "value": 19.61
+    },
+    {
+      "date": "202603",
+      "value": 19.19
+    },
+    {
+      "date": "202602",
+      "value": 18.71
+    },
+    {
+      "date": "202601",
+      "value": 16.53
+    },
+    {
+      "date": "202512",
+      "value": 11.45
+    },
+    {
+      "date": "202511",
+      "value": 9.94
+    },
+    {
+      "date": "202510",
+      "value": 9.25
+    },
+    {
+      "date": "202509",
+      "value": 8.95
+    },
+    {
+      "date": "202508",
+      "value": 8.65
+    },
+    {
+      "date": "202507",
+      "value": 7.8
+    }
+  ]
+}

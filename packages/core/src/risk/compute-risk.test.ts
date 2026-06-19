@@ -12,7 +12,7 @@ import {
     DEFAULT_TRADE_VOLUME_WEIGHT,
     DEFAULT_REGULATORY_WEIGHT,
 } from './compute-risk.js';
-import type { SupplyChainNode, SupplyChainEdge } from '@mineral-chain/shared';
+import type { SupplyChainNode, SupplyChainEdge } from '@navigator/shared';
 
 const makeNode = (overrides?: Partial<SupplyChainNode>): SupplyChainNode => ({
     id: 'RF-01',
@@ -358,7 +358,7 @@ describe('computeEdgeRisk', () => {
     });
 });
 
-import type { RiskScore } from '@mineral-chain/shared';
+import type { RiskScore } from '@navigator/shared';
 
 describe('flagHighRisk', () => {
     const makeRiskScore = (overrides?: Partial<RiskScore>): RiskScore => ({

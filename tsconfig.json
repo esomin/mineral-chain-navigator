@@ -22,6 +22,12 @@
             "path": "./packages/shared"
         },
         {
+            "path": "./packages/core"
+        },
+        {
+            "path": "./packages/database"
+        },
+        {
             "path": "./packages/backend"
         },
         {

@@ -1,0 +1,57 @@
+[
+    {
+        "id": 152,
+        "text": "Chile",
+        "reporterCode": 152,
+        "reporterDesc": "Chile",
+        "reporterNote": "Chile",
+        "reporterCodeIsoAlpha2": "CL",
+        "reporterCodeIsoAlpha3": "CHL",
+        "entryEffectiveDate": "1900-01-01T00:00:00",
+        "isGroup": false
+    },
+    {
+        "id": 156,
+        "text": "China",
+        "reporterCode": 156,
+        "reporterDesc": "China",
+        "reporterNote": "China",
+        "reporterCodeIsoAlpha2": "CN",
+        "reporterCodeIsoAlpha3": "CHN",
+        "entryEffectiveDate": "1900-01-01T00:00:00",
+        "isGroup": false
+    },
+    {
+        "id": 392,
+        "text": "Japan",
+        "reporterCode": 392,
+        "reporterDesc": "Japan",
+        "reporterNote": "Japan",
+        "reporterCodeIsoAlpha2": "JP",
+        "reporterCodeIsoAlpha3": "JPN",
+        "entryEffectiveDate": "1900-01-01T00:00:00",
+        "isGroup": false
+    },
+    {
+        "id": 410,
+        "text": "Rep. of Korea",
+        "reporterCode": 410,
+        "reporterDesc": "Rep. of Korea",
+        "reporterNote": "Republic of Korea",
+        "reporterCodeIsoAlpha2": "KR",
+        "reporterCodeIsoAlpha3": "KOR",
+        "entryEffectiveDate": "1900-01-01T00:00:00",
+        "isGroup": false
+    },
+    {
+        "id": 842,
+        "text": "USA",
+        "reporterCode": 842,
+        "reporterDesc": "USA",
+        "reporterNote": "USA, Puerto Rico and US Virgin Islands",
+        "reporterCodeIsoAlpha2": "US",
+        "reporterCodeIsoAlpha3": "USA",
+        "entryEffectiveDate": "1981-01-01T00:00:00",
+        "isGroup": false
+    }
+]

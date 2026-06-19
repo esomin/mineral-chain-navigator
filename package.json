@@ -3,9 +3,8 @@
     "version": "0.1.0",
     "private": true,
     "workspaces": [
-        "packages/shared",
-        "packages/backend",
-        "packages/frontend"
+        "apps/*",
+        "packages/*"
     ],
     "scripts": {
         "build": "npm run build --workspaces",
@@ -13,8 +12,8 @@
         "test:watch": "vitest",
         "lint": "eslint 'packages/*/src/**/*.{ts,tsx}'",
         "format": "prettier --write 'packages/*/src/**/*.{ts,tsx}'",
-        "fetch:comtrade": "npx tsx packages/seed-data/scripts/fetch-comtrade-export.ts && npx tsx packages/seed-data/scripts/fetch-comtrade-import.ts && npx tsx packages/seed-data/scripts/merge-comtrade-data.ts",
-        "fetch:production": "npx tsx packages/seed-data/scripts/extract-lithium-production.ts"
+        "fetch:comtrade": "npx tsx packages/pipeline/src/fetch-comtrade-export.ts && npx tsx packages/pipeline/src/fetch-comtrade-import.ts && npx tsx packages/pipeline/src/merge-comtrade-data.ts",
+        "fetch:production": "npx tsx packages/pipeline/src/extract-lithium-production.ts"
     },
     "devDependencies": {
         "@types/node": "^25.9.2",

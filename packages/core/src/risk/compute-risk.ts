@@ -3,7 +3,7 @@ import type {
     RiskFactor,
     SupplyChainNode,
     SupplyChainEdge,
-} from '@mineral-chain/shared';
+} from '@navigator/shared';
 
 /**
  * 노드별 공급원 집중도 HHI 동적 계산.
