@@ -14,9 +14,9 @@
         "declaration": true,
         "declarationMap": true,
         "sourceMap": true,
-        "outDir": "./dist",
         "composite": true
     },
+    "include": [],
     "references": [
         {
             "path": "./packages/shared"
@@ -28,10 +28,13 @@
             "path": "./packages/database"
         },
         {
+            "path": "./packages/pipeline"
+        },
+        {
             "path": "./apps/backend"
         },
         {
-            "path": "./packages/frontend"
+            "path": "./apps/frontend"
         }
     ]
 }

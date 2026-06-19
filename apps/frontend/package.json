@@ -1,5 +1,5 @@
 {
-    "name": "@mineral-chain/frontend",
+    "name": "@navigator/frontend",
     "version": "0.1.0",
     "private": true,
     "type": "module",
@@ -10,6 +10,6 @@
         "test": "vitest --run"
     },
     "dependencies": {
-        "@mineral-chain/shared": "*"
+        "@navigator/shared": "*"
     }
 }
