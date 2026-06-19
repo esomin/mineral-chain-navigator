@@ -1,4 +1,4 @@
-import type { SupplyChainEdge, Country } from '@mineral-chain/shared';
+import type { SupplyChainEdge, Country } from '@navigator/shared';
 
 /**
  * UN Comtrade API 응답의 개별 레코드 인터페이스.

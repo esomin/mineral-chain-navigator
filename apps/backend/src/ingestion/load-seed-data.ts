@@ -7,8 +7,8 @@ import type {
     SerializedNode,
     SerializedEdge,
     RawDataRecord,
-} from '@mineral-chain/shared';
-import { deserializeNode, deserializeEdge } from '@mineral-chain/shared';
+} from '@navigator/shared';
+import { deserializeNode, deserializeEdge } from '@navigator/shared';
 import { normalizeRecord } from './normalize.js';
 
 /**
@@ -21,12 +21,12 @@ export interface SeedDataResult {
 }
 
 /**
- * seed-data 패키지 기준 상대 경로를 절대 경로로 변환한다.
+ * pipeline/data 경로를 기준으로 상대 경로를 절대 경로로 변환한다.
  */
 function getSeedDataPath(relativePath: string): string {
-    // packages/backend/src/ingestion/ → packages/seed-data/ 경로 탐색
+    // apps/backend/src/ingestion/ → packages/pipeline/data/ 경로 탐색
     const currentDir = dirname(fileURLToPath(import.meta.url));
-    return resolve(currentDir, '..', '..', '..', 'seed-data', relativePath);
+    return resolve(currentDir, '..', '..', '..', '..', 'packages', 'pipeline', 'data', relativePath);
 }
 
 /**

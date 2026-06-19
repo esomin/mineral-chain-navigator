@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { SupplyChainNode, RawDataRecord } from '@mineral-chain/shared';
+import type { SupplyChainNode, RawDataRecord } from '@navigator/shared';
 import { normalizeRecord } from './normalize.js';
 
 /**

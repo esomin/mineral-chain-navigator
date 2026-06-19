@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { loadPriceData, selectLatestPrice } from './load-price-data.js';
 import type { PriceDataFile } from './load-price-data.js';
-import type { SupplyChainNode } from '@mineral-chain/shared';
+import type { SupplyChainNode } from '@navigator/shared';
 
 /** 테스트용 임시 디렉토리 경로 */
 let testSeedDir: string;

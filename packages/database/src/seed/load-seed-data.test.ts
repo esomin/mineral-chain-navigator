@@ -6,8 +6,8 @@ import type { SeedDataResult } from '../types.js';
 import type { SupplyChainNode, SupplyChainEdge } from '@navigator/shared';
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
-// packages/database/src/seed/ → packages/seed-data/
-const seedDataPath = resolve(currentDir, '..', '..', '..', 'seed-data');
+// packages/database/src/seed/ → packages/pipeline/data/
+const seedDataPath = resolve(currentDir, '..', '..', '..', 'pipeline', 'data');
 
 describe('loadFromFiles', () => {
     let result: SeedDataResult;

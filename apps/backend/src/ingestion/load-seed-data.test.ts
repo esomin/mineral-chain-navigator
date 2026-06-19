@@ -5,7 +5,8 @@ import { loadSeedData } from './load-seed-data.js';
 import type { SeedDataResult } from './load-seed-data.js';
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
-const seedDataPath = resolve(currentDir, '..', '..', '..', 'seed-data');
+// 시드 데이터는 packages/pipeline/data/로 이동됨
+const seedDataPath = resolve(currentDir, '..', '..', '..', '..', 'packages', 'pipeline', 'data');
 
 describe('loadSeedData', () => {
     let result: SeedDataResult;

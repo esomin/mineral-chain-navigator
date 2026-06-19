@@ -1,4 +1,4 @@
-import type { RawDataRecord, NormalizedRecord, NormalizationResult } from '@mineral-chain/shared';
+import type { RawDataRecord, NormalizedRecord, NormalizationResult } from '@navigator/shared';
 
 /**
  * Validates a raw data record before normalization.

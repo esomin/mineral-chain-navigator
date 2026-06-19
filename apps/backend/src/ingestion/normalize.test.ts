@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { normalizeRecord } from './normalize.js';
-import type { RawDataRecord } from '@mineral-chain/shared';
+import type { RawDataRecord } from '@navigator/shared';
 
 describe('normalizeRecord', () => {
     it('should normalize a valid raw record with source and timestamp', () => {

@@ -52,12 +52,12 @@ function defaultNormalize(raw: RawDataRecord): NormalizationResult {
 }
 
 /**
- * seed-data 패키지 기준 상대 경로를 절대 경로로 변환한다.
- * packages/database/src/seed/ → packages/seed-data/
+ * 시드 데이터 기본 경로를 절대 경로로 변환한다.
+ * packages/database/src/seed/ → packages/pipeline/data/
  */
 function getSeedDataPath(relativePath: string): string {
     const currentDir = dirname(fileURLToPath(import.meta.url));
-    return resolve(currentDir, '..', '..', '..', 'seed-data', relativePath);
+    return resolve(currentDir, '..', '..', '..', 'pipeline', 'data', relativePath);
 }
 
 /**
