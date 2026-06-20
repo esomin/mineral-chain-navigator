@@ -3,6 +3,8 @@ import express from 'express';
 import cors from 'cors';
 import type { Request, Response, NextFunction } from 'express';
 import { router } from './routes/index.js';
+import { store } from './store.js';
+import { loadSeedData } from '@navigator/database';
 
 const app = express();
 
@@ -47,10 +49,38 @@ app.use((err: AppError, _req: Request, res: Response, _next: NextFunction) => {
 const DEFAULT_PORT = 3001;
 
 /**
+ * 시드 데이터를 InMemoryStore에 로딩한다.
+ * 14개 마스터 노드 및 엣지 데이터를 packages/pipeline/data에서 읽어와 초기화한다.
+ */
+function initializeSeedData(): void {
+    console.info('[backend] 시드 데이터 로딩을 시작합니다...');
+
+    const seedResult = loadSeedData();
+
+    // InMemoryStore에 시드 데이터 적재
+    store.loadSeedData(seedResult);
+
+    console.info(
+        `[backend] 시드 데이터 초기화 완료: 노드 ${seedResult.nodes.length}개, 엣지 ${seedResult.edges.length}개`,
+    );
+
+    if (seedResult.errors.length > 0) {
+        console.warn(
+            `[backend] 시드 데이터 로딩 중 ${seedResult.errors.length}개의 오류가 발생했습니다:`,
+            seedResult.errors,
+        );
+    }
+}
+
+/**
  * 서버를 시작한다.
+ * 시드 데이터를 InMemoryStore에 로딩한 후 Express 서버를 기동한다.
  * @param port 리스닝 포트 (기본값: 3001)
  */
 export function startServer(port: number = DEFAULT_PORT): Promise<void> {
+    // 서버 시작 시 시드 데이터 자동 로딩
+    initializeSeedData();
+
     return new Promise((resolve) => {
         app.listen(port, () => {
             console.log(`[backend] 서버가 포트 ${port}에서 실행 중입니다.`);
