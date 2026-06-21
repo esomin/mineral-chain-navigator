@@ -1,11 +1,13 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSupplyChainStore } from '../store/supply-chain-store';
 import { GraphRenderer } from '../components/GraphRenderer';
+import { FilterBar } from '../components/FilterBar';
+import { NodeDetailPanel } from '../components/NodeDetailPanel';
 import type { RiskScore } from '@navigator/shared';
 
 // 공급망 그래프 시각화 페이지 (Phase 1 메인 뷰)
 export function GraphView() {
-    const { nodes, edges, selectedNodeId, setNodes, setEdges, selectNode, setLoading, isLoading } =
+    const { nodes, edges, selectedNodeId, filters, setNodes, setEdges, selectNode, setLoading, isLoading } =
         useSupplyChainStore();
 
     const [riskScores, setRiskScores] = useState<RiskScore[]>([]);
@@ -73,6 +75,47 @@ export function GraphView() {
         return map;
     }, [riskScores]);
 
+    // 필터링된 노드 계산 (200ms 이내 업데이트를 위해 useMemo 활용)
+    const filteredNodes = useMemo(() => {
+        return nodes.filter((node) => {
+            // 노드 타입 필터: 빈 배열이면 모든 타입 표시
+            if (filters.nodeTypes.length > 0 && !filters.nodeTypes.includes(node.type)) {
+                return false;
+            }
+
+            // 국가 필터: 빈 배열이면 모든 국가 표시
+            if (filters.countries.length > 0 && !filters.countries.includes(node.country)) {
+                return false;
+            }
+
+            // 리스크 레벨 필터
+            if (filters.riskLevel !== 'all') {
+                const score = riskScoreMap.get(node.id) ?? 0;
+                switch (filters.riskLevel) {
+                    case 'low':
+                        if (score > 33) return false;
+                        break;
+                    case 'medium':
+                        if (score < 34 || score > 66) return false;
+                        break;
+                    case 'high':
+                        if (score < 67) return false;
+                        break;
+                }
+            }
+
+            return true;
+        });
+    }, [nodes, filters.nodeTypes, filters.countries, filters.riskLevel, riskScoreMap]);
+
+    // 필터링된 노드에 연결된 엣지만 포함
+    const filteredEdges = useMemo(() => {
+        const filteredNodeIds = new Set(filteredNodes.map((n) => n.id));
+        return edges.filter(
+            (edge) => filteredNodeIds.has(edge.sourceNodeId) && filteredNodeIds.has(edge.targetNodeId),
+        );
+    }, [edges, filteredNodes]);
+
     // 노드 클릭 핸들러
     const handleNodeClick = useCallback(
         (nodeId: string) => {
@@ -80,6 +123,11 @@ export function GraphView() {
         },
         [selectNode, selectedNodeId],
     );
+
+    // 패널 닫기 핸들러
+    const handleClosePanel = useCallback(() => {
+        selectNode(null);
+    }, [selectNode]);
 
     // 선택된 노드 정보
     const selectedNode = useMemo(
@@ -105,9 +153,12 @@ export function GraphView() {
             <header style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #e0e0e0', background: '#fafafa' }}>
                 <h1 style={{ margin: 0, fontSize: '1.25rem' }}>Mineral Chain Navigator</h1>
                 <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: '#666' }}>
-                    리튬(HS 2825.20) 공급망 그래프 시각화 • 노드: {nodes.length} | 엣지: {edges.length}
+                    리튬(HS 2825.20) 공급망 그래프 시각화 • 노드: {filteredNodes.length}/{nodes.length} | 엣지: {filteredEdges.length}/{edges.length}
                 </p>
             </header>
+
+            {/* 필터 컨트롤 바 */}
+            <FilterBar />
 
             <main style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
                 {/* 로딩 상태 */}
@@ -142,116 +193,39 @@ export function GraphView() {
                     </div>
                 )}
 
-                {/* 그래프 렌더러 */}
-                {nodes.length > 0 && (
+                {/* 그래프 렌더러 — 필터링된 노드/엣지를 전달 */}
+                {filteredNodes.length > 0 && (
                     <GraphRenderer
-                        nodes={nodes}
-                        edges={edges}
+                        nodes={filteredNodes}
+                        edges={filteredEdges}
                         riskScores={riskScoreMap}
                         onNodeClick={handleNodeClick}
                     />
                 )}
 
-                {/* 선택된 노드 상세 패널 */}
+                {/* 필터 결과 없음 표시 */}
+                {!isLoading && nodes.length > 0 && filteredNodes.length === 0 && (
+                    <div style={{
+                        position: 'absolute',
+                        inset: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}>
+                        <p style={{ color: '#999', fontSize: '0.9rem' }}>
+                            필터 조건에 맞는 노드가 없습니다.
+                        </p>
+                    </div>
+                )}
+
+                {/* 노드 상세 패널 */}
                 {selectedNode && (
-                    <aside
-                        style={{
-                            position: 'absolute',
-                            top: 0,
-                            right: 0,
-                            width: '340px',
-                            height: '100%',
-                            background: '#fff',
-                            borderLeft: '1px solid #e0e0e0',
-                            padding: '1rem',
-                            overflowY: 'auto',
-                            boxShadow: '-2px 0 8px rgba(0,0,0,0.06)',
-                        }}
-                        aria-label="노드 상세 정보 패널"
-                    >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <h2 style={{ margin: 0, fontSize: '1rem' }}>노드 상세</h2>
-                            <button
-                                onClick={() => selectNode(null)}
-                                style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    fontSize: '1.25rem',
-                                    cursor: 'pointer',
-                                    color: '#999',
-                                }}
-                                aria-label="패널 닫기"
-                            >
-                                ✕
-                            </button>
-                        </div>
-
-                        <div style={{ marginTop: '1rem' }}>
-                            <h3 style={{ margin: '0 0 0.5rem', fontSize: '0.95rem' }}>{selectedNode.name}</h3>
-                            <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: '#666' }}>
-                                {selectedNode.description}
-                            </p>
-
-                            <table style={{ width: '100%', fontSize: '0.8rem', borderCollapse: 'collapse' }}>
-                                <tbody>
-                                    <tr>
-                                        <td style={{ padding: '4px 8px', color: '#999' }}>ID</td>
-                                        <td style={{ padding: '4px 8px' }}>{selectedNode.id}</td>
-                                    </tr>
-                                    <tr>
-                                        <td style={{ padding: '4px 8px', color: '#999' }}>타입</td>
-                                        <td style={{ padding: '4px 8px' }}>{selectedNode.type}</td>
-                                    </tr>
-                                    <tr>
-                                        <td style={{ padding: '4px 8px', color: '#999' }}>국가</td>
-                                        <td style={{ padding: '4px 8px' }}>{selectedNode.country}</td>
-                                    </tr>
-                                    <tr>
-                                        <td style={{ padding: '4px 8px', color: '#999' }}>생산능력</td>
-                                        <td style={{ padding: '4px 8px' }}>
-                                            {selectedNode.metadata.productionCapacity.toLocaleString()}{' '}
-                                            {selectedNode.metadata.capacityUnit}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style={{ padding: '4px 8px', color: '#999' }}>리스크 점수</td>
-                                        <td style={{ padding: '4px 8px' }}>
-                                            {riskScoreMap.get(selectedNode.id)?.toFixed(1) ?? 'N/A'}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style={{ padding: '4px 8px', color: '#999' }}>좌표</td>
-                                        <td style={{ padding: '4px 8px' }}>
-                                            {selectedNode.coordinates.latitude.toFixed(2)},{' '}
-                                            {selectedNode.coordinates.longitude.toFixed(2)}
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-
-                            {/* 연결된 엣지 */}
-                            {connectedEdges.length > 0 && (
-                                <div style={{ marginTop: '1rem' }}>
-                                    <h4 style={{ margin: '0 0 0.5rem', fontSize: '0.85rem' }}>
-                                        연결 엣지 ({connectedEdges.length})
-                                    </h4>
-                                    <ul style={{ margin: 0, padding: '0 0 0 1rem', fontSize: '0.75rem' }}>
-                                        {connectedEdges.map((edge) => (
-                                            <li key={edge.id} style={{ marginBottom: '4px' }}>
-                                                {edge.type}: {edge.sourceNodeId} → {edge.targetNodeId}
-                                                {edge.attributes.volume && (
-                                                    <span style={{ color: '#999' }}>
-                                                        {' '}
-                                                        ({edge.attributes.volume.toLocaleString()} kg)
-                                                    </span>
-                                                )}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-                        </div>
-                    </aside>
+                    <NodeDetailPanel
+                        node={selectedNode}
+                        connectedEdges={connectedEdges}
+                        riskScore={riskScoreMap.get(selectedNode.id)}
+                        onClose={handleClosePanel}
+                    />
                 )}
 
                 {/* 범례 */}

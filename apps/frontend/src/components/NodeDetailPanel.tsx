@@ -1,0 +1,127 @@
+import type { SupplyChainNode, SupplyChainEdge } from '@navigator/shared';
+import { getCountryDisplayName, getNodeTypeLabel } from '../utils/graph-helpers';
+
+export interface NodeDetailPanelProps {
+    node: SupplyChainNode;
+    connectedEdges: SupplyChainEdge[];
+    riskScore: number | undefined;
+    onClose: () => void;
+}
+
+/**
+ * 노드 상세 정보 패널.
+ * 선택된 노드의 속성, description, 연결 엣지, 리스크 점수를 표시한다.
+ * Requirements 4.4 구현.
+ */
+export function NodeDetailPanel({ node, connectedEdges, riskScore, onClose }: NodeDetailPanelProps) {
+    return (
+        <aside
+            style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: '340px',
+                height: '100%',
+                background: '#fff',
+                borderLeft: '1px solid #e0e0e0',
+                padding: '1rem',
+                overflowY: 'auto',
+                boxShadow: '-2px 0 8px rgba(0,0,0,0.06)',
+                zIndex: 5,
+            }}
+            aria-label="노드 상세 정보 패널"
+        >
+            {/* 헤더 영역: 제목 + 닫기 버튼 */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2 style={{ margin: 0, fontSize: '1rem' }}>노드 상세</h2>
+                <button
+                    onClick={onClose}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        fontSize: '1.25rem',
+                        cursor: 'pointer',
+                        color: '#999',
+                    }}
+                    aria-label="패널 닫기"
+                >
+                    ✕
+                </button>
+            </div>
+
+            <div style={{ marginTop: '1rem' }}>
+                {/* 노드 이름 */}
+                <h3 style={{ margin: '0 0 0.5rem', fontSize: '0.95rem' }}>{node.name}</h3>
+
+                {/* 노드 설명 */}
+                <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: '#666' }}>
+                    {node.description}
+                </p>
+
+                {/* 노드 속성 테이블 */}
+                <table style={{ width: '100%', fontSize: '0.8rem', borderCollapse: 'collapse' }}>
+                    <tbody>
+                        <tr>
+                            <td style={{ padding: '4px 8px', color: '#999' }}>ID</td>
+                            <td style={{ padding: '4px 8px' }}>{node.id}</td>
+                        </tr>
+                        <tr>
+                            <td style={{ padding: '4px 8px', color: '#999' }}>타입</td>
+                            <td style={{ padding: '4px 8px' }}>
+                                {node.type} ({getNodeTypeLabel(node.type)})
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style={{ padding: '4px 8px', color: '#999' }}>국가</td>
+                            <td style={{ padding: '4px 8px' }}>
+                                {getCountryDisplayName(node.country)}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style={{ padding: '4px 8px', color: '#999' }}>생산능력</td>
+                            <td style={{ padding: '4px 8px' }}>
+                                {node.metadata.productionCapacity.toLocaleString()}{' '}
+                                {node.metadata.capacityUnit}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style={{ padding: '4px 8px', color: '#999' }}>리스크 점수</td>
+                            <td style={{ padding: '4px 8px' }}>
+                                {riskScore !== undefined ? riskScore.toFixed(1) : 'N/A'}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style={{ padding: '4px 8px', color: '#999' }}>좌표</td>
+                            <td style={{ padding: '4px 8px' }}>
+                                {node.coordinates.latitude.toFixed(2)},{' '}
+                                {node.coordinates.longitude.toFixed(2)}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                {/* 연결된 엣지 목록 */}
+                {connectedEdges.length > 0 && (
+                    <div style={{ marginTop: '1rem' }}>
+                        <h4 style={{ margin: '0 0 0.5rem', fontSize: '0.85rem' }}>
+                            연결 엣지 ({connectedEdges.length})
+                        </h4>
+                        <ul style={{ margin: 0, padding: '0 0 0 1rem', fontSize: '0.75rem' }}>
+                            {connectedEdges.map((edge) => (
+                                <li key={edge.id} style={{ marginBottom: '4px' }}>
+                                    {edge.type}: {edge.sourceNodeId} → {edge.targetNodeId}
+                                    {edge.attributes.volume && (
+                                        <span style={{ color: '#999' }}>
+                                            {' '}
+                                            ({edge.attributes.volume.toLocaleString()} kg)
+                                        </span>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+            </div>
+        </aside>
+    );
+}
