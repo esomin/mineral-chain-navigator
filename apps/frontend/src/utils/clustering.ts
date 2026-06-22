@@ -44,18 +44,15 @@ export interface LODResult {
 
 // 줌 레벨 임계값 설정
 export const LOD_THRESHOLDS = {
-    /** 이 줌 레벨 이하에서는 국가별 클러스터링 적용 */
-    CLUSTER_ZOOM: 0.5,
-    /** 이 줌 레벨 이상에서는 모든 노드 개별 표시 */
-    DETAIL_ZOOM: 1.0,
+    /** 이 줌 레벨 이하에서는 국가별 클러스터링 적용, 이상이면 모든 노드 개별 표시 */
+    CLUSTER_ZOOM: 0.8,
 } as const;
 
 /**
  * 줌 레벨에 따른 LOD 클러스터링 수행.
  *
- * - zoomLevel <= CLUSTER_ZOOM: 국가별 클러스터링
- * - zoomLevel > CLUSTER_ZOOM && < DETAIL_ZOOM: 부분 클러스터링 (노드 수 3개 이상 국가만)
- * - zoomLevel >= DETAIL_ZOOM: 모든 노드 개별 표시 (클러스터링 없음)
+ * - zoomLevel <= CLUSTER_ZOOM: 국가별 클러스터링 (최소 2개 노드)
+ * - zoomLevel > CLUSTER_ZOOM: 모든 노드 개별 표시 (클러스터링 없음)
  *
  * 불변식: clusters.totalMemberCount === 원본 노드 수
  */
@@ -63,8 +60,8 @@ export function computeLODClusters(
     nodes: ClusterableNode[],
     zoomLevel: number,
 ): LODResult {
-    // 줌 레벨이 상세 임계값 이상이면 클러스터링 없음
-    if (zoomLevel >= LOD_THRESHOLDS.DETAIL_ZOOM) {
+    // 줌 레벨이 임계값 초과이면 클러스터링 없음
+    if (zoomLevel > LOD_THRESHOLDS.CLUSTER_ZOOM) {
         return {
             clusters: [],
             visibleNodes: nodes.map((n) => n.id),
@@ -80,8 +77,7 @@ export function computeLODClusters(
         countryGroups.set(node.country, group);
     }
 
-    // 클러스터링 최소 노드 수 결정 (줌 레벨에 따라 유동적)
-    const minNodesForCluster = zoomLevel <= LOD_THRESHOLDS.CLUSTER_ZOOM ? 2 : 3;
+    const minNodesForCluster = 2;
 
     const clusters: ClusterResult[] = [];
     const visibleNodes: string[] = [];

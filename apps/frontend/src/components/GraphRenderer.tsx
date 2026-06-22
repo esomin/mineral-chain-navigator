@@ -188,7 +188,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
                 'drag-element',
             ],
             // 자동 뷰핏
-            autoFit: 'view',
+            // autoFit: 'view',
             // 데이터 설정
             data,
         });
@@ -204,7 +204,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
             }
         });
 
-        // afterrender: 초기 줌 레벨만 한 번 캡처 (재렌더 방지)
+        // 줌 변경 시 LOD 업데이트 (사용자 휠 인터랙션에 의한 줌만 처리)
         graph.on('afterrender', () => {
             if (!isInitialRenderRef.current) return;
             isInitialRenderRef.current = false;
@@ -247,10 +247,52 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
         // 초기 렌더 중에는 무시 (위 effect에서 이미 데이터 설정됨)
         if (isInitialRenderRef.current) return;
 
+        const graph = graphRef.current;
         const data = buildGraphData();
+
         try {
-            graphRef.current.setData(data);
-            graphRef.current.render();
+            // 현재 노드 위치를 캡처 (위치 보존용)
+            const positionMap = new Map<string, { x: number; y: number }>();
+            const currentData = graph.getData();
+            for (const node of currentData.nodes || []) {
+                const id = (node as Record<string, unknown>).id as string;
+                const style = (node as Record<string, unknown>).style as Record<string, unknown> | undefined;
+                if (id && style?.x != null && style?.y != null) {
+                    positionMap.set(id, { x: style.x as number, y: style.y as number });
+                }
+            }
+
+            // 새 데이터 노드에 이전 위치 또는 연관 노드 위치를 할당
+            for (const node of data.nodes) {
+                const nodeAny = node as Record<string, unknown>;
+                const nodeId = nodeAny.id as string;
+                const nodeData = nodeAny.data as Record<string, unknown> | undefined;
+
+                // 이전 위치가 있으면 그대로 사용
+                if (positionMap.has(nodeId)) {
+                    const pos = positionMap.get(nodeId)!;
+                    nodeAny.style = { ...((nodeAny.style as Record<string, unknown>) || {}), x: pos.x, y: pos.y };
+                } else if (nodeData?.isCluster && nodeData?.memberNodeIds) {
+                    // 클러스터 노드: 멤버 노드들의 평균 위치 사용
+                    const memberIds = nodeData.memberNodeIds as string[];
+                    let sumX = 0, sumY = 0, count = 0;
+                    for (const mid of memberIds) {
+                        if (positionMap.has(mid)) {
+                            const p = positionMap.get(mid)!;
+                            sumX += p.x;
+                            sumY += p.y;
+                            count++;
+                        }
+                    }
+                    if (count > 0) {
+                        nodeAny.style = { ...((nodeAny.style as Record<string, unknown>) || {}), x: sumX / count, y: sumY / count };
+                    }
+                }
+            }
+
+            // 레이아웃 없이 데이터만 교체하여 렌더링
+            graph.setData(data);
+            graph.draw();
         } catch {
             // 그래프 인스턴스 파괴 중 호출되면 무시
         }
@@ -262,31 +304,29 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
             style={{
                 width: '100%',
                 height: '100%',
-                minHeight: '400px',
+                position: 'relative',
+                overflow: 'hidden',
             }}
             aria-label="리튬 공급망 그래프 시각화"
             role="img"
         >
-            {/* LOD 상태 표시 */}
-            {isClustered && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: '0.5rem',
-                        right: '0.5rem',
-                        background: 'rgba(255, 255, 255, 0.9)',
-                        border: '1px solid #d9d9d9',
-                        borderRadius: '4px',
-                        padding: '4px 8px',
-                        fontSize: '0.7rem',
-                        color: '#666',
-                        zIndex: 5,
-                    }}
-                    aria-label="LOD 클러스터링 활성 상태"
-                >
-                    클러스터 뷰 (줌 인으로 상세 보기)
-                </div>
-            )}
+            {/* 줌 레벨 표시 */}
+            <div
+                style={{
+                    position: 'absolute',
+                    top: '0.5rem',
+                    right: '0.5rem',
+                    background: 'rgba(255, 255, 255, 0.9)',
+                    border: '1px solid #d9d9d9',
+                    borderRadius: '4px',
+                    padding: '4px 8px',
+                    fontSize: '0.7rem',
+                    color: '#333',
+                    zIndex: 5,
+                }}
+            >
+                줌: {zoomLevel.toFixed(2)}
+            </div>
         </div>
     );
 }

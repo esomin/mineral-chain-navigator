@@ -111,7 +111,7 @@ export function useLODClustering({
     }, [requestClustering, enabled]);
 
     // 현재 클러스터링이 활성화된 상태인지
-    const isClustered = zoomLevel < LOD_THRESHOLDS.DETAIL_ZOOM && (lodResult?.clusters.length ?? 0) > 0;
+    const isClustered = zoomLevel <= LOD_THRESHOLDS.CLUSTER_ZOOM && (lodResult?.clusters.length ?? 0) > 0;
 
     return {
         lodResult,

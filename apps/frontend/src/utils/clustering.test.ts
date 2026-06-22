@@ -46,10 +46,10 @@ function createMasterNodes(): ClusterableNode[] {
 }
 
 describe('computeLODClusters', () => {
-    describe('줌 레벨 >= DETAIL_ZOOM (클러스터링 없음)', () => {
+    describe('줌 레벨 > CLUSTER_ZOOM (클러스터링 없음)', () => {
         it('모든 노드가 개별 표시되어야 한다', () => {
             const nodes = createMasterNodes();
-            const result = computeLODClusters(nodes, LOD_THRESHOLDS.DETAIL_ZOOM);
+            const result = computeLODClusters(nodes, LOD_THRESHOLDS.CLUSTER_ZOOM + 0.1);
 
             expect(result.clusters).toHaveLength(0);
             expect(result.visibleNodes).toHaveLength(14);
@@ -89,27 +89,6 @@ describe('computeLODClusters', () => {
             const nodes = createMasterNodes();
             const result = computeLODClusters(nodes, LOD_THRESHOLDS.CLUSTER_ZOOM);
 
-            expect(result.totalMemberCount).toBe(nodes.length);
-        });
-    });
-
-    describe('중간 줌 레벨 (부분 클러스터링)', () => {
-        it('3개 이상 노드를 가진 국가만 클러스터링되어야 한다', () => {
-            const nodes = createMasterNodes();
-            // CLUSTER_ZOOM (0.5) < zoomLevel (0.7) < DETAIL_ZOOM (1.0)
-            const result = computeLODClusters(nodes, 0.7);
-
-            // 중국(4개), 한국(3개), 미국(3개) → minNodes=3이므로 3개 이상만 클러스터
-            // 칠레(2개), NA(1개), 일본(1개) → 개별 표시
-            const chinaCluster = result.clusters.find((c) => c.country === 'China');
-            expect(chinaCluster).toBeDefined();
-            expect(chinaCluster!.memberCount).toBe(4);
-
-            // 칠레는 2개 노드 → 개별 표시 (minNodes=3 미만)
-            const chileCluster = result.clusters.find((c) => c.country === 'Chile');
-            expect(chileCluster).toBeUndefined();
-
-            // 전체 보존 불변식
             expect(result.totalMemberCount).toBe(nodes.length);
         });
     });
