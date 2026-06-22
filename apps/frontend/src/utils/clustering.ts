@@ -45,7 +45,7 @@ export interface LODResult {
 // 줌 레벨 임계값 설정
 export const LOD_THRESHOLDS = {
     /** 이 줌 레벨 이하에서는 국가별 클러스터링 적용, 이상이면 모든 노드 개별 표시 */
-    CLUSTER_ZOOM: 0.8,
+    CLUSTER_ZOOM: 1.0,
 } as const;
 
 /**

@@ -23,7 +23,7 @@ export interface GraphRendererProps {
 export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRendererProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const graphRef = useRef<Graph | null>(null);
-    const [zoomLevel, setZoomLevel] = useState(1.0);
+    const [zoomLevel, setZoomLevel] = useState(1.2);
 
     // 노드 클릭 핸들러를 ref로 보관 (리렌더링 방지)
     const onNodeClickRef = useRef(onNodeClick);
@@ -187,8 +187,10 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
                 'zoom-canvas',
                 'drag-element',
             ],
+            // 줌 범위 제한 (최소 0.5, 최대 3.0)
+            zoomRange: [0.5, 3.0],
             // 자동 뷰핏
-            // autoFit: 'view',
+            autoFit: 'view',
             // 데이터 설정
             data,
         });
@@ -205,18 +207,6 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
         });
 
         // 줌 변경 시 LOD 업데이트 (사용자 휠 인터랙션에 의한 줌만 처리)
-        graph.on('afterrender', () => {
-            if (!isInitialRenderRef.current) return;
-            isInitialRenderRef.current = false;
-            try {
-                const currentZoom = graph.getZoom?.() ?? 1.0;
-                setZoomLevel(currentZoom);
-            } catch {
-                // 초기 렌더 시 getZoom 실패할 수 있음
-            }
-        });
-
-        // 줌 변경 시 LOD 업데이트 (사용자 인터랙션에 의한 줌만 처리)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         graph.on('canvas:wheel' as any, () => {
             try {
@@ -229,6 +219,8 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
 
         // 비동기 렌더링 실행
         graph.render();
+        // 초기 렌더 완료 표시 (LOD effect 활성화)
+        isInitialRenderRef.current = false;
 
         return () => {
             if (graphRef.current) {
