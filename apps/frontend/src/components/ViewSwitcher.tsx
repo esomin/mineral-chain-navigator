@@ -22,13 +22,7 @@ export function ViewSwitcher({ currentView }: ViewSwitcherProps) {
 
     return (
         <div
-            style={{
-                display: 'flex',
-                gap: 0,
-                border: '1px solid #d9d9d9',
-                borderRadius: '4px',
-                overflow: 'hidden',
-            }}
+            className="inline-flex rounded overflow-hidden shadow-sm"
             role="tablist"
             aria-label="뷰 전환"
         >
@@ -36,15 +30,10 @@ export function ViewSwitcher({ currentView }: ViewSwitcherProps) {
                 onClick={() => handleSwitch('graph')}
                 role="tab"
                 aria-selected={currentView === 'graph'}
-                style={{
-                    padding: '4px 12px',
-                    fontSize: '0.8rem',
-                    border: 'none',
-                    cursor: currentView === 'graph' ? 'default' : 'pointer',
-                    background: currentView === 'graph' ? '#1890ff' : '#fff',
-                    color: currentView === 'graph' ? '#fff' : '#333',
-                    fontWeight: currentView === 'graph' ? 'bold' : 'normal',
-                }}
+                className={`px-3 py-1.5 text-xs outline-none border border-gray-300 rounded-l ${currentView === 'graph'
+                    ? 'bg-blue-500 !text-white font-bold !border-blue-500 cursor-default'
+                    : 'bg-white text-gray-700 cursor-pointer hover:bg-gray-100'
+                    }`}
             >
                 그래프
             </button>
@@ -52,16 +41,10 @@ export function ViewSwitcher({ currentView }: ViewSwitcherProps) {
                 onClick={() => handleSwitch('map')}
                 role="tab"
                 aria-selected={currentView === 'map'}
-                style={{
-                    padding: '4px 12px',
-                    fontSize: '0.8rem',
-                    border: 'none',
-                    borderLeft: '1px solid #d9d9d9',
-                    cursor: currentView === 'map' ? 'default' : 'pointer',
-                    background: currentView === 'map' ? '#1890ff' : '#fff',
-                    color: currentView === 'map' ? '#fff' : '#333',
-                    fontWeight: currentView === 'map' ? 'bold' : 'normal',
-                }}
+                className={`px-3 py-1.5 text-xs outline-none border border-gray-300 border-l-0 rounded-r ${currentView === 'map'
+                    ? 'bg-blue-500 !text-white font-bold !border-blue-500 cursor-default'
+                    : 'bg-white text-gray-700 cursor-pointer hover:bg-gray-100'
+                    }`}
             >
                 지도
             </button>

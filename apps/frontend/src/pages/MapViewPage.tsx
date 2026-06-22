@@ -149,11 +149,11 @@ export function MapViewPage() {
     );
 
     return (
-        <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column' }}>
-            <header style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #e0e0e0', background: '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div className="w-screen h-screen flex flex-col">
+            <header className="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
                 <div>
-                    <h1 style={{ margin: 0, fontSize: '1.25rem' }}>Mineral Chain Navigator</h1>
-                    <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: '#666' }}>
+                    <h1 className="m-0 text-xl">Mineral Chain Navigator</h1>
+                    <p className="mt-1 mb-0 text-sm text-gray-500">
                         리튬(HS 2825.20) 공급망 GIS 지도 시각화 • 노드: {filteredNodes.length}/{nodes.length} | 엣지: {filteredEdges.length}/{edges.length}
                     </p>
                 </div>
@@ -164,36 +164,18 @@ export function MapViewPage() {
             {/* 필터 컨트롤 바 */}
             <FilterBar />
 
-            <main style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+            <main className="flex-1 relative overflow-hidden">
                 {/* 로딩 상태 */}
                 {isLoading && (
-                    <div style={{
-                        position: 'absolute',
-                        inset: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: 'rgba(255,255,255,0.8)',
-                        zIndex: 10,
-                    }}>
+                    <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-10">
                         <p>지도 데이터 로딩 중...</p>
                     </div>
                 )}
 
                 {/* 에러 상태 */}
                 {error && (
-                    <div style={{
-                        position: 'absolute',
-                        top: '1rem',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        padding: '0.75rem 1.5rem',
-                        background: '#fff2f0',
-                        border: '1px solid #ffccc7',
-                        borderRadius: '4px',
-                        zIndex: 10,
-                    }}>
-                        <span style={{ color: '#cf1322' }}>⚠ {error}</span>
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 px-6 py-3 bg-red-50 border border-red-200 rounded z-10">
+                        <span className="text-red-700">⚠ {error}</span>
                     </div>
                 )}
 
@@ -209,14 +191,8 @@ export function MapViewPage() {
 
                 {/* 필터 결과 없음 */}
                 {!isLoading && nodes.length > 0 && filteredNodes.length === 0 && (
-                    <div style={{
-                        position: 'absolute',
-                        inset: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}>
-                        <p style={{ color: '#999', fontSize: '0.9rem' }}>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <p className="text-gray-400 text-sm">
                             필터 조건에 맞는 노드가 없습니다.
                         </p>
                     </div>

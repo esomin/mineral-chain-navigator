@@ -26,27 +26,15 @@ export function MapLayerToggle({ layerState, onChange }: MapLayerToggleProps) {
 
     return (
         <div
-            style={{
-                position: 'absolute',
-                top: '1rem',
-                right: '1rem',
-                background: 'rgba(255, 255, 255, 0.95)',
-                border: '1px solid #e0e0e0',
-                borderRadius: '8px',
-                padding: '0.75rem',
-                fontSize: '0.8rem',
-                zIndex: 10,
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                minWidth: '160px',
-            }}
+            className="absolute top-4 right-4 bg-white/95 border border-gray-200 rounded-lg p-3 text-xs z-10 shadow-md min-w-[160px]"
             role="group"
             aria-label="지도 레이어 토글"
         >
-            <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#333' }}>
+            <div className="font-bold mb-2 text-gray-700">
                 레이어
             </div>
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem', cursor: 'pointer' }}>
+            <label className="flex items-center gap-2 mb-1.5 cursor-pointer">
                 <input
                     type="checkbox"
                     checked={layerState.showNodeType}
@@ -56,7 +44,7 @@ export function MapLayerToggle({ layerState, onChange }: MapLayerToggleProps) {
                 <span>노드 타입</span>
             </label>
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem', cursor: 'pointer' }}>
+            <label className="flex items-center gap-2 mb-1.5 cursor-pointer">
                 <input
                     type="checkbox"
                     checked={layerState.showRiskLevel}
@@ -66,7 +54,7 @@ export function MapLayerToggle({ layerState, onChange }: MapLayerToggleProps) {
                 <span>리스크 레벨</span>
             </label>
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+            <label className="flex items-center gap-2 cursor-pointer">
                 <input
                     type="checkbox"
                     checked={layerState.showTradeVolume}
