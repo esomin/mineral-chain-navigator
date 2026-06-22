@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { Graph } from '@antv/g6';
 import type { SupplyChainNode, SupplyChainEdge } from '@navigator/shared';
-import { getRiskColor, getNodeRadius, getCountryColor, getRiskStroke } from '../utils/graph-helpers';
+import { getNodeRadius, getCountryColor, getRiskStroke } from '../utils/graph-helpers';
 import { useLODClustering } from '../hooks/useLODClustering';
 import type { ClusterResult } from '../utils/clustering';
 
@@ -252,7 +252,45 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
 
         try {
             if (needsLayout) {
-                // force-layout으로 노드를 다시 분산 배치
+                // 클러스터 → 개별: 클러스터 위치 기반으로 멤버 노드 초기 좌표 설정
+                const positionMap = new Map<string, { x: number; y: number }>();
+                const currentData = graph.getData();
+                for (const node of currentData.nodes || []) {
+                    const id = (node as Record<string, unknown>).id as string;
+                    const style = (node as Record<string, unknown>).style as Record<string, unknown> | undefined;
+                    if (id && style?.x != null && style?.y != null) {
+                        positionMap.set(id, { x: style.x as number, y: style.y as number });
+                    }
+                }
+
+                // 각 멤버 노드를 클러스터 위치 근처에 약간의 오프셋으로 배치
+                for (let i = 0; i < data.nodes.length; i++) {
+                    const node = data.nodes[i];
+                    const nodeAny = node as Record<string, unknown>;
+                    const nodeId = nodeAny.id as string;
+
+                    if (positionMap.has(nodeId)) {
+                        // 이전에 개별 노드였으면 그 위치 유지
+                        const pos = positionMap.get(nodeId)!;
+                        nodeAny.style = { ...((nodeAny.style as Record<string, unknown>) || {}), x: pos.x, y: pos.y };
+                    } else {
+                        // 클러스터에서 풀려난 노드: 클러스터가 있던 위치 근처에 분산 배치
+                        const nodeData = nodeAny.data as Record<string, unknown> | undefined;
+                        const country = nodeData?.country as string;
+                        const clusterPos = positionMap.get(`cluster-${country}`);
+                        if (clusterPos) {
+                            // 인덱스 기반 원형 분산 (결정적)
+                            const angle = (i * 2.4); // 황금각 근사
+                            const radius = 30 + (i % 3) * 20;
+                            nodeAny.style = {
+                                ...((nodeAny.style as Record<string, unknown>) || {}),
+                                x: clusterPos.x + Math.cos(angle) * radius,
+                                y: clusterPos.y + Math.sin(angle) * radius,
+                            };
+                        }
+                    }
+                }
+
                 graph.setData(data);
                 graph.render();
             } else {
