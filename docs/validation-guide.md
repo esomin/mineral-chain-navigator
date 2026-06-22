@@ -115,3 +115,105 @@ packages/shared/src/
     ├── graph-serialization.ts      # serializeNode, deserializeNode 등
     └── graph-serialization.test.ts
 ```
+
+---
+
+## 7. LOD 클러스터링 전환 시 그래프 데이터 업데이트 로직
+
+### 개요
+
+줌 레벨이 임계값(`CLUSTER_ZOOM: 0.8`)을 넘나들 때 그래프 데이터가 교체된다. 전환 방향에 따라 다른 렌더링 전략을 적용하여 시각적 안정성을 보장한다.
+
+### 전환 방향별 전략
+
+| 전환 방향 | 조건 | 렌더 방식 | 이유 |
+|-----------|------|-----------|------|
+| 개별 → 클러스터 | 줌 아웃 (> 0.8 → ≤ 0.8) | `draw()` (위치 보존) | 기존 노드 위치를 기반으로 클러스터 중심 계산 가능 |
+| 클러스터 → 개별 | 줌 인 (≤ 0.8 → > 0.8) | `render()` (force-layout 재실행) | 클러스터 해제 시 모든 멤버가 동일 좌표에 겹치므로 재배치 필요 |
+
+### 상세 흐름
+
+```
+줌 변경 감지 (canvas:wheel)
+    │
+    ▼
+zoomLevel 상태 업데이트
+    │
+    ▼
+useLODClustering 훅: isClustered 재계산
+    │
+    ▼
+LOD useEffect 트리거
+    │
+    ├─── wasClusteredBefore && !isClustered (클러스터 → 개별)
+    │         │
+    │         ▼
+    │    graph.setData(newData)
+    │    graph.render()          ← force-layout 실행, 노드 분산 배치
+    │
+    └─── !wasClusteredBefore && isClustered (개별 → 클러스터)
+              │
+              ▼
+         현재 노드 위치 캡처 (positionMap)
+              │
+              ▼
+         새 데이터에 위치 할당:
+           - 기존 노드 → 이전 좌표 유지
+           - 클러스터 노드 → 멤버 노드 평균 좌표
+              │
+              ▼
+         graph.setData(newData)
+         graph.draw()            ← 레이아웃 없이 즉시 렌더
+```
+
+### 위치 할당 규칙
+
+**개별 → 클러스터 전환 시:**
+
+```
+클러스터 위치 = 멤버 노드들의 (x, y) 산술 평균
+
+예: 한국 클러스터
+  RF-04 (200, 100)
+  F-01  (220, 110)
+  F-02  (210, 90)
+  → 클러스터 위치: ((200+220+210)/3, (100+110+90)/3) = (210, 100)
+```
+
+**클러스터 → 개별 전환 시:**
+- force-layout이 전체 노드를 처음부터 재배치
+- 척력(`nodeStrength: -400`)과 충돌 방지(`collide`)로 겹침 자동 해소
+- 시뮬레이션 수렴까지 ~100ms (14개 노드 기준)
+
+### 판별 코드
+
+```typescript
+// 이전 클러스터링 상태 추적
+const prevIsClusteredRef = useRef(isClustered);
+
+useEffect(() => {
+    const wasClusteredBefore = prevIsClusteredRef.current;
+    prevIsClusteredRef.current = isClustered;
+
+    // 클러스터 → 개별: force-layout 필요
+    const needsLayout = wasClusteredBefore && !isClustered;
+
+    if (needsLayout) {
+        graph.setData(data);
+        graph.render();   // force 시뮬레이션 실행
+    } else {
+        // 개별 → 클러스터: 위치 보존
+        // ... positionMap 기반 좌표 할당 ...
+        graph.setData(data);
+        graph.draw();     // 즉시 렌더 (레이아웃 스킵)
+    }
+}, [isClustered, lodResult, ...]);
+```
+
+### 관련 파일
+
+| 파일 | 역할 |
+|------|------|
+| `components/GraphRenderer.tsx` | 전환 로직 실행 (LOD useEffect) |
+| `hooks/useLODClustering.ts` | `isClustered` 상태 계산 |
+| `utils/clustering.ts` | `CLUSTER_ZOOM` 임계값, `computeLODClusters` 함수 |

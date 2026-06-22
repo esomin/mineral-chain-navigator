@@ -241,7 +241,10 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [nodes, edges, riskScores]);
 
-    // LOD 클러스터링 변경 시 그래프 데이터만 업데이트 (인스턴스 재생성 없이)
+    // 이전 클러스터링 상태 추적 (전환 방향 판별용)
+    const prevIsClusteredRef = useRef(isClustered);
+
+    // LOD 클러스터링 변경 시 그래프 데이터 업데이트
     useEffect(() => {
         if (!graphRef.current || nodes.length === 0) return;
         // 초기 렌더 중에는 무시 (위 effect에서 이미 데이터 설정됨)
@@ -249,50 +252,57 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
 
         const graph = graphRef.current;
         const data = buildGraphData();
+        const wasClusteredBefore = prevIsClusteredRef.current;
+        prevIsClusteredRef.current = isClustered;
+
+        // 클러스터 → 개별 전환: force-layout 재실행 (노드가 겹치지 않도록)
+        const needsLayout = wasClusteredBefore && !isClustered;
 
         try {
-            // 현재 노드 위치를 캡처 (위치 보존용)
-            const positionMap = new Map<string, { x: number; y: number }>();
-            const currentData = graph.getData();
-            for (const node of currentData.nodes || []) {
-                const id = (node as Record<string, unknown>).id as string;
-                const style = (node as Record<string, unknown>).style as Record<string, unknown> | undefined;
-                if (id && style?.x != null && style?.y != null) {
-                    positionMap.set(id, { x: style.x as number, y: style.y as number });
+            if (needsLayout) {
+                // force-layout으로 노드를 다시 분산 배치
+                graph.setData(data);
+                graph.render();
+            } else {
+                // 개별 → 클러스터 전환: 위치 보존
+                const positionMap = new Map<string, { x: number; y: number }>();
+                const currentData = graph.getData();
+                for (const node of currentData.nodes || []) {
+                    const id = (node as Record<string, unknown>).id as string;
+                    const style = (node as Record<string, unknown>).style as Record<string, unknown> | undefined;
+                    if (id && style?.x != null && style?.y != null) {
+                        positionMap.set(id, { x: style.x as number, y: style.y as number });
+                    }
                 }
-            }
 
-            // 새 데이터 노드에 이전 위치 또는 연관 노드 위치를 할당
-            for (const node of data.nodes) {
-                const nodeAny = node as Record<string, unknown>;
-                const nodeId = nodeAny.id as string;
-                const nodeData = nodeAny.data as Record<string, unknown> | undefined;
+                for (const node of data.nodes) {
+                    const nodeAny = node as Record<string, unknown>;
+                    const nodeId = nodeAny.id as string;
+                    const nodeData = nodeAny.data as Record<string, unknown> | undefined;
 
-                // 이전 위치가 있으면 그대로 사용
-                if (positionMap.has(nodeId)) {
-                    const pos = positionMap.get(nodeId)!;
-                    nodeAny.style = { ...((nodeAny.style as Record<string, unknown>) || {}), x: pos.x, y: pos.y };
-                } else if (nodeData?.isCluster && nodeData?.memberNodeIds) {
-                    // 클러스터 노드: 멤버 노드들의 평균 위치 사용
-                    const memberIds = nodeData.memberNodeIds as string[];
-                    let sumX = 0, sumY = 0, count = 0;
-                    for (const mid of memberIds) {
-                        if (positionMap.has(mid)) {
-                            const p = positionMap.get(mid)!;
-                            sumX += p.x;
-                            sumY += p.y;
-                            count++;
+                    if (positionMap.has(nodeId)) {
+                        const pos = positionMap.get(nodeId)!;
+                        nodeAny.style = { ...((nodeAny.style as Record<string, unknown>) || {}), x: pos.x, y: pos.y };
+                    } else if (nodeData?.isCluster && nodeData?.memberNodeIds) {
+                        const memberIds = nodeData.memberNodeIds as string[];
+                        let sumX = 0, sumY = 0, count = 0;
+                        for (const mid of memberIds) {
+                            if (positionMap.has(mid)) {
+                                const p = positionMap.get(mid)!;
+                                sumX += p.x;
+                                sumY += p.y;
+                                count++;
+                            }
+                        }
+                        if (count > 0) {
+                            nodeAny.style = { ...((nodeAny.style as Record<string, unknown>) || {}), x: sumX / count, y: sumY / count };
                         }
                     }
-                    if (count > 0) {
-                        nodeAny.style = { ...((nodeAny.style as Record<string, unknown>) || {}), x: sumX / count, y: sumY / count };
-                    }
                 }
-            }
 
-            // 레이아웃 없이 데이터만 교체하여 렌더링
-            graph.setData(data);
-            graph.draw();
+                graph.setData(data);
+                graph.draw();
+            }
         } catch {
             // 그래프 인스턴스 파괴 중 호출되면 무시
         }
