@@ -83,8 +83,8 @@ export function GraphView() {
                 return false;
             }
 
-            // 국가 필터: 빈 배열이면 모든 국가 표시
-            if (filters.countries.length > 0 && !filters.countries.includes(node.country)) {
+            // 국가 필터: 빈 배열이면 모든 국가 표시, N/A 국가는 항상 표시
+            if (filters.countries.length > 0 && node.country !== 'NA' && !filters.countries.includes(node.country)) {
                 return false;
             }
 
