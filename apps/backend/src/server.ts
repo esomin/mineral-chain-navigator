@@ -90,3 +90,6 @@ export function startServer(port: number = DEFAULT_PORT): Promise<void> {
 }
 
 export { app };
+
+// 직접 실행 시 서버 기동
+startServer();

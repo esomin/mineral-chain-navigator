@@ -245,38 +245,38 @@ export function GraphView() {
                     <div style={{ fontWeight: 'bold', marginBottom: '6px' }}>국가</div>
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
                         <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, background: '#4A90D9', borderRadius: '50%' }} />{' '}
+                            <span style={{ display: 'inline-block', width: 12, height: 12, background: 'rgba(0, 188, 212, 0.8)', borderRadius: '50%' }} />{' '}
                             한국
                         </span>
                         <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, background: '#E8453C', borderRadius: '50%' }} />{' '}
+                            <span style={{ display: 'inline-block', width: 12, height: 12, background: 'rgba(139, 90, 43, 0.8)', borderRadius: '50%' }} />{' '}
                             중국
                         </span>
                         <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, background: '#F5A623', borderRadius: '50%' }} />{' '}
+                            <span style={{ display: 'inline-block', width: 12, height: 12, background: 'rgba(0, 57, 166, 0.8)', borderRadius: '50%' }} />{' '}
                             칠레
                         </span>
                         <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, background: '#7B68EE', borderRadius: '50%' }} />{' '}
+                            <span style={{ display: 'inline-block', width: 12, height: 12, background: 'rgba(123, 104, 238, 0.8)', borderRadius: '50%' }} />{' '}
                             미국
                         </span>
                         <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, background: '#50C878', borderRadius: '50%' }} />{' '}
+                            <span style={{ display: 'inline-block', width: 12, height: 12, background: 'rgba(255, 105, 180, 0.8)', borderRadius: '50%' }} />{' '}
                             일본
                         </span>
                     </div>
                     <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>리스크 (테두리)</div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                         <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', border: '2px solid #52c41a', background: 'transparent' }} />{' '}
+                            <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', border: '2px solid #52c41a', background: '#b7eb8f' }} />{' '}
                             저위험
                         </span>
                         <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', border: '3px solid #faad14', background: 'transparent' }} />{' '}
+                            <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', border: '2px solid #faad14', background: '#ffe58f' }} />{' '}
                             중위험
                         </span>
                         <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', border: '4px solid #f5222d', background: 'transparent' }} />{' '}
+                            <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', border: '3px solid #f5222d', background: '#ffa39e' }} />{' '}
                             고위험
                         </span>
                     </div>

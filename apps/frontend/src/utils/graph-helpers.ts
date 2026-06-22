@@ -84,12 +84,12 @@ export function getNodeTypeLabel(type: string): string {
  * 국가별 노드 fill 색상 매핑.
  */
 const COUNTRY_COLORS: Record<string, string> = {
-    SouthKorea: '#4A90D9',   // 파랑
-    China: '#E8453C',        // 빨강
-    Chile: '#F5A623',        // 주황
-    UnitedStates: '#7B68EE', // 보라
-    Japan: '#50C878',        // 초록
-    NA: '#888888',           // 회색
+    SouthKorea: 'rgba(0, 188, 212, 0.8)',      // 시안
+    China: 'rgba(93, 52, 14, 0.8)',            // 브라운
+    Chile: 'rgba(0,57,166, 0.8)',
+    UnitedStates: 'rgba(123, 104, 238, 0.8)', // 보라
+    Japan: 'rgba(255, 105, 180, 0.8)',         // 핑크
+    NA: 'rgba(136, 136, 136, 0.8)',           // 회색
 };
 
 /**
@@ -100,17 +100,22 @@ export function getCountryColor(country: string): string {
 }
 
 /**
- * 리스크 점수를 테두리(stroke) 색상 + 두께로 변환.
+ * 리스크 점수를 테두리(stroke) 스타일로 변환.
+ * RISK_COLORS 매핑을 활용하여 fill + stroke 조합 반환.
  *
- * - 0~33: 초록 테두리, 2px
- * - 34~66: 주황 테두리, 3px
- * - 67~100: 빨강 테두리, 4px
+ * - 0~33 (저위험): 녹색 계열
+ * - 34~66 (중위험): 노란색 계열
+ * - 67~100 (고위험): 빨간색 계열
  */
-export function getRiskStroke(score: number): { color: string; width: number } {
+export function getRiskStroke(score: number): {
+    fill: string;
+    stroke: string;
+    width: number;
+} {
     const clamped = Math.max(0, Math.min(100, score));
-    if (clamped <= 33) return { color: '#52c41a', width: 2 };
-    if (clamped <= 66) return { color: '#faad14', width: 3 };
-    return { color: '#f5222d', width: 4 };
+    if (clamped <= 33) return { fill: RISK_COLORS.green.fill, stroke: RISK_COLORS.green.stroke, width: 6 };
+    if (clamped <= 66) return { fill: RISK_COLORS.yellow.fill, stroke: RISK_COLORS.yellow.stroke, width: 6 };
+    return { fill: RISK_COLORS.red.fill, stroke: RISK_COLORS.red.stroke, width: 6 };
 }
 
 /**

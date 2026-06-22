@@ -7,6 +7,7 @@
     "types": "./src/index.ts",
     "scripts": {
         "build": "tsc --build",
+        "dev": "npx tsx --watch src/server.ts",
         "start": "node dist/server.js",
         "test": "vitest --run"
     },
