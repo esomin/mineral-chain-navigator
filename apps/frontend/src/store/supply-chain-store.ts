@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { SupplyChainNode, SupplyChainEdge, NodeType, Country } from '@navigator/shared';
+import type { SupplyChainNode, SupplyChainEdge, NodeType, Country, RiskScore } from '@navigator/shared';
 
 // 그래프 필터 상태
 export interface GraphFilters {
@@ -14,6 +14,9 @@ export interface SupplyChainState {
     nodes: SupplyChainNode[];
     edges: SupplyChainEdge[];
 
+    // 리스크 점수 (뷰 전환 시 상태 보존을 위해 전역 관리)
+    riskScores: RiskScore[];
+
     // UI 상태
     selectedNodeId: string | null;
     filters: GraphFilters;
@@ -23,6 +26,7 @@ export interface SupplyChainState {
     // 액션
     setNodes: (nodes: SupplyChainNode[]) => void;
     setEdges: (edges: SupplyChainEdge[]) => void;
+    setRiskScores: (riskScores: RiskScore[]) => void;
     selectNode: (nodeId: string | null) => void;
     setFilters: (filters: Partial<GraphFilters>) => void;
     setLoading: (isLoading: boolean) => void;
@@ -42,6 +46,7 @@ export const useSupplyChainStore = create<SupplyChainState>((set) => ({
     // 초기 상태
     nodes: [],
     edges: [],
+    riskScores: [],
     selectedNodeId: null,
     filters: initialFilters,
     isLoading: false,
@@ -52,6 +57,9 @@ export const useSupplyChainStore = create<SupplyChainState>((set) => ({
 
     // 엣지 데이터 설정
     setEdges: (edges) => set({ edges }),
+
+    // 리스크 점수 설정 (뷰 전환 시에도 유지됨)
+    setRiskScores: (riskScores) => set({ riskScores }),
 
     // 노드 선택/해제
     selectNode: (nodeId) => set({ selectedNodeId: nodeId }),
@@ -73,6 +81,7 @@ export const useSupplyChainStore = create<SupplyChainState>((set) => ({
         set({
             nodes: [],
             edges: [],
+            riskScores: [],
             selectedNodeId: null,
             filters: initialFilters,
             isLoading: false,

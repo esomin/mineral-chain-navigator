@@ -11,9 +11,15 @@
     },
     "dependencies": {
         "@antv/g6": "^5.1.1",
+        "@deck.gl/core": "^9.0.16",
+        "@deck.gl/layers": "^9.0.16",
+        "@deck.gl/react": "^9.0.16",
         "@navigator/shared": "*",
+        "deck.gl": "^9.0.16",
+        "maplibre-gl": "^4.5.0",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
+        "react-map-gl": "^7.1.7",
         "react-router-dom": "^6.23.1",
         "zustand": "^4.5.2"
     },

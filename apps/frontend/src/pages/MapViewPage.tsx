@@ -1,19 +1,25 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSupplyChainStore } from '../store/supply-chain-store';
-import { GraphRenderer } from '../components/GraphRenderer';
+import { MapView } from '../components/MapView';
 import { FilterBar } from '../components/FilterBar';
 import { NodeDetailPanel } from '../components/NodeDetailPanel';
 import { ViewSwitcher } from '../components/ViewSwitcher';
+import { RiskScore } from '@navigator/shared/src/types/risk';
 
-// 공급망 그래프 시각화 페이지 (Phase 1 메인 뷰)
-export function GraphView() {
+/**
+ * GIS 지도 뷰 페이지 (Phase 2).
+ * Deck.gl 기반 세계 지도에 14개 마스터 노드와 물류 경로를 시각화한다.
+ * GraphView와 동일한 Zustand 스토어를 공유하여 상태 동기화를 유지한다.
+ */
+export function MapViewPage() {
     const { nodes, edges, selectedNodeId, filters, riskScores, setNodes, setEdges, setRiskScores, selectNode, setLoading, isLoading } =
         useSupplyChainStore();
 
     const [error, setError] = useState<string | null>(null);
 
-    // 백엔드 API에서 그래프 데이터 로딩 (이미 로드된 경우 건너뛰기 - 뷰 전환 시 재요청 방지)
+    // 백엔드 API에서 그래프 데이터 로딩
     useEffect(() => {
+        // 이미 데이터가 로드되어 있으면 건너뛰기 (뷰 전환 시 재요청 방지)
         if (nodes.length > 0) return;
 
         const fetchGraphData = async () => {
@@ -48,25 +54,23 @@ export function GraphView() {
         fetchGraphData();
     }, [nodes.length, setNodes, setEdges, setLoading]);
 
-    // 리스크 점수 로딩 (그래프 데이터 로딩 후, 이미 로드된 경우 건너뛰기)
+    // 리스크 점수 로딩
     useEffect(() => {
         if (nodes.length === 0) return;
-        if (riskScores.length > 0) return;
 
         const fetchRiskScores = async () => {
             try {
                 const response = await fetch('/api/risk/recalculate', { method: 'POST' });
                 if (!response.ok) return;
-                const scores = await response.json();
+                const scores: RiskScore[] = await response.json();
                 setRiskScores(scores);
             } catch {
-                // 리스크 점수 실패 시 기본값(0)으로 렌더링
                 console.warn('리스크 점수 로딩 실패 - 기본값 사용');
             }
         };
 
         fetchRiskScores();
-    }, [nodes, riskScores.length, setRiskScores]);
+    }, [nodes]);
 
     // 리스크 점수를 nodeId → score Map으로 변환
     const riskScoreMap = useMemo(() => {
@@ -77,20 +81,15 @@ export function GraphView() {
         return map;
     }, [riskScores]);
 
-    // 필터링된 노드 계산 (200ms 이내 업데이트를 위해 useMemo 활용)
+    // 필터링된 노드
     const filteredNodes = useMemo(() => {
         return nodes.filter((node) => {
-            // 노드 타입 필터: 빈 배열이면 모든 타입 표시
             if (filters.nodeTypes.length > 0 && !filters.nodeTypes.includes(node.type)) {
                 return false;
             }
-
-            // 국가 필터: 빈 배열이면 모든 국가 표시, N/A 국가는 항상 표시
             if (filters.countries.length > 0 && node.country !== 'NA' && !filters.countries.includes(node.country)) {
                 return false;
             }
-
-            // 리스크 레벨 필터
             if (filters.riskLevel !== 'all') {
                 const score = riskScoreMap.get(node.id) ?? 0;
                 switch (filters.riskLevel) {
@@ -105,12 +104,11 @@ export function GraphView() {
                         break;
                 }
             }
-
             return true;
         });
     }, [nodes, filters.nodeTypes, filters.countries, filters.riskLevel, riskScoreMap]);
 
-    // 필터링된 노드에 연결된 엣지만 포함
+    // 필터링된 엣지
     const filteredEdges = useMemo(() => {
         const filteredNodeIds = new Set(filteredNodes.map((n) => n.id));
         return edges.filter(
@@ -156,11 +154,11 @@ export function GraphView() {
                 <div>
                     <h1 style={{ margin: 0, fontSize: '1.25rem' }}>Mineral Chain Navigator</h1>
                     <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: '#666' }}>
-                        리튬(HS 2825.20) 공급망 그래프 시각화 • 노드: {filteredNodes.length}/{nodes.length} | 엣지: {filteredEdges.length}/{edges.length}
+                        리튬(HS 2825.20) 공급망 GIS 지도 시각화 • 노드: {filteredNodes.length}/{nodes.length} | 엣지: {filteredEdges.length}/{edges.length}
                     </p>
                 </div>
                 {/* 뷰 전환 스위처 */}
-                <ViewSwitcher currentView="graph" />
+                <ViewSwitcher currentView="map" />
             </header>
 
             {/* 필터 컨트롤 바 */}
@@ -178,7 +176,7 @@ export function GraphView() {
                         background: 'rgba(255,255,255,0.8)',
                         zIndex: 10,
                     }}>
-                        <p>그래프 데이터 로딩 중...</p>
+                        <p>지도 데이터 로딩 중...</p>
                     </div>
                 )}
 
@@ -199,9 +197,9 @@ export function GraphView() {
                     </div>
                 )}
 
-                {/* 그래프 렌더러 — 필터링된 노드/엣지를 전달 */}
+                {/* 지도 렌더러 */}
                 {filteredNodes.length > 0 && (
-                    <GraphRenderer
+                    <MapView
                         nodes={filteredNodes}
                         edges={filteredEdges}
                         riskScores={riskScoreMap}
@@ -209,7 +207,7 @@ export function GraphView() {
                     />
                 )}
 
-                {/* 필터 결과 없음 표시 */}
+                {/* 필터 결과 없음 */}
                 {!isLoading && nodes.length > 0 && filteredNodes.length === 0 && (
                     <div style={{
                         position: 'absolute',
@@ -233,60 +231,6 @@ export function GraphView() {
                         onClose={handleClosePanel}
                     />
                 )}
-
-                {/* 범례 */}
-                <div
-                    style={{
-                        position: 'absolute',
-                        bottom: '1rem',
-                        left: '1rem',
-                        background: 'rgba(255,255,255,0.95)',
-                        border: '1px solid #e0e0e0',
-                        borderRadius: '6px',
-                        padding: '0.75rem',
-                        fontSize: '0.75rem',
-                    }}
-                    aria-label="그래프 범례"
-                >
-                    <div style={{ fontWeight: 'bold', marginBottom: '6px' }}>국가</div>
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
-                        <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, background: 'rgba(0, 188, 212, 0.8)', borderRadius: '50%' }} />{' '}
-                            한국
-                        </span>
-                        <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, background: 'rgba(139, 90, 43, 0.8)', borderRadius: '50%' }} />{' '}
-                            중국
-                        </span>
-                        <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, background: 'rgba(0, 57, 166, 0.8)', borderRadius: '50%' }} />{' '}
-                            칠레
-                        </span>
-                        <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, background: 'rgba(123, 104, 238, 0.8)', borderRadius: '50%' }} />{' '}
-                            미국
-                        </span>
-                        <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, background: 'rgba(255, 105, 180, 0.8)', borderRadius: '50%' }} />{' '}
-                            일본
-                        </span>
-                    </div>
-                    <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>리스크 (테두리)</div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                        <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', border: '2px solid #52c41a', background: '#b7eb8f' }} />{' '}
-                            저위험
-                        </span>
-                        <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', border: '2px solid #faad14', background: '#ffe58f' }} />{' '}
-                            중위험
-                        </span>
-                        <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', border: '3px solid #f5222d', background: '#ffa39e' }} />{' '}
-                            고위험
-                        </span>
-                    </div>
-                </div>
             </main>
         </div>
     );
