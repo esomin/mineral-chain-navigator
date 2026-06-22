@@ -240,20 +240,43 @@ export function GraphView() {
                         padding: '0.75rem',
                         fontSize: '0.75rem',
                     }}
-                    aria-label="리스크 색상 범례"
+                    aria-label="그래프 범례"
                 >
-                    <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>리스크 수준</div>
+                    <div style={{ fontWeight: 'bold', marginBottom: '6px' }}>국가</div>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                        <span>
+                            <span style={{ display: 'inline-block', width: 12, height: 12, background: '#4A90D9', borderRadius: '50%' }} />{' '}
+                            한국
+                        </span>
+                        <span>
+                            <span style={{ display: 'inline-block', width: 12, height: 12, background: '#E8453C', borderRadius: '50%' }} />{' '}
+                            중국
+                        </span>
+                        <span>
+                            <span style={{ display: 'inline-block', width: 12, height: 12, background: '#F5A623', borderRadius: '50%' }} />{' '}
+                            칠레
+                        </span>
+                        <span>
+                            <span style={{ display: 'inline-block', width: 12, height: 12, background: '#7B68EE', borderRadius: '50%' }} />{' '}
+                            미국
+                        </span>
+                        <span>
+                            <span style={{ display: 'inline-block', width: 12, height: 12, background: '#50C878', borderRadius: '50%' }} />{' '}
+                            일본
+                        </span>
+                    </div>
+                    <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>리스크 (테두리)</div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                         <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, background: '#b7eb8f', borderRadius: '50%', border: '1px solid #52c41a' }} />{' '}
+                            <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', border: '2px solid #52c41a', background: 'transparent' }} />{' '}
                             저위험
                         </span>
                         <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, background: '#ffe58f', borderRadius: '50%', border: '1px solid #faad14' }} />{' '}
+                            <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', border: '3px solid #faad14', background: 'transparent' }} />{' '}
                             중위험
                         </span>
                         <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, background: '#ffa39e', borderRadius: '50%', border: '1px solid #f5222d' }} />{' '}
+                            <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', border: '4px solid #f5222d', background: 'transparent' }} />{' '}
                             고위험
                         </span>
                     </div>

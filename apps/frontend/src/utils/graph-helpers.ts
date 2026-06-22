@@ -81,6 +81,39 @@ export function getNodeTypeLabel(type: string): string {
 }
 
 /**
+ * 국가별 노드 fill 색상 매핑.
+ */
+const COUNTRY_COLORS: Record<string, string> = {
+    SouthKorea: '#4A90D9',   // 파랑
+    China: '#E8453C',        // 빨강
+    Chile: '#F5A623',        // 주황
+    UnitedStates: '#7B68EE', // 보라
+    Japan: '#50C878',        // 초록
+    NA: '#888888',           // 회색
+};
+
+/**
+ * 국가 코드를 노드 fill 색상으로 변환.
+ */
+export function getCountryColor(country: string): string {
+    return COUNTRY_COLORS[country] || '#888888';
+}
+
+/**
+ * 리스크 점수를 테두리(stroke) 색상 + 두께로 변환.
+ *
+ * - 0~33: 초록 테두리, 2px
+ * - 34~66: 주황 테두리, 3px
+ * - 67~100: 빨강 테두리, 4px
+ */
+export function getRiskStroke(score: number): { color: string; width: number } {
+    const clamped = Math.max(0, Math.min(100, score));
+    if (clamped <= 33) return { color: '#52c41a', width: 2 };
+    if (clamped <= 66) return { color: '#faad14', width: 3 };
+    return { color: '#f5222d', width: 4 };
+}
+
+/**
  * 국가 코드를 표시 이름으로 변환.
  */
 export function getCountryDisplayName(country: string): string {

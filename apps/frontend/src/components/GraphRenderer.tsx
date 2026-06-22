@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { Graph } from '@antv/g6';
 import type { SupplyChainNode, SupplyChainEdge } from '@navigator/shared';
-import { getRiskColor, getNodeRadius } from '../utils/graph-helpers';
+import { getRiskColor, getNodeRadius, getCountryColor, getRiskStroke } from '../utils/graph-helpers';
 import { useLODClustering } from '../hooks/useLODClustering';
 import type { ClusterResult } from '../utils/clustering';
 
@@ -126,8 +126,8 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
                     },
                     lineWidth: (d: Record<string, unknown>) => {
                         const nodeData = d?.data as Record<string, unknown> | undefined;
-                        // 클러스터 노드는 두꺼운 테두리
-                        return (nodeData?.isCluster as boolean) ? 3 : 2;
+                        // 리스크 수준에 따른 테두리 두께 (data에서 동적 결정)
+                        return (nodeData?.strokeWidth as number) || 2;
                     },
                     lineDash: (d: Record<string, unknown>) => {
                         const nodeData = d?.data as Record<string, unknown> | undefined;
@@ -317,7 +317,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
                 style={{
                     position: 'absolute',
                     top: '0.5rem',
-                    right: '0.5rem',
+                    right: '1.0rem',
                     background: 'rgba(255, 255, 255, 0.9)',
                     border: '1px solid #d9d9d9',
                     borderRadius: '4px',
@@ -327,7 +327,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
                     zIndex: 5,
                 }}
             >
-                줌: {zoomLevel.toFixed(2)}
+                Zoom Level: {zoomLevel.toFixed(2)}
             </div>
         </div>
     );
@@ -341,7 +341,8 @@ function buildRegularNode(
     riskScores: Map<string, number>,
 ) {
     const riskScore = riskScores.get(node.id) ?? 0;
-    const color = getRiskColor(riskScore);
+    const countryColor = getCountryColor(node.country);
+    const riskStroke = getRiskStroke(riskScore);
     const radius = getNodeRadius(node.metadata.productionCapacity, node.metadata.capacityUnit);
 
     return {
@@ -352,8 +353,9 @@ function buildRegularNode(
             riskScore,
             label: node.name,
             size: radius * 2,
-            color: color.fill,
-            stroke: color.stroke,
+            color: countryColor,
+            stroke: riskStroke.color,
+            strokeWidth: riskStroke.width,
             isCluster: false,
         },
     };
@@ -364,7 +366,8 @@ function buildRegularNode(
  * 클러스터는 멤버 수에 비례하는 큰 원으로 표시하며, 점선 테두리로 구분한다.
  */
 function buildClusterNode(cluster: ClusterResult) {
-    const color = getRiskColor(cluster.averageRiskScore);
+    const countryColor = getCountryColor(cluster.country);
+    const riskStroke = getRiskStroke(cluster.averageRiskScore);
 
     // 클러스터 크기: 멤버 수에 비례 (최소 60px, 최대 120px)
     const clusterSize = Math.min(120, Math.max(60, 40 + cluster.memberCount * 15));
@@ -377,8 +380,9 @@ function buildClusterNode(cluster: ClusterResult) {
             riskScore: cluster.averageRiskScore,
             label: cluster.label,
             size: clusterSize,
-            color: color.fill,
-            stroke: color.stroke,
+            color: countryColor,
+            stroke: riskStroke.color,
+            strokeWidth: riskStroke.width,
             isCluster: true,
             memberCount: cluster.memberCount,
             memberNodeIds: cluster.memberNodeIds,
