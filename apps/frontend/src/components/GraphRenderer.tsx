@@ -10,6 +10,10 @@ export interface GraphRendererProps {
     edges: SupplyChainEdge[];
     riskScores: Map<string, number>;
     onNodeClick?: (nodeId: string) => void;
+    highlightedPath?: {
+        nodeIds: string[];
+        edgeIds: string[];
+    } | null;
 }
 
 /**
@@ -20,7 +24,7 @@ export interface GraphRendererProps {
  * - LOD (Level of Detail) 클러스터링: 줌 아웃 시 국가별 노드 집계
  * - Web Worker 기반 레이아웃 계산 오프로드
  */
-export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRendererProps) {
+export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlightedPath }: GraphRendererProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const graphRef = useRef<Graph | null>(null);
     const [zoomLevel, setZoomLevel] = useState(1.2);
@@ -150,7 +154,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
                     labelPlacement: 'bottom',
                     labelOffsetY: 4,
                 },
-                // 상태별 스타일 (호버, 선택)
+                // 상태별 스타일 (호버, 선택, 전파경로)
                 state: {
                     selected: {
                         stroke: '#1890ff',
@@ -162,6 +166,12 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
                         lineWidth: 3,
                         shadowColor: 'rgba(0, 0, 0, 0.15)',
                         shadowBlur: 6,
+                    },
+                    propagation: {
+                        stroke: '#ff4d4f',
+                        lineWidth: 4,
+                        shadowColor: 'rgba(255, 77, 79, 0.6)',
+                        shadowBlur: 12,
                     },
                 },
             },
@@ -178,6 +188,11 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
                     highlight: {
                         stroke: '#1890ff',
                         lineWidth: 2.5,
+                    },
+                    propagation: {
+                        stroke: '#ff4d4f',
+                        lineWidth: 3,
+                        lineDash: [6, 3],
                     },
                 },
             },
@@ -337,6 +352,50 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
             // 그래프 인스턴스 파괴 중 호출되면 무시
         }
     }, [isClustered, lodResult, buildGraphData, nodes.length]);
+
+    // 전파 경로 하이라이트 효과: highlightedPath 변경 시 노드/엣지 상태 토글
+    useEffect(() => {
+        if (!graphRef.current) return;
+        const graph = graphRef.current;
+
+        try {
+            const data = graph.getData();
+
+            // 기존 propagation 상태 제거
+            for (const node of data.nodes || []) {
+                const nodeId = (node as Record<string, unknown>).id as string;
+                if (nodeId) {
+                    graph.setElementState(nodeId, []);
+                }
+            }
+            for (const edge of data.edges || []) {
+                const edgeId = (edge as Record<string, unknown>).id as string;
+                if (edgeId) {
+                    graph.setElementState(edgeId, []);
+                }
+            }
+
+            // 새로운 전파 경로가 있으면 propagation 상태 적용
+            if (highlightedPath) {
+                for (const nodeId of highlightedPath.nodeIds) {
+                    try {
+                        graph.setElementState(nodeId, ['propagation']);
+                    } catch {
+                        // 노드가 현재 그래프에 없으면 무시
+                    }
+                }
+                for (const edgeId of highlightedPath.edgeIds) {
+                    try {
+                        graph.setElementState(edgeId, ['propagation']);
+                    } catch {
+                        // 엣지가 현재 그래프에 없으면 무시
+                    }
+                }
+            }
+        } catch {
+            // 그래프 인스턴스 파괴 중 호출 시 무시
+        }
+    }, [highlightedPath]);
 
     return (
         <div
