@@ -371,6 +371,24 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
     );
 }
 
+/** 노드 타입 영-한 매핑 */
+const NODE_TYPE_LABEL_KO: Record<string, string> = {
+    Resource: '자원',
+    Mine: '광산',
+    Refinery: '정제소',
+    Factory: '공장',
+};
+
+/** 국가 영-한 매핑 */
+const COUNTRY_LABEL_KO: Record<string, string> = {
+    SouthKorea: '한국',
+    Japan: '일본',
+    China: '중국',
+    Chile: '칠레',
+    UnitedStates: '미국',
+    NA: '기타',
+};
+
 /**
  * 일반 노드를 G6 데이터 형식으로 변환.
  */
@@ -389,7 +407,9 @@ function buildRegularNode(
             nodeType: node.type,
             country: node.country,
             riskScore,
-            label: node.name,
+            label: node.country === 'NA'
+                ? `${node.name}\n(${NODE_TYPE_LABEL_KO[node.type] ?? node.type})`
+                : `${node.name}\n(${COUNTRY_LABEL_KO[node.country] ?? node.country}, ${NODE_TYPE_LABEL_KO[node.type] ?? node.type})`,
             size: radius * 2,
             color: countryColor,
             riskFill: riskStroke.fill,
