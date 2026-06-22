@@ -78,7 +78,10 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
         return { nodes: g6Nodes, edges: g6Edges };
     }, [nodes, edges, riskScores, isClustered, lodResult]);
 
-    // G6 그래프 인스턴스 초기화 및 렌더링
+    // 초기 렌더 완료 여부 — afterrender에서 불필요한 재렌더 방지
+    const isInitialRenderRef = useRef(true);
+
+    // G6 그래프 인스턴스 초기화 (노드/엣지 원본 데이터 변경 시만 재생성)
     useEffect(() => {
         if (!containerRef.current || nodes.length === 0) return;
 
@@ -88,6 +91,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
             graphRef.current = null;
         }
 
+        isInitialRenderRef.current = true;
         const container = containerRef.current;
         const data = buildGraphData();
 
@@ -200,10 +204,10 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
             }
         });
 
-        // 줌 변경 이벤트 핸들링 — LOD 트리거
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // afterrender: 초기 줌 레벨만 한 번 캡처 (재렌더 방지)
         graph.on('afterrender', () => {
-            // G6 v5의 줌 레벨 감지를 위한 viewport 이벤트
+            if (!isInitialRenderRef.current) return;
+            isInitialRenderRef.current = false;
             try {
                 const currentZoom = graph.getZoom?.() ?? 1.0;
                 setZoomLevel(currentZoom);
@@ -212,7 +216,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
             }
         });
 
-        // 줌 변경 시 LOD 업데이트
+        // 줌 변경 시 LOD 업데이트 (사용자 인터랙션에 의한 줌만 처리)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         graph.on('canvas:wheel' as any, () => {
             try {
@@ -232,7 +236,25 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick }: GraphRe
                 graphRef.current = null;
             }
         };
-    }, [buildGraphData, nodes.length]);
+        // 의존성: 원본 데이터(nodes, edges, riskScores)가 변경될 때만 그래프 재생성
+        // buildGraphData를 의존성에서 제거하여 LOD 상태 변경으로 인한 불필요한 재생성 방지
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [nodes, edges, riskScores]);
+
+    // LOD 클러스터링 변경 시 그래프 데이터만 업데이트 (인스턴스 재생성 없이)
+    useEffect(() => {
+        if (!graphRef.current || nodes.length === 0) return;
+        // 초기 렌더 중에는 무시 (위 effect에서 이미 데이터 설정됨)
+        if (isInitialRenderRef.current) return;
+
+        const data = buildGraphData();
+        try {
+            graphRef.current.setData(data);
+            graphRef.current.render();
+        } catch {
+            // 그래프 인스턴스 파괴 중 호출되면 무시
+        }
+    }, [isClustered, lodResult, buildGraphData, nodes.length]);
 
     return (
         <div
