@@ -4,12 +4,19 @@ import type { Request, Response } from 'express';
 import { RiskController } from '../controllers/risk-controller.js';
 import { GraphController } from '../controllers/graph-controller.js';
 import { SimulationController } from '../controllers/simulation-controller.js';
+import { DocumentController } from '../controllers/document-controller.js';
+import { InMemoryVectorStore, createMockEmbeddingProvider } from '@navigator/pipeline';
 import { store } from '../store.js';
 
 const router = Router();
 const riskController = new RiskController(store);
 const graphController = new GraphController(store);
 const simulationController = new SimulationController(store);
+
+// 문서 인덱싱 컨트롤러 초기화
+const vectorStore = new InMemoryVectorStore();
+const embeddingProvider = createMockEmbeddingProvider();
+const documentController = new DocumentController(vectorStore, embeddingProvider);
 
 // === 리스크 라우트 ===
 
@@ -95,6 +102,64 @@ router.get('/simulation/:id', (req: Request, res: Response) => {
     }
 
     res.json(result);
+});
+
+// === 문서 인덱싱 라우트 (Phase 2) ===
+
+/** POST /api/documents/index - 문서 인덱싱 */
+router.post('/documents/index', async (req: Request, res: Response) => {
+    const doc = req.body;
+
+    if (!doc || !doc.title || !doc.content || !doc.source || !doc.documentType) {
+        res.status(400).json({
+            error: '유효한 문서를 제공해야 합니다 (title, content, source, date, documentType 필수).',
+            statusCode: 400,
+        });
+        return;
+    }
+
+    try {
+        const result = await documentController.indexDocument(doc);
+        if (!result.success) {
+            res.status(400).json({
+                error: '문서 인덱싱에 실패했습니다.',
+                statusCode: 400,
+                details: result.errors,
+            });
+            return;
+        }
+        res.json(result);
+    } catch (err) {
+        console.error('[documents/index] 예상치 못한 오류:', err);
+        res.status(500).json({
+            error: '문서 인덱싱 중 오류가 발생했습니다.',
+            statusCode: 500,
+        });
+    }
+});
+
+/** POST /api/documents/search - 의미 검색 */
+router.post('/documents/search', async (req: Request, res: Response) => {
+    const { query, topK } = req.body;
+
+    if (!query || typeof query !== 'string' || query.trim().length === 0) {
+        res.status(400).json({
+            error: 'query는 필수이며 비어있지 않은 문자열이어야 합니다.',
+            statusCode: 400,
+        });
+        return;
+    }
+
+    try {
+        const results = await documentController.search(query, topK ?? 5);
+        res.json({ results, count: results.length });
+    } catch (err) {
+        console.error('[documents/search] 예상치 못한 오류:', err);
+        res.status(500).json({
+            error: '문서 검색 중 오류가 발생했습니다.',
+            statusCode: 500,
+        });
+    }
 });
 
 export { router };

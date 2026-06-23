@@ -14,6 +14,7 @@
     "dependencies": {
         "@navigator/core": "*",
         "@navigator/database": "*",
+        "@navigator/pipeline": "*",
         "@navigator/shared": "*",
         "cors": "^2.8.5",
         "express": "^4.18.2"
