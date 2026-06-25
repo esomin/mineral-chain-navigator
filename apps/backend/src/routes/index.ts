@@ -5,6 +5,7 @@ import { RiskController } from '../controllers/risk-controller.js';
 import { GraphController } from '../controllers/graph-controller.js';
 import { SimulationController } from '../controllers/simulation-controller.js';
 import { DocumentController } from '../controllers/document-controller.js';
+import { TraceabilityController } from '../controllers/traceability-controller.js';
 import { InMemoryVectorStore, createMockEmbeddingProvider } from '@navigator/pipeline';
 import { store } from '../store.js';
 
@@ -12,6 +13,7 @@ const router = Router();
 const riskController = new RiskController(store);
 const graphController = new GraphController(store);
 const simulationController = new SimulationController(store);
+const traceabilityController = new TraceabilityController(store);
 
 // 문서 인덱싱 컨트롤러 초기화
 const vectorStore = new InMemoryVectorStore();
@@ -192,6 +194,24 @@ router.post('/documents/search', async (req: Request, res: Response) => {
             statusCode: 500,
         });
     }
+});
+
+// === ESG 역추적 라우트 (Phase 2) ===
+
+/** GET /api/trace/:factoryNodeId - Factory 노드의 ESG 역추적 보고서 조회 */
+router.get('/trace/:factoryNodeId', (req: Request, res: Response) => {
+    const { factoryNodeId } = req.params;
+    const report = traceabilityController.getUpstreamTrace(factoryNodeId);
+
+    if (!report) {
+        res.status(404).json({
+            error: `Factory 노드를 찾을 수 없습니다: ${factoryNodeId}`,
+            statusCode: 404,
+        });
+        return;
+    }
+
+    res.json(report);
 });
 
 export { router };

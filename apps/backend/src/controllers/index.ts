@@ -3,3 +3,4 @@ export { RiskController } from './risk-controller.js';
 export { GraphController } from './graph-controller.js';
 export { SimulationController } from './simulation-controller.js';
 export { DocumentController } from './document-controller.js';
+export { TraceabilityController } from './traceability-controller.js';
