@@ -138,6 +138,38 @@ router.post('/documents/index', async (req: Request, res: Response) => {
     }
 });
 
+/** POST /api/documents/associate - 청크를 노드와 연관시킨다 */
+router.post('/documents/associate', (req: Request, res: Response) => {
+    const { chunkIds, nodeId } = req.body;
+
+    if (!chunkIds || !Array.isArray(chunkIds) || chunkIds.length === 0) {
+        res.status(400).json({
+            error: 'chunkIds는 필수이며 비어있지 않은 문자열 배열이어야 합니다.',
+            statusCode: 400,
+        });
+        return;
+    }
+
+    if (!nodeId || typeof nodeId !== 'string' || nodeId.trim().length === 0) {
+        res.status(400).json({
+            error: 'nodeId는 필수이며 비어있지 않은 문자열이어야 합니다.',
+            statusCode: 400,
+        });
+        return;
+    }
+
+    try {
+        documentController.associateWithNode(chunkIds, nodeId);
+        res.json({ success: true, chunkIds, nodeId });
+    } catch (err) {
+        console.error('[documents/associate] 예상치 못한 오류:', err);
+        res.status(500).json({
+            error: '청크-노드 연관 처리 중 오류가 발생했습니다.',
+            statusCode: 500,
+        });
+    }
+});
+
 /** POST /api/documents/search - 의미 검색 */
 router.post('/documents/search', async (req: Request, res: Response) => {
     const { query, topK } = req.body;
