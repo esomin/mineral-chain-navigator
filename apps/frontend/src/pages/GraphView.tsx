@@ -3,6 +3,7 @@ import { useSupplyChainStore } from '../store/supply-chain-store';
 import { GraphRenderer } from '../components/GraphRenderer';
 import { FilterBar } from '../components/FilterBar';
 import { NodeDetailPanel } from '../components/NodeDetailPanel';
+import { TraceabilityPanel } from '../components/TraceabilityPanel';
 import { ViewSwitcher } from '../components/ViewSwitcher';
 
 // 공급망 그래프 시각화 페이지 (Phase 1 메인 뷰)
@@ -11,6 +12,8 @@ export function GraphView() {
         useSupplyChainStore();
 
     const [error, setError] = useState<string | null>(null);
+    // ESG 역추적 패널 표시 상태
+    const [showTraceability, setShowTraceability] = useState(false);
 
     // 백엔드 API에서 그래프 데이터 로딩 (이미 로드된 경우 건너뛰기 - 뷰 전환 시 재요청 방지)
     useEffect(() => {
@@ -122,6 +125,8 @@ export function GraphView() {
     const handleNodeClick = useCallback(
         (nodeId: string) => {
             selectNode(nodeId === selectedNodeId ? null : nodeId);
+            // 다른 노드 선택 시 역추적 패널 닫기
+            setShowTraceability(false);
         },
         [selectNode, selectedNodeId],
     );
@@ -130,6 +135,16 @@ export function GraphView() {
     const handleClosePanel = useCallback(() => {
         selectNode(null);
     }, [selectNode]);
+
+    // ESG 역추적 패널 열기 핸들러
+    const handleOpenTraceability = useCallback(() => {
+        setShowTraceability(true);
+    }, []);
+
+    // ESG 역추적 패널 닫기 핸들러
+    const handleCloseTraceability = useCallback(() => {
+        setShowTraceability(false);
+    }, []);
 
     // 선택된 노드 정보
     const selectedNode = useMemo(
@@ -225,12 +240,22 @@ export function GraphView() {
                 )}
 
                 {/* 노드 상세 패널 */}
-                {selectedNode && (
+                {selectedNode && !showTraceability && (
                     <NodeDetailPanel
                         node={selectedNode}
                         connectedEdges={connectedEdges}
                         riskScore={riskScoreMap.get(selectedNode.id)}
                         onClose={handleClosePanel}
+                        onOpenTraceability={selectedNode.type === 'Factory' ? handleOpenTraceability : undefined}
+                    />
+                )}
+
+                {/* ESG 역추적 패널 */}
+                {selectedNode && showTraceability && selectedNode.type === 'Factory' && (
+                    <TraceabilityPanel
+                        factoryNodeId={selectedNode.id}
+                        factoryName={selectedNode.name}
+                        onClose={handleCloseTraceability}
                     />
                 )}
 

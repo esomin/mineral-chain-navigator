@@ -6,6 +6,8 @@ export interface NodeDetailPanelProps {
     connectedEdges: SupplyChainEdge[];
     riskScore: number | undefined;
     onClose: () => void;
+    /** Factory 노드에서 역추적 패널을 열기 위한 콜백 (옵션) */
+    onOpenTraceability?: () => void;
 }
 
 /**
@@ -13,7 +15,7 @@ export interface NodeDetailPanelProps {
  * 선택된 노드의 속성, description, 연결 엣지, 리스크 점수를 표시한다.
  * Requirements 4.4 구현.
  */
-export function NodeDetailPanel({ node, connectedEdges, riskScore, onClose }: NodeDetailPanelProps) {
+export function NodeDetailPanel({ node, connectedEdges, riskScore, onClose, onOpenTraceability }: NodeDetailPanelProps) {
     return (
         <aside
             style={{
@@ -119,6 +121,19 @@ export function NodeDetailPanel({ node, connectedEdges, riskScore, onClose }: No
                                 </li>
                             ))}
                         </ul>
+                    </div>
+                )}
+
+                {/* Factory 노드일 때 ESG 역추적 버튼 */}
+                {node.type === 'Factory' && onOpenTraceability && (
+                    <div className="mt-4">
+                        <button
+                            onClick={onOpenTraceability}
+                            className="w-full py-2 px-3 bg-blue-500 text-white border-none rounded cursor-pointer text-sm font-medium hover:bg-blue-600 transition-colors"
+                            aria-label="ESG 역추적 보기"
+                        >
+                            ESG 역추적 보기
+                        </button>
                     </div>
                 )}
             </div>
