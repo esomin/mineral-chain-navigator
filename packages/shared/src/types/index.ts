@@ -4,3 +4,4 @@ export * from './risk.js';
 export * from './simulation.js';
 export * from './document.js';
 export * from './ingestion.js';
+export * from './traceability.js';
