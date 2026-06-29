@@ -1,9 +1,11 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSupplyChainStore } from '../store/supply-chain-store';
+import { useSimulationStore } from '../store/simulation-store';
 import { GraphRenderer } from '../components/GraphRenderer';
 import { FilterBar } from '../components/FilterBar';
 import { NodeDetailPanel } from '../components/NodeDetailPanel';
 import { TraceabilityPanel } from '../components/TraceabilityPanel';
+import { SimulationPanel } from '../components/SimulationPanel';
 import { ViewSwitcher } from '../components/ViewSwitcher';
 import { AIInsightPanel } from '../components/AIInsightPanel';
 import { GiDiamonds } from 'react-icons/gi';
@@ -13,11 +15,16 @@ export function GraphView() {
     const { nodes, edges, selectedNodeId, filters, riskScores, setNodes, setEdges, setRiskScores, selectNode, setLoading, isLoading } =
         useSupplyChainStore();
 
+    // 시뮬레이션 결과에서 전파 경로 하이라이트 가져오기
+    const highlightedPath = useSimulationStore((state) => state.highlightedPath);
+
     const [error, setError] = useState<string | null>(null);
     // ESG 역추적 패널 표시 상태
     const [showTraceability, setShowTraceability] = useState(false);
     // AI 인사이트 패널 표시 상태
     const [showAIPanel, setShowAIPanel] = useState(false);
+    // 시뮬레이션 패널 표시 상태
+    const [showSimulation, setShowSimulation] = useState(false);
 
     // 백엔드 API에서 그래프 데이터 로딩 (이미 로드된 경우 건너뛰기 - 뷰 전환 시 재요청 방지)
     useEffect(() => {
@@ -181,6 +188,17 @@ export function GraphView() {
                 {/* 뷰 전환 스위처 */}
                 <div className="flex items-center gap-3">
                     <button
+                        onClick={() => setShowSimulation(!showSimulation)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors cursor-pointer ${showSimulation
+                            ? 'bg-green-500 text-white border-green-500'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                            }`}
+                        aria-label="시뮬레이션 패널 토글"
+                        aria-pressed={showSimulation}
+                    >
+                        ⚡ 시뮬레이션
+                    </button>
+                    <button
                         onClick={() => setShowAIPanel(!showAIPanel)}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors cursor-pointer ${showAIPanel
                             ? 'bg-blue-500 text-white border-blue-500'
@@ -238,6 +256,7 @@ export function GraphView() {
                         edges={filteredEdges}
                         riskScores={riskScoreMap}
                         onNodeClick={handleNodeClick}
+                        highlightedPath={highlightedPath}
                     />
                 )}
 
@@ -280,6 +299,9 @@ export function GraphView() {
                 <div className={showAIPanel ? '' : 'hidden'}>
                     <AIInsightPanel onClose={() => setShowAIPanel(false)} />
                 </div>
+
+                {/* 시뮬레이션 제어 패널 */}
+                {showSimulation && <SimulationPanel />}
 
                 {/* 범례 */}
                 <div
