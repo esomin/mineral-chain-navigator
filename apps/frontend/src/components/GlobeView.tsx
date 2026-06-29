@@ -45,16 +45,16 @@ function getPointColor(score: number | undefined): string {
     return '#f5222d'; // 고위험: 빨간색
 }
 
-// 아크 색상 반환 (소스 노드 국가 기반)
+// 아크 색상 반환 (소스 노드 국가 기반) — 밝은 파스텔 톤 + 투명도로 지구본 위 가독성 확보
 function getArcColor(sourceCountry: string): [string, string] {
     const colors: Record<string, [string, string]> = {
-        China: ['rgba(93, 52, 14, 0.6)', 'rgba(93, 52, 14, 0.3)'],
-        Chile: ['rgba(0, 57, 166, 0.6)', 'rgba(0, 57, 166, 0.3)'],
-        UnitedStates: ['rgba(123, 104, 238, 0.6)', 'rgba(123, 104, 238, 0.3)'],
-        SouthKorea: ['rgba(0, 188, 212, 0.6)', 'rgba(0, 188, 212, 0.3)'],
-        Japan: ['rgba(255, 105, 180, 0.6)', 'rgba(255, 105, 180, 0.3)'],
+        China: ['rgba(255, 160, 120, 0.75)', 'rgba(255, 160, 120, 0.35)'],       // 밝은 살몬(연한 주황)
+        Chile: ['rgba(220, 220, 220, 0.8)', 'rgba(220, 220, 220, 0.4)'],        // 밝은 회색 (지구본 배경 대비 무채색)
+        UnitedStates: ['rgba(180, 160, 255, 0.75)', 'rgba(180, 160, 255, 0.35)'], // 연한 라벤더
+        SouthKorea: ['rgba(100, 220, 240, 0.75)', 'rgba(100, 220, 240, 0.35)'],  // 밝은 시안
+        Japan: ['rgba(255, 170, 210, 0.75)', 'rgba(255, 170, 210, 0.35)'],       // 연한 분홍
     };
-    return colors[sourceCountry] || ['rgba(136, 136, 136, 0.6)', 'rgba(136, 136, 136, 0.3)'];
+    return colors[sourceCountry] || ['rgba(200, 200, 200, 0.65)', 'rgba(200, 200, 200, 0.3)'];
 }
 
 /**
@@ -137,6 +137,7 @@ export function GlobeView({ nodes, edges, riskScores, arcWeightMode, onNodeClick
 
         const globe = new Globe(containerRef.current, { animateIn: true })
             .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+            // .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
             .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
             .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
             // 60fps 유지를 위한 렌더링 최적화
@@ -146,6 +147,9 @@ export function GlobeView({ nodes, edges, riskScores, arcWeightMode, onNodeClick
         // 렌더러 성능 최적화 설정
         const renderer = globe.renderer();
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        // 초기 시점: 한국 좌표(위도 36.5, 경도 127.5) 중심으로 설정
+        globe.pointOfView({ lat: 36.5, lng: 127.5, altitude: 2.5 });
 
         globeRef.current = globe;
 
@@ -206,9 +210,13 @@ export function GlobeView({ nodes, edges, riskScores, arcWeightMode, onNodeClick
             .arcEndLng((d: object) => (d as ArcData).endLng)
             .arcColor((d: object) => (d as ArcData).color)
             .arcStroke((d: object) => (d as ArcData).weight)
-            .arcDashLength(0.4)
-            .arcDashGap(0.2)
-            .arcDashAnimateTime(2000);
+            // 점선 애니메이션 설정
+            .arcDashLength(0.15)
+            .arcDashGap(0.05)
+            .arcDashAnimateTime(8000);
+        // .arcDashLength(0.001)
+        // .arcDashGap(0.001)
+        // .arcDashAnimateTime(100000)
     }, [arcsData]);
 
     // 라벨 레이어 업데이트
