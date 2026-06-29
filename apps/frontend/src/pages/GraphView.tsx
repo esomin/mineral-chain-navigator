@@ -5,6 +5,8 @@ import { FilterBar } from '../components/FilterBar';
 import { NodeDetailPanel } from '../components/NodeDetailPanel';
 import { TraceabilityPanel } from '../components/TraceabilityPanel';
 import { ViewSwitcher } from '../components/ViewSwitcher';
+import { AIInsightPanel } from '../components/AIInsightPanel';
+import { GiDiamonds } from 'react-icons/gi';
 
 // 공급망 그래프 시각화 페이지 (Phase 1 메인 뷰)
 export function GraphView() {
@@ -14,6 +16,8 @@ export function GraphView() {
     const [error, setError] = useState<string | null>(null);
     // ESG 역추적 패널 표시 상태
     const [showTraceability, setShowTraceability] = useState(false);
+    // AI 인사이트 패널 표시 상태
+    const [showAIPanel, setShowAIPanel] = useState(false);
 
     // 백엔드 API에서 그래프 데이터 로딩 (이미 로드된 경우 건너뛰기 - 뷰 전환 시 재요청 방지)
     useEffect(() => {
@@ -175,7 +179,20 @@ export function GraphView() {
                     </p>
                 </div>
                 {/* 뷰 전환 스위처 */}
-                <ViewSwitcher currentView="graph" />
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setShowAIPanel(!showAIPanel)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors cursor-pointer ${showAIPanel
+                            ? 'bg-blue-500 text-white border-blue-500'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                            }`}
+                        aria-label="AI 인사이트 패널 토글"
+                        aria-pressed={showAIPanel}
+                    >
+                        <GiDiamonds color='#4796e3' size={16} /> AI 인사이트
+                    </button>
+                    <ViewSwitcher currentView="graph" />
+                </div>
             </header>
 
             {/* 필터 컨트롤 바 */}
@@ -257,6 +274,11 @@ export function GraphView() {
                         factoryName={selectedNode.name}
                         onClose={handleCloseTraceability}
                     />
+                )}
+
+                {/* AI 인사이트 패널 */}
+                {showAIPanel && (
+                    <AIInsightPanel onClose={() => setShowAIPanel(false)} />
                 )}
 
                 {/* 범례 */}
