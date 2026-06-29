@@ -40,6 +40,7 @@ export interface GraphContext {
 export class AIInsightsService {
     private model: GenerativeModel | null = null;
     private sessions: Map<string, ChatMessage[]> = new Map();
+    private initAttempted = false;
 
     constructor() {
         // 지연 초기화: 첫 API 호출 시 Gemini 클라이언트를 초기화한다
@@ -51,13 +52,10 @@ export class AIInsightsService {
      */
     private ensureInitialized(): void {
         if (this.model !== null) return;
-        // 이미 시도했으나 실패한 경우 재시도하지 않도록 플래그 확인
         if (this.initAttempted) return;
         this.initAttempted = true;
         this.initializeGemini();
     }
-
-    private initAttempted = false;
 
     /**
      * Gemini 클라이언트를 초기화한다.
@@ -65,11 +63,9 @@ export class AIInsightsService {
      */
     private initializeGemini(): void {
         const apiKey = process.env.GEMINI_API_KEY;
-        console.log('[AIInsightsService] GEMINI_API_KEY 존재 여부:', !!apiKey, '| 길이:', apiKey?.length ?? 0);
 
         if (!apiKey) {
             console.warn('[AIInsightsService] GEMINI_API_KEY가 설정되지 않았습니다. LLM 기능을 사용할 수 없습니다.');
-            console.warn('[AIInsightsService] 현재 환경변수 키 목록:', Object.keys(process.env).filter(k => k.includes('GEMINI') || k.includes('API')));
             return;
         }
 
@@ -138,6 +134,10 @@ ${userQuery}`;
         graphContext: GraphContext,
         documentChunks: DocumentChunk[],
     ): Promise<InsightResponse> {
+        const startTime = Date.now();
+        console.info(`[LLM] 요청 시작 | session=${sessionId} | query="${userQuery.substring(0, 80)}"`);
+        console.info(`[LLM] 컨텍스트 | nodes=${graphContext.nodes.length} edges=${graphContext.edges.length} docs=${documentChunks.length}`);
+
         // 세션 이력 조회 또는 생성
         if (!this.sessions.has(sessionId)) {
             this.sessions.set(sessionId, []);
@@ -156,6 +156,7 @@ ${userQuery}`;
 
         // 모델 미초기화 시 에러 반환
         if (!this.model) {
+            console.warn(`[LLM] 실패 | 모델 미초기화 | ${Date.now() - startTime}ms`);
             return {
                 answer: '',
                 citations: [],
@@ -166,14 +167,18 @@ ${userQuery}`;
 
         // 프롬프트 구성
         const prompt = this.buildContextPrompt(graphContext, documentChunks, userQuery);
+        console.info(`[LLM] 프롬프트 생성 | 길이=${prompt.length}자 (~${Math.round(prompt.length / 4)}토큰)`);
 
         // 멀티턴 대화: 이전 이력을 Gemini chat 모드로 전달
+        const historyTurns = Math.floor(history.length / 2);
+        console.info(`[LLM] API 호출 | mode=${historyTurns > 0 ? 'chat' : 'single'} | history=${historyTurns}턴`);
+
         let result: GenerateContentResult;
         try {
             result = await this.callWithChatHistory(sessionId, prompt);
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
-            console.error('[AIInsightsService] API 호출 실패:', errorMessage);
+            console.error(`[LLM] API 오류 | ${errorMessage} | ${Date.now() - startTime}ms`);
 
             return {
                 answer: '',
@@ -188,6 +193,9 @@ ${userQuery}`;
 
         // 출처 인용 추출
         const citations = this.extractCitations(responseText, documentChunks, graphContext);
+
+        const elapsed = Date.now() - startTime;
+        console.info(`[LLM] 응답 완료 | ${elapsed}ms | 답변=${responseText.length}자 | 인용=${citations.length}건`);
 
         // 어시스턴트 메시지 기록
         history.push({

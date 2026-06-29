@@ -223,7 +223,6 @@ router.get('/trace/:factoryNodeId', (req: Request, res: Response) => {
 /** POST /api/insights/query - AI 질의 */
 router.post('/insights/query', async (req: Request, res: Response) => {
     const { sessionId, query } = req.body;
-    console.log('[insights/query] 요청 수신:', { sessionId, query: query?.substring(0, 50), url: req.originalUrl });
 
     if (!query || typeof query !== 'string' || query.trim().length === 0) {
         res.status(400).json({

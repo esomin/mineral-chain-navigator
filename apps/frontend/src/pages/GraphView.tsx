@@ -276,10 +276,10 @@ export function GraphView() {
                     />
                 )}
 
-                {/* AI 인사이트 패널 */}
-                {showAIPanel && (
+                {/* AI 인사이트 패널 — 항상 렌더링, CSS로 표시/숨김 (채팅 기록 유지) */}
+                <div className={showAIPanel ? '' : 'hidden'}>
                     <AIInsightPanel onClose={() => setShowAIPanel(false)} />
-                )}
+                </div>
 
                 {/* 범례 */}
                 <div

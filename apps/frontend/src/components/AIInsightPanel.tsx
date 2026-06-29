@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import type { ChatMessage, Citation, InsightResponse } from '@navigator/shared';
 import { GiDiamonds } from 'react-icons/gi';
+import ReactMarkdown from 'react-markdown';
 
 export interface AIInsightPanelProps {
     onClose: () => void;
@@ -122,7 +123,7 @@ export function AIInsightPanel({ onClose }: AIInsightPanelProps) {
 
     return (
         <aside
-            className="fixed top-0 right-0 w-[400px] max-w-[90vw] h-full bg-white border-l border-gray-200 shadow-lg z-50 flex flex-col animate-slide-in"
+            className="fixed top-0 right-0 w-[600px] max-w-[90vw] h-full bg-white border-l border-gray-200 shadow-lg z-50 flex flex-col animate-slide-in"
             aria-label="AI 인사이트 패널"
         >
             {/* 헤더 */}
@@ -133,10 +134,10 @@ export function AIInsightPanel({ onClose }: AIInsightPanelProps) {
                 </div>
                 <button
                     onClick={onClose}
-                    className="bg-transparent border-none text-xl cursor-pointer text-gray-400 hover:text-gray-600 transition-colors"
-                    aria-label="AI 인사이트 패널 닫기"
+                    className="bg-transparent border-none text-lg cursor-pointer text-gray-400 hover:text-gray-600 transition-colors"
+                    aria-label="AI 인사이트 패널 접기"
                 >
-                    ✕
+                    ▶
                 </button>
             </div>
 
@@ -203,17 +204,43 @@ export function AIInsightPanel({ onClose }: AIInsightPanelProps) {
 /** 메시지 버블 컴포넌트 */
 function MessageBubble({ message }: { message: ChatMessage }) {
     const isUser = message.role === 'user';
+    const [copied, setCopied] = useState(false);
+
+    // 답변 복사 핸들러
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(message.content);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            console.warn('클립보드 복사 실패');
+        }
+    };
 
     return (
-        <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+        <div className={`group flex ${isUser ? 'justify-end' : 'justify-start'}`}>
             <div
-                className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${isUser
+                className={`max-w-[85%] rounded-lg px-3 py-2 text-sm relative ${isUser
                     ? 'bg-blue-500 text-white rounded-br-sm'
                     : 'bg-gray-100 text-gray-800 rounded-bl-sm'
                     }`}
             >
+                {/* 복사 버튼 (어시스턴트 메시지에만 표시) */}
+                {!isUser && (
+                    <button
+                        onClick={handleCopy}
+                        className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded bg-white/80 hover:bg-white text-gray-500 hover:text-gray-700 text-xs border-none cursor-pointer"
+                        aria-label="답변 복사"
+                        title={copied ? '복사됨!' : '복사'}
+                    >
+                        {copied ? '✓' : '📋'}
+                    </button>
+                )}
+
                 {/* 메시지 내용 */}
-                <p className="m-0 whitespace-pre-wrap break-words">{message.content}</p>
+                <div className="m-0 prose prose-sm max-w-none break-words [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+                    <ReactMarkdown>{message.content}</ReactMarkdown>
+                </div>
 
                 {/* 출처 인용 (어시스턴트 메시지에만 표시) */}
                 {!isUser && message.citations && message.citations.length > 0 && (
