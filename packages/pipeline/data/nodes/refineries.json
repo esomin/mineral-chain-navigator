@@ -13,7 +13,11 @@
             "capacityUnit": "tons",
             "annualOutput": 100000,
             "owner": "Ganfeng Lithium",
-            "hsCode": "282520"
+            "hsCode": "282520",
+            "esgStatus": "unverified",
+            "certifications": [
+                "ISO 9001"
+            ]
         },
         "description": "글로벌 1위 규모의 리튬 제련소. 단일 공장 기준 세계 최대의 수산화리튬 가공 능력을 보유한 핵심 병목 노드 (HHI 가중치 최고점)",
         "created_at": "2025-01-01T00:00:00.000Z",
@@ -33,7 +37,11 @@
             "capacityUnit": "tons",
             "annualOutput": 50000,
             "owner": "Tianqi Lithium",
-            "hsCode": "282520"
+            "hsCode": "282520",
+            "esgStatus": "unverified",
+            "certifications": [
+                "ISO 9001"
+            ]
         },
         "description": "중국 최상위권의 고순도 리튬 정제 거점. 호주 등에서 수입한 광석을 가공하여 한국, 일본 등의 다운스트림 공장으로 공급",
         "created_at": "2025-01-01T00:00:00.000Z",
@@ -53,7 +61,13 @@
             "capacityUnit": "tons",
             "annualOutput": 40000,
             "owner": "SQM",
-            "hsCode": "282520"
+            "hsCode": "282520",
+            "esgStatus": "compliant",
+            "certifications": [
+                "IRMA Standard",
+                "ISO 14001",
+                "ISO 9001"
+            ]
         },
         "description": "남미 최대의 수산화리튬 정제 시설. 중국을 거치지 않고 아시아 및 북미로 직수출하므로 지정학적 리스크 발생 시 우회 대안 경로로 활용",
         "created_at": "2025-01-01T00:00:00.000Z",
@@ -73,7 +87,13 @@
             "capacityUnit": "tons",
             "annualOutput": 40000,
             "owner": "POSCO Future M",
-            "hsCode": "282520"
+            "hsCode": "282520",
+            "esgStatus": "compliant",
+            "certifications": [
+                "ISO 14001",
+                "ISO 9001",
+                "IATF 16949"
+            ]
         },
         "description": "대한민국 최대의 수산화리튬 제련소. 호주 광석을 직수입 가공하여 대중국 의존도를 낮추기 위한 국내 미드스트림 내재화 검증 노드",
         "created_at": "2025-01-01T00:00:00.000Z",
@@ -93,7 +113,12 @@
             "capacityUnit": "tons",
             "annualOutput": 30000,
             "owner": "Piedmont Lithium",
-            "hsCode": "282520"
+            "hsCode": "282520",
+            "esgStatus": "compliant",
+            "certifications": [
+                "ISO 14001",
+                "RMI"
+            ]
         },
         "description": "미국 최신 미드스트림 거점. 미국 자국 및 FTA 원료를 받아 수산화리튬을 생산하며 테슬라 등 북미 기가팩토리에 직결되는 노드",
         "created_at": "2025-01-01T00:00:00.000Z",

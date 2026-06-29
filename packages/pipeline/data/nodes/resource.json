@@ -13,7 +13,9 @@
             "capacityUnit": "tons_lce",
             "annualOutput": 180000,
             "owner": "Global",
-            "hsCode": "282520"
+            "hsCode": "282520",
+            "esgStatus": "compliant",
+            "certifications": []
         },
         "description": "모든 공급망의 근원이 되는 최상위 노드로, 전 세계 리튬 매장량(염수 및 경암)의 총량을 관리하는 기준점",
         "created_at": "2025-01-01T00:00:00.000Z",
