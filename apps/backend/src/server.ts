@@ -1,4 +1,12 @@
 // Express 서버 엔트리포인트
+import dotenv from 'dotenv';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+// 모노레포 루트의 .env 파일 로딩
+const __dirname = dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: resolve(__dirname, '../../../.env') });
+
 import express from 'express';
 import cors from 'cors';
 import type { Request, Response, NextFunction } from 'express';

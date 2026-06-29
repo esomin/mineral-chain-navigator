@@ -5,3 +5,4 @@ export * from './simulation.js';
 export * from './document.js';
 export * from './ingestion.js';
 export * from './traceability.js';
+export * from './ai-insight.js';

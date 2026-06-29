@@ -6,6 +6,7 @@ import { GraphController } from '../controllers/graph-controller.js';
 import { SimulationController } from '../controllers/simulation-controller.js';
 import { DocumentController } from '../controllers/document-controller.js';
 import { TraceabilityController } from '../controllers/traceability-controller.js';
+import { AIInsightsController } from '../controllers/ai-insights-controller.js';
 import { InMemoryVectorStore, createMockEmbeddingProvider } from '@navigator/pipeline';
 import { store } from '../store.js';
 
@@ -19,6 +20,9 @@ const traceabilityController = new TraceabilityController(store);
 const vectorStore = new InMemoryVectorStore();
 const embeddingProvider = createMockEmbeddingProvider();
 const documentController = new DocumentController(vectorStore, embeddingProvider);
+
+// AI 인사이트 컨트롤러 초기화
+const aiInsightsController = new AIInsightsController(store, vectorStore, embeddingProvider);
 
 // === 리스크 라우트 ===
 
@@ -212,6 +216,89 @@ router.get('/trace/:factoryNodeId', (req: Request, res: Response) => {
     }
 
     res.json(report);
+});
+
+// === AI 인사이트 라우트 (Phase 2) ===
+
+/** POST /api/insights/query - AI 질의 */
+router.post('/insights/query', async (req: Request, res: Response) => {
+    const { sessionId, query } = req.body;
+    console.log('[insights/query] 요청 수신:', { sessionId, query: query?.substring(0, 50), url: req.originalUrl });
+
+    if (!query || typeof query !== 'string' || query.trim().length === 0) {
+        res.status(400).json({
+            error: 'query는 필수이며 비어있지 않은 문자열이어야 합니다.',
+            statusCode: 400,
+        });
+        return;
+    }
+
+    // 세션 ID가 없으면 새로 생성
+    const resolvedSessionId = sessionId || `session-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+    try {
+        const result = await aiInsightsController.query(resolvedSessionId, query.trim());
+        res.json(result);
+    } catch (err) {
+        console.error('[insights/query] 예상치 못한 오류:', err);
+        res.status(500).json({
+            error: '인사이트 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
+            statusCode: 500,
+        });
+    }
+});
+
+/** POST /api/insights/recommend - 시뮬레이션 결과 기반 대안 추천 */
+router.post('/insights/recommend', async (req: Request, res: Response) => {
+    const { sessionId, simulationId } = req.body;
+
+    if (!simulationId || typeof simulationId !== 'string' || simulationId.trim().length === 0) {
+        res.status(400).json({
+            error: 'simulationId는 필수이며 비어있지 않은 문자열이어야 합니다.',
+            statusCode: 400,
+        });
+        return;
+    }
+
+    // 시뮬레이션 결과 조회
+    const simulationResult = simulationController.getSimulationResult(simulationId.trim());
+    if (!simulationResult) {
+        res.status(404).json({
+            error: `시뮬레이션 결과를 찾을 수 없습니다: ${simulationId}`,
+            statusCode: 404,
+        });
+        return;
+    }
+
+    // 세션 ID가 없으면 새로 생성
+    const resolvedSessionId = sessionId || `session-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+    try {
+        const result = await aiInsightsController.recommend(resolvedSessionId, simulationResult);
+        res.json(result);
+    } catch (err) {
+        console.error('[insights/recommend] 예상치 못한 오류:', err);
+        res.status(500).json({
+            error: '대안 추천 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
+            statusCode: 500,
+        });
+    }
+});
+
+/** GET /api/insights/session/:id - 세션 내 대화 이력 조회 */
+router.get('/insights/session/:id', (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    if (!aiInsightsController.hasSession(id)) {
+        res.status(404).json({
+            error: `세션을 찾을 수 없습니다: ${id}`,
+            statusCode: 404,
+        });
+        return;
+    }
+
+    const history = aiInsightsController.getSessionHistory(id);
+    res.json({ sessionId: id, messages: history });
 });
 
 export { router };
