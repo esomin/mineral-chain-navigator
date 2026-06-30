@@ -69,7 +69,7 @@ export function deserializeEdge(json: SerializedEdge): SupplyChainEdge {
         type: json.type as SupplyChainEdge['type'],
         sourceNodeId: json.source_node_id,
         targetNodeId: json.target_node_id,
-        attributes: { ...json.attributes },
+        attributes: { ...json.attributes } as SupplyChainEdge['attributes'],
         createdAt: new Date(json.created_at),
         updatedAt: new Date(json.updated_at),
     };

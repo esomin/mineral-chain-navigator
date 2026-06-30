@@ -39,12 +39,14 @@ describe('validateCountry', () => {
         expect(validateCountry('China')).toBe(true);
         expect(validateCountry('Chile')).toBe(true);
         expect(validateCountry('UnitedStates')).toBe(true);
+        expect(validateCountry('Australia')).toBe(true);
+        expect(validateCountry('Argentina')).toBe(true);
         expect(validateCountry('NA')).toBe(true);
     });
 
     it('rejects invalid countries', () => {
-        expect(validateCountry('Australia')).toBe(false);
         expect(validateCountry('Korea')).toBe(false);
+        expect(validateCountry('Brazil')).toBe(false);
         expect(validateCountry('')).toBe(false);
     });
 });
@@ -78,7 +80,7 @@ describe('validateNodeInput', () => {
     });
 
     it('rejects invalid country', () => {
-        const result = validateNodeInput({ ...validInput, country: 'Australia' });
+        const result = validateNodeInput({ ...validInput, country: 'Brazil' });
         expect(result.valid).toBe(false);
         expect(result.errors.some(e => e.includes('country'))).toBe(true);
     });

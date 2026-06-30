@@ -18,6 +18,8 @@ const VALID_COUNTRIES: ReadonlySet<string> = new Set<Country>([
     'China',
     'Chile',
     'UnitedStates',
+    'Australia',
+    'Argentina',
     'NA',
 ]);
 
