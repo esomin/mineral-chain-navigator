@@ -13,7 +13,8 @@
             "capacityUnit": "tons_lce",
             "annualOutput": 180000,
             "owner": "Global",
-            "hsCode": "282520",
+            "hsCode": "253090",
+            "hsCodeCategory": "raw_material",
             "esgStatus": "compliant",
             "certifications": []
         },

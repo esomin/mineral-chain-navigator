@@ -9,9 +9,9 @@ describe('서버 시작 시 시드 데이터 초기화', () => {
         store.loadSeedData(seedResult);
     });
 
-    it('InMemoryStore에 14개 마스터 노드가 로딩되어야 한다', () => {
+    it('InMemoryStore에 23개 마스터 노드가 로딩되어야 한다', () => {
         const nodes = store.getNodes();
-        expect(nodes).toHaveLength(14);
+        expect(nodes).toHaveLength(23);
     });
 
     it('InMemoryStore에 엣지 데이터가 로딩되어야 한다', () => {
@@ -52,7 +52,7 @@ describe('서버 시작 시 시드 데이터 초기화', () => {
         expect(types).toContain('Factory');
     });
 
-    it('5개국 + NA 모든 국가의 노드가 존재해야 한다', () => {
+    it('7개국 + NA 모든 국가의 노드가 존재해야 한다', () => {
         const nodes = store.getNodes();
         const countries = new Set(nodes.map(n => n.country));
         expect(countries).toContain('Chile');
@@ -60,6 +60,8 @@ describe('서버 시작 시 시드 데이터 초기화', () => {
         expect(countries).toContain('UnitedStates');
         expect(countries).toContain('SouthKorea');
         expect(countries).toContain('Japan');
+        expect(countries).toContain('Australia');
+        expect(countries).toContain('Argentina');
         expect(countries).toContain('NA');
     });
 });

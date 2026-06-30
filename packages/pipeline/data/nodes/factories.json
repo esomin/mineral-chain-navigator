@@ -14,6 +14,7 @@
             "annualOutput": 100000,
             "owner": "EcoPro BM",
             "hsCode": "282520",
+            "hsCodeCategory": "lithium_hydroxide",
             "esgStatus": "compliant",
             "certifications": [
                 "ISO 14001",
@@ -41,6 +42,7 @@
             "annualOutput": 30,
             "owner": "LG Energy Solution",
             "hsCode": "282520",
+            "hsCodeCategory": "lithium_hydroxide",
             "esgStatus": "compliant",
             "certifications": [
                 "ISO 14001",
@@ -67,6 +69,7 @@
             "annualOutput": 10,
             "owner": "Panasonic",
             "hsCode": "282520",
+            "hsCodeCategory": "lithium_hydroxide",
             "esgStatus": "compliant",
             "certifications": [
                 "ISO 14001",
@@ -91,14 +94,15 @@
             "capacityUnit": "gwh",
             "annualOutput": 100,
             "owner": "CATL",
-            "hsCode": "282520",
+            "hsCode": "283691",
+            "hsCodeCategory": "lithium_carbonate",
             "esgStatus": "unverified",
             "certifications": [
                 "ISO 9001",
                 "IATF 16949"
             ]
         },
-        "description": "글로벌 1위 규모의 배터리 제조 공장. 중국 내부의 광산 및 제련소 물량을 대규모로 흡수하는 완결형 다운스트림 노드",
+        "description": "글로벌 1위 규모의 배터리 제조 공장. LFP 배터리 주력으로 탄산리튬 대규모 흡수",
         "created_at": "2025-01-01T00:00:00.000Z",
         "updated_at": "2025-01-01T00:00:00.000Z"
     },
@@ -117,6 +121,7 @@
             "annualOutput": 40,
             "owner": "Tesla / Panasonic",
             "hsCode": "282520",
+            "hsCodeCategory": "lithium_hydroxide",
             "esgStatus": "compliant",
             "certifications": [
                 "ISO 14001",
@@ -125,6 +130,58 @@
             ]
         },
         "description": "북미 최대의 기가팩토리. IRA 보조금 충족을 위해 미국 자국 내 정제 리튬과 FTA 원료만을 수용하려는 제약 조건(Constraint) 분석 노드",
+        "created_at": "2025-01-01T00:00:00.000Z",
+        "updated_at": "2025-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "F-06",
+        "type": "Factory",
+        "name": "BYD Shenzhen Gigafactory",
+        "country": "China",
+        "coordinates": {
+            "lat": 22.55,
+            "lng": 114.07
+        },
+        "metadata": {
+            "productionCapacity": 80,
+            "capacityUnit": "gwh",
+            "annualOutput": 80,
+            "owner": "BYD",
+            "hsCode": "283691",
+            "hsCodeCategory": "lithium_carbonate",
+            "esgStatus": "unverified",
+            "certifications": [
+                "ISO 9001",
+                "IATF 16949"
+            ]
+        },
+        "description": "BYD의 LFP 배터리 주력 생산 공장. 수직계열화 완성 노드",
+        "created_at": "2025-01-01T00:00:00.000Z",
+        "updated_at": "2025-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "F-07",
+        "type": "Factory",
+        "name": "Sumitomo Metal Mining Niihama",
+        "country": "Japan",
+        "coordinates": {
+            "lat": 33.96,
+            "lng": 133.28
+        },
+        "metadata": {
+            "productionCapacity": 50000,
+            "capacityUnit": "tons_cathode",
+            "annualOutput": 50000,
+            "owner": "Sumitomo Metal Mining",
+            "hsCode": "282520",
+            "hsCodeCategory": "lithium_hydroxide",
+            "esgStatus": "compliant",
+            "certifications": [
+                "ISO 14001",
+                "ISO 9001"
+            ]
+        },
+        "description": "일본 최대 양극재(NCM) 제조사. 수산화리튬 기반 하이니켈 양극재 생산의 핵심 다운스트림 노드",
         "created_at": "2025-01-01T00:00:00.000Z",
         "updated_at": "2025-01-01T00:00:00.000Z"
     }

@@ -15,8 +15,8 @@ describe('loadSeedData', () => {
         result = loadSeedData(seedDataPath);
     });
 
-    it('should load all 14 master nodes', () => {
-        expect(result.nodes).toHaveLength(14);
+    it('should load all 23 master nodes', () => {
+        expect(result.nodes).toHaveLength(23);
     });
 
     it('should load nodes with correct types distribution', () => {
@@ -26,18 +26,20 @@ describe('loadSeedData', () => {
         const factories = result.nodes.filter(n => n.type === 'Factory');
 
         expect(resources).toHaveLength(1);
-        expect(mines).toHaveLength(3);
-        expect(refineries).toHaveLength(5);
-        expect(factories).toHaveLength(5);
+        expect(mines).toHaveLength(7);
+        expect(refineries).toHaveLength(8);
+        expect(factories).toHaveLength(7);
     });
 
-    it('should load nodes for all 5 countries plus NA', () => {
+    it('should load nodes for all 7 countries plus NA', () => {
         const countries = new Set(result.nodes.map(n => n.country));
         expect(countries).toContain('Chile');
         expect(countries).toContain('China');
         expect(countries).toContain('UnitedStates');
         expect(countries).toContain('SouthKorea');
         expect(countries).toContain('Japan');
+        expect(countries).toContain('Australia');
+        expect(countries).toContain('Argentina');
         expect(countries).toContain('NA');
     });
 
@@ -59,15 +61,15 @@ describe('loadSeedData', () => {
 
     it('should load supply chain edges (Resource→Mine, Mine→Refinery)', () => {
         const supplyEdges = result.edges.filter(e => e.type === 'Supply');
-        expect(supplyEdges.length).toBeGreaterThanOrEqual(9);
+        expect(supplyEdges.length).toBeGreaterThanOrEqual(20);
 
-        // R-01 → M-01, M-02, M-03
+        // R-01 → M-01~M-07
         const resourceToMine = supplyEdges.filter(e => e.sourceNodeId === 'R-01');
-        expect(resourceToMine).toHaveLength(3);
+        expect(resourceToMine).toHaveLength(7);
 
         // Mine to Refinery edges
         const mineToRefinery = supplyEdges.filter(e => e.sourceNodeId.startsWith('M-'));
-        expect(mineToRefinery.length).toBeGreaterThanOrEqual(6);
+        expect(mineToRefinery.length).toBeGreaterThanOrEqual(15);
     });
 
     it('should load delivery edges (Refinery→Factory) with volume and price', () => {
@@ -113,16 +115,25 @@ describe('loadSeedData', () => {
         expect(nodeIds).toContain('M-01');
         expect(nodeIds).toContain('M-02');
         expect(nodeIds).toContain('M-03');
+        expect(nodeIds).toContain('M-04');
+        expect(nodeIds).toContain('M-05');
+        expect(nodeIds).toContain('M-06');
+        expect(nodeIds).toContain('M-07');
         expect(nodeIds).toContain('RF-01');
         expect(nodeIds).toContain('RF-02');
         expect(nodeIds).toContain('RF-03');
         expect(nodeIds).toContain('RF-04');
         expect(nodeIds).toContain('RF-05');
+        expect(nodeIds).toContain('RF-06');
+        expect(nodeIds).toContain('RF-07');
+        expect(nodeIds).toContain('RF-08');
         expect(nodeIds).toContain('F-01');
         expect(nodeIds).toContain('F-02');
         expect(nodeIds).toContain('F-03');
         expect(nodeIds).toContain('F-04');
         expect(nodeIds).toContain('F-05');
+        expect(nodeIds).toContain('F-06');
+        expect(nodeIds).toContain('F-07');
     });
 
     it('should report no errors for valid seed data', () => {

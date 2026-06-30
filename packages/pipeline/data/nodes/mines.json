@@ -13,7 +13,8 @@
             "capacityUnit": "tons_lce",
             "annualOutput": 200000,
             "owner": "SQM / Albemarle",
-            "hsCode": "282520",
+            "hsCode": "253090",
+            "hsCodeCategory": "raw_material",
             "esgStatus": "compliant",
             "certifications": [
                 "IRMA Standard",
@@ -38,7 +39,8 @@
             "capacityUnit": "tons_lce",
             "annualOutput": 60000,
             "owner": "Jiangxi Provincial",
-            "hsCode": "282520",
+            "hsCode": "253090",
+            "hsCodeCategory": "raw_material",
             "esgStatus": "unverified",
             "certifications": []
         },
@@ -60,7 +62,8 @@
             "capacityUnit": "tons_lce",
             "annualOutput": 5000,
             "owner": "Albemarle",
-            "hsCode": "282520",
+            "hsCode": "253090",
+            "hsCodeCategory": "raw_material",
             "esgStatus": "compliant",
             "certifications": [
                 "ISO 14001",
@@ -68,6 +71,107 @@
             ]
         },
         "description": "미국 내 유일한 상업 가동 염호 광산. 북미 배터리 공급망 자립화 조달 시나리오를 테스트하기 위한 필수 상류 노드",
+        "created_at": "2025-01-01T00:00:00.000Z",
+        "updated_at": "2025-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "M-04",
+        "type": "Mine",
+        "name": "Greenbushes",
+        "country": "Australia",
+        "coordinates": {
+            "lat": -33.85,
+            "lng": 116.06
+        },
+        "metadata": {
+            "productionCapacity": 300000,
+            "capacityUnit": "tons_lce",
+            "annualOutput": 300000,
+            "owner": "Talison Lithium (Tianqi / IGO)",
+            "hsCode": "253090",
+            "hsCodeCategory": "raw_material",
+            "esgStatus": "compliant",
+            "certifications": [
+                "ISO 14001",
+                "ISO 9001"
+            ]
+        },
+        "description": "세계 최대 규모의 경암(스포듀민) 리튬 광산. 글로벌 공급량의 핵심 출발점이며 대부분 중국으로 수출",
+        "created_at": "2025-01-01T00:00:00.000Z",
+        "updated_at": "2025-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "M-05",
+        "type": "Mine",
+        "name": "Pilgangoora",
+        "country": "Australia",
+        "coordinates": {
+            "lat": -21.3,
+            "lng": 119.0
+        },
+        "metadata": {
+            "productionCapacity": 100000,
+            "capacityUnit": "tons_lce",
+            "annualOutput": 100000,
+            "owner": "Pilbara Minerals",
+            "hsCode": "253090",
+            "hsCodeCategory": "raw_material",
+            "esgStatus": "compliant",
+            "certifications": [
+                "ISO 14001"
+            ]
+        },
+        "description": "호주 2위 규모의 스포듀민 광산. Pilbara Minerals 운영, 중국 및 한국향 원자재 공급",
+        "created_at": "2025-01-01T00:00:00.000Z",
+        "updated_at": "2025-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "M-06",
+        "type": "Mine",
+        "name": "Salar de Olaroz",
+        "country": "Argentina",
+        "coordinates": {
+            "lat": -23.5,
+            "lng": -66.7
+        },
+        "metadata": {
+            "productionCapacity": 40000,
+            "capacityUnit": "tons_lce",
+            "annualOutput": 40000,
+            "owner": "Allkem (Livent JV)",
+            "hsCode": "253090",
+            "hsCodeCategory": "raw_material",
+            "esgStatus": "compliant",
+            "certifications": [
+                "ISO 14001"
+            ]
+        },
+        "description": "아르헨티나 최대 가동 염호 광산. DLE 기술 적용 확대 중이며 남미 리튬 트라이앵글의 성장 핵",
+        "created_at": "2025-01-01T00:00:00.000Z",
+        "updated_at": "2025-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "M-07",
+        "type": "Mine",
+        "name": "Cauchari-Olaroz",
+        "country": "Argentina",
+        "coordinates": {
+            "lat": -23.4,
+            "lng": -66.6
+        },
+        "metadata": {
+            "productionCapacity": 40000,
+            "capacityUnit": "tons_lce",
+            "annualOutput": 40000,
+            "owner": "Lithium Americas / Ganfeng",
+            "hsCode": "253090",
+            "hsCodeCategory": "raw_material",
+            "esgStatus": "compliant",
+            "certifications": [
+                "ISO 14001"
+            ]
+        },
+        "description": "리튬아메리카 + 간펑 합작 대형 프로젝트. 아르헨티나 신규 공급의 상징적 노드",
         "created_at": "2025-01-01T00:00:00.000Z",
         "updated_at": "2025-01-01T00:00:00.000Z"
     }

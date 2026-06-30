@@ -5,7 +5,7 @@
         "source_node_id": "R-01",
         "target_node_id": "M-01",
         "attributes": {
-            "hsCode": "282520",
+            "hsCode": "2530.90",
             "year": 2025,
             "description": "Global lithium reserves to Salar de Atacama"
         },
@@ -18,7 +18,7 @@
         "source_node_id": "R-01",
         "target_node_id": "M-02",
         "attributes": {
-            "hsCode": "282520",
+            "hsCode": "2530.90",
             "year": 2025,
             "description": "Global lithium reserves to Yichun Lepidolite Mine"
         },
@@ -31,9 +31,61 @@
         "source_node_id": "R-01",
         "target_node_id": "M-03",
         "attributes": {
-            "hsCode": "282520",
+            "hsCode": "2530.90",
             "year": 2025,
             "description": "Global lithium reserves to Silver Peak"
+        },
+        "created_at": "2025-01-01T00:00:00.000Z",
+        "updated_at": "2025-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "E-R01-M04",
+        "type": "Supply",
+        "source_node_id": "R-01",
+        "target_node_id": "M-04",
+        "attributes": {
+            "hsCode": "2530.90",
+            "year": 2025,
+            "description": "Global lithium reserves to Greenbushes"
+        },
+        "created_at": "2025-01-01T00:00:00.000Z",
+        "updated_at": "2025-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "E-R01-M05",
+        "type": "Supply",
+        "source_node_id": "R-01",
+        "target_node_id": "M-05",
+        "attributes": {
+            "hsCode": "2530.90",
+            "year": 2025,
+            "description": "Global lithium reserves to Pilgangoora"
+        },
+        "created_at": "2025-01-01T00:00:00.000Z",
+        "updated_at": "2025-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "E-R01-M06",
+        "type": "Supply",
+        "source_node_id": "R-01",
+        "target_node_id": "M-06",
+        "attributes": {
+            "hsCode": "2530.90",
+            "year": 2025,
+            "description": "Global lithium reserves to Salar de Olaroz"
+        },
+        "created_at": "2025-01-01T00:00:00.000Z",
+        "updated_at": "2025-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "E-R01-M07",
+        "type": "Supply",
+        "source_node_id": "R-01",
+        "target_node_id": "M-07",
+        "attributes": {
+            "hsCode": "2530.90",
+            "year": 2025,
+            "description": "Global lithium reserves to Cauchari-Olaroz"
         },
         "created_at": "2025-01-01T00:00:00.000Z",
         "updated_at": "2025-01-01T00:00:00.000Z"
@@ -44,10 +96,10 @@
         "source_node_id": "M-01",
         "target_node_id": "RF-03",
         "attributes": {
-            "hsCode": "282520",
+            "hsCode": "2530.90",
             "year": 2025,
             "volume": 40000000,
-            "description": "Chile mine to Chile refinery (domestic)"
+            "description": "Chile mine to Chile refinery (domestic, raw ore → lithium carbonate)"
         },
         "created_at": "2025-01-01T00:00:00.000Z",
         "updated_at": "2025-01-01T00:00:00.000Z"
@@ -58,7 +110,7 @@
         "source_node_id": "M-01",
         "target_node_id": "RF-01",
         "attributes": {
-            "hsCode": "282520",
+            "hsCode": "2530.90",
             "year": 2025,
             "volume": 80000000,
             "description": "Chile mine exports to China Ganfeng refinery"
@@ -72,7 +124,7 @@
         "source_node_id": "M-01",
         "target_node_id": "RF-02",
         "attributes": {
-            "hsCode": "282520",
+            "hsCode": "2530.90",
             "year": 2025,
             "volume": 40000000,
             "description": "Chile mine exports to China Tianqi refinery"
@@ -86,7 +138,7 @@
         "source_node_id": "M-02",
         "target_node_id": "RF-01",
         "attributes": {
-            "hsCode": "282520",
+            "hsCode": "2530.90",
             "year": 2025,
             "volume": 40000000,
             "description": "China mine to China Ganfeng refinery (domestic)"
@@ -100,10 +152,24 @@
         "source_node_id": "M-02",
         "target_node_id": "RF-02",
         "attributes": {
-            "hsCode": "282520",
+            "hsCode": "2530.90",
             "year": 2025,
             "volume": 20000000,
             "description": "China mine to China Tianqi refinery (domestic)"
+        },
+        "created_at": "2025-01-01T00:00:00.000Z",
+        "updated_at": "2025-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "E-M02-RF08",
+        "type": "Supply",
+        "source_node_id": "M-02",
+        "target_node_id": "RF-08",
+        "attributes": {
+            "hsCode": "2530.90",
+            "year": 2025,
+            "volume": 30000000,
+            "description": "China mine to BYD lithium carbonate plant (domestic)"
         },
         "created_at": "2025-01-01T00:00:00.000Z",
         "updated_at": "2025-01-01T00:00:00.000Z"
@@ -114,11 +180,151 @@
         "source_node_id": "M-03",
         "target_node_id": "RF-05",
         "attributes": {
-            "hsCode": "282520",
+            "hsCode": "2530.90",
             "year": 2025,
             "volume": 5000000,
             "iraCompliant": true,
             "description": "US mine to US refinery (domestic, IRA compliant)"
+        },
+        "created_at": "2025-01-01T00:00:00.000Z",
+        "updated_at": "2025-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "E-M04-RF01",
+        "type": "Supply",
+        "source_node_id": "M-04",
+        "target_node_id": "RF-01",
+        "attributes": {
+            "hsCode": "2530.90",
+            "year": 2025,
+            "volume": 120000000,
+            "description": "Australia Greenbushes to China Ganfeng (spodumene concentrate export)"
+        },
+        "created_at": "2025-01-01T00:00:00.000Z",
+        "updated_at": "2025-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "E-M04-RF02",
+        "type": "Supply",
+        "source_node_id": "M-04",
+        "target_node_id": "RF-02",
+        "attributes": {
+            "hsCode": "2530.90",
+            "year": 2025,
+            "volume": 80000000,
+            "description": "Australia Greenbushes to China Tianqi (parent company Tianqi owns 51% of Greenbushes)"
+        },
+        "created_at": "2025-01-01T00:00:00.000Z",
+        "updated_at": "2025-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "E-M04-RF06",
+        "type": "Supply",
+        "source_node_id": "M-04",
+        "target_node_id": "RF-06",
+        "attributes": {
+            "hsCode": "2530.90",
+            "year": 2025,
+            "volume": 24000000,
+            "description": "Australia Greenbushes to Kwinana refinery (domestic, Tianqi JV)"
+        },
+        "created_at": "2025-01-01T00:00:00.000Z",
+        "updated_at": "2025-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "E-M04-RF04",
+        "type": "Supply",
+        "source_node_id": "M-04",
+        "target_node_id": "RF-04",
+        "attributes": {
+            "hsCode": "2530.90",
+            "year": 2025,
+            "volume": 40000000,
+            "description": "Australia Greenbushes to Korea POSCO (spodumene concentrate export)"
+        },
+        "created_at": "2025-01-01T00:00:00.000Z",
+        "updated_at": "2025-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "E-M05-RF01",
+        "type": "Supply",
+        "source_node_id": "M-05",
+        "target_node_id": "RF-01",
+        "attributes": {
+            "hsCode": "2530.90",
+            "year": 2025,
+            "volume": 50000000,
+            "description": "Australia Pilgangoora to China Ganfeng (spodumene concentrate export)"
+        },
+        "created_at": "2025-01-01T00:00:00.000Z",
+        "updated_at": "2025-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "E-M05-RF04",
+        "type": "Supply",
+        "source_node_id": "M-05",
+        "target_node_id": "RF-04",
+        "attributes": {
+            "hsCode": "2530.90",
+            "year": 2025,
+            "volume": 30000000,
+            "description": "Australia Pilgangoora to Korea POSCO (offtake agreement)"
+        },
+        "created_at": "2025-01-01T00:00:00.000Z",
+        "updated_at": "2025-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "E-M06-RF07",
+        "type": "Supply",
+        "source_node_id": "M-06",
+        "target_node_id": "RF-07",
+        "attributes": {
+            "hsCode": "2530.90",
+            "year": 2025,
+            "volume": 20000000,
+            "description": "Argentina Salar de Olaroz to Ganfeng Cauchari refinery (domestic vertical)"
+        },
+        "created_at": "2025-01-01T00:00:00.000Z",
+        "updated_at": "2025-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "E-M06-RF03",
+        "type": "Supply",
+        "source_node_id": "M-06",
+        "target_node_id": "RF-03",
+        "attributes": {
+            "hsCode": "2530.90",
+            "year": 2025,
+            "volume": 15000000,
+            "description": "Argentina Salar de Olaroz to Chile SQM (cross-border South America)"
+        },
+        "created_at": "2025-01-01T00:00:00.000Z",
+        "updated_at": "2025-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "E-M07-RF07",
+        "type": "Supply",
+        "source_node_id": "M-07",
+        "target_node_id": "RF-07",
+        "attributes": {
+            "hsCode": "2530.90",
+            "year": 2025,
+            "volume": 20000000,
+            "description": "Argentina Cauchari-Olaroz to Ganfeng Cauchari refinery (vertical integration)"
+        },
+        "created_at": "2025-01-01T00:00:00.000Z",
+        "updated_at": "2025-01-01T00:00:00.000Z"
+    },
+    {
+        "id": "E-M07-RF08",
+        "type": "Supply",
+        "source_node_id": "M-07",
+        "target_node_id": "RF-08",
+        "attributes": {
+            "hsCode": "2530.90",
+            "year": 2025,
+            "volume": 15000000,
+            "description": "Argentina Cauchari-Olaroz to China BYD (Ganfeng partner export)"
         },
         "created_at": "2025-01-01T00:00:00.000Z",
         "updated_at": "2025-01-01T00:00:00.000Z"
