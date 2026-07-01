@@ -81,40 +81,29 @@ export function MapViewPage() {
         return map;
     }, [riskScores]);
 
-    // 필터링된 노드
+    // 필터링된 노드 (HS 코드 필터 적용)
     const filteredNodes = useMemo(() => {
-        return nodes.filter((node) => {
-            if (filters.nodeTypes.length > 0 && !filters.nodeTypes.includes(node.type)) {
-                return false;
+        if (filters.hsCode === 'all') return nodes;
+        const nodeIds = new Set<string>();
+        for (const edge of edges) {
+            if (edge.attributes.hsCode === filters.hsCode) {
+                nodeIds.add(edge.sourceNodeId);
+                nodeIds.add(edge.targetNodeId);
             }
-            if (filters.countries.length > 0 && node.country !== 'NA' && !filters.countries.includes(node.country)) {
-                return false;
-            }
-            if (filters.riskLevel !== 'all') {
-                const score = riskScoreMap.get(node.id) ?? 0;
-                switch (filters.riskLevel) {
-                    case 'low':
-                        if (score > 33) return false;
-                        break;
-                    case 'medium':
-                        if (score < 34 || score > 66) return false;
-                        break;
-                    case 'high':
-                        if (score < 67) return false;
-                        break;
-                }
-            }
-            return true;
-        });
-    }, [nodes, filters.nodeTypes, filters.countries, filters.riskLevel, riskScoreMap]);
+        }
+        return nodes.filter((node) => nodeIds.has(node.id));
+    }, [nodes, edges, filters.hsCode]);
 
-    // 필터링된 엣지
+    // 필터링된 엣지 (HS 코드 필터 + 양쪽 노드 표시 조건)
     const filteredEdges = useMemo(() => {
         const filteredNodeIds = new Set(filteredNodes.map((n) => n.id));
         return edges.filter(
-            (edge) => filteredNodeIds.has(edge.sourceNodeId) && filteredNodeIds.has(edge.targetNodeId),
+            (edge) =>
+                filteredNodeIds.has(edge.sourceNodeId) &&
+                filteredNodeIds.has(edge.targetNodeId) &&
+                (filters.hsCode === 'all' || edge.attributes.hsCode === filters.hsCode),
         );
-    }, [edges, filteredNodes]);
+    }, [edges, filteredNodes, filters.hsCode]);
 
     // 노드 클릭 핸들러
     const handleNodeClick = useCallback(

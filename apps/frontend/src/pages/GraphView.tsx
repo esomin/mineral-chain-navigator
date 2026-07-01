@@ -9,7 +9,6 @@ import { SimulationPanel } from '../components/SimulationPanel';
 import { ViewSwitcher } from '../components/ViewSwitcher';
 import { AIInsightPanel } from '../components/AIInsightPanel';
 import { GiDiamonds } from 'react-icons/gi';
-
 // 공급망 그래프 시각화 페이지 (Phase 1 메인 뷰)
 export function GraphView() {
     const { nodes, edges, selectedNodeId, filters, riskScores, setNodes, setEdges, setRiskScores, selectNode, setLoading, isLoading } =
@@ -111,36 +110,9 @@ export function GraphView() {
             if (hsCodeFilteredNodeIds !== null && !hsCodeFilteredNodeIds.has(node.id)) {
                 return false;
             }
-
-            // 노드 타입 필터: 빈 배열이면 모든 타입 표시
-            if (filters.nodeTypes.length > 0 && !filters.nodeTypes.includes(node.type)) {
-                return false;
-            }
-
-            // 국가 필터: 빈 배열이면 모든 국가 표시, N/A 국가는 항상 표시
-            if (filters.countries.length > 0 && node.country !== 'NA' && !filters.countries.includes(node.country)) {
-                return false;
-            }
-
-            // 리스크 레벨 필터
-            if (filters.riskLevel !== 'all') {
-                const score = riskScoreMap.get(node.id) ?? 0;
-                switch (filters.riskLevel) {
-                    case 'low':
-                        if (score > 33) return false;
-                        break;
-                    case 'medium':
-                        if (score < 34 || score > 66) return false;
-                        break;
-                    case 'high':
-                        if (score < 67) return false;
-                        break;
-                }
-            }
-
             return true;
         });
-    }, [nodes, filters.nodeTypes, filters.countries, filters.riskLevel, filters.hsCode, riskScoreMap, hsCodeFilteredNodeIds]);
+    }, [nodes, filters.hsCode, hsCodeFilteredNodeIds]);
 
     // 필터링된 노드에 연결된 엣지만 포함 + HS 코드 필터 적용
     const filteredEdges = useMemo(() => {
