@@ -109,9 +109,13 @@ export function GraphView() {
             if (hsCodeFilteredNodeIds && !hsCodeFilteredNodeIds.has(node.id)) {
                 return false;
             }
+            // 국가 필터 적용
+            if (!filters.countries.includes(node.country)) {
+                return false;
+            }
             return true;
         });
-    }, [nodes, hsCodeFilteredNodeIds]);
+    }, [nodes, hsCodeFilteredNodeIds, filters.countries]);
 
     // 필터링된 노드에 연결된 엣지만 포함 + HS 코드 필터 적용
     const filteredEdges = useMemo(() => {

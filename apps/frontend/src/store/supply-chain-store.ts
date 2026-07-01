@@ -4,9 +4,10 @@ import type { SupplyChainNode, SupplyChainEdge, RiskScore } from '@navigator/sha
 // HS 코드 필터 옵션
 export type HsCodeFilter = string[];
 
-// 그래프 필터 상태 (HS 코드 필터만 유지)
+// 그래프 필터 상태
 export interface GraphFilters {
     hsCode: HsCodeFilter;
+    countries: string[];
 }
 
 // 공급망 그래프 전역 상태
@@ -38,6 +39,7 @@ export interface SupplyChainState {
 // 초기 필터 상태
 const initialFilters: GraphFilters = {
     hsCode: ['2825.20'],
+    countries: ['SouthKorea', 'Japan', 'China', 'Chile', 'UnitedStates', 'Argentina', 'Australia'],
 };
 
 // Zustand 스토어 생성 - 공급망 그래프 상태 관리

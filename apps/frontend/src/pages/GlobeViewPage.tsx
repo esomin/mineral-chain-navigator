@@ -84,7 +84,7 @@ export function GlobeViewPage() {
         return map;
     }, [riskScores]);
 
-    // 필터링된 노드 (HS 코드 필터 적용)
+    // 필터링된 노드 (HS 코드 및 국가 필터 적용)
     const filteredNodes = useMemo(() => {
         const nodeIds = new Set<string>();
         for (const edge of edges) {
@@ -93,8 +93,8 @@ export function GlobeViewPage() {
                 nodeIds.add(edge.targetNodeId);
             }
         }
-        return nodes.filter((node) => nodeIds.has(node.id));
-    }, [nodes, edges, filters.hsCode]);
+        return nodes.filter((node) => nodeIds.has(node.id) && filters.countries.includes(node.country));
+    }, [nodes, edges, filters.hsCode, filters.countries]);
 
     // 필터링된 엣지 (HS 코드 필터 + 양쪽 노드 표시 조건)
     const filteredEdges = useMemo(() => {
