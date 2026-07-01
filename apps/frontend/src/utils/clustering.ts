@@ -131,6 +131,8 @@ function createCluster(country: Country, members: ClusterableNode[]): ClusterRes
         China: '중국',
         Chile: '칠레',
         UnitedStates: '미국',
+        Australia: '호주',
+        Argentina: '아르헨티나',
         NA: 'Global',
     };
 

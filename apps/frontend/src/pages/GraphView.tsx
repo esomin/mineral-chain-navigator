@@ -91,9 +91,27 @@ export function GraphView() {
         return map;
     }, [riskScores]);
 
+    // HS 코드 필터 적용 시 해당 엣지에 연결된 노드 ID 집합 계산
+    const hsCodeFilteredNodeIds = useMemo(() => {
+        if (filters.hsCode === 'all') return null; // null = 필터 비활성
+        const nodeIds = new Set<string>();
+        for (const edge of edges) {
+            if (edge.attributes.hsCode === filters.hsCode) {
+                nodeIds.add(edge.sourceNodeId);
+                nodeIds.add(edge.targetNodeId);
+            }
+        }
+        return nodeIds;
+    }, [edges, filters.hsCode]);
+
     // 필터링된 노드 계산 (200ms 이내 업데이트를 위해 useMemo 활용)
     const filteredNodes = useMemo(() => {
         return nodes.filter((node) => {
+            // HS 코드 필터: 해당 HS 코드 엣지에 연결된 노드만 표시
+            if (hsCodeFilteredNodeIds !== null && !hsCodeFilteredNodeIds.has(node.id)) {
+                return false;
+            }
+
             // 노드 타입 필터: 빈 배열이면 모든 타입 표시
             if (filters.nodeTypes.length > 0 && !filters.nodeTypes.includes(node.type)) {
                 return false;
@@ -122,15 +140,23 @@ export function GraphView() {
 
             return true;
         });
-    }, [nodes, filters.nodeTypes, filters.countries, filters.riskLevel, riskScoreMap]);
+    }, [nodes, filters.nodeTypes, filters.countries, filters.riskLevel, filters.hsCode, riskScoreMap, hsCodeFilteredNodeIds]);
 
-    // 필터링된 노드에 연결된 엣지만 포함
+    // 필터링된 노드에 연결된 엣지만 포함 + HS 코드 필터 적용
     const filteredEdges = useMemo(() => {
         const filteredNodeIds = new Set(filteredNodes.map((n) => n.id));
-        return edges.filter(
-            (edge) => filteredNodeIds.has(edge.sourceNodeId) && filteredNodeIds.has(edge.targetNodeId),
-        );
-    }, [edges, filteredNodes]);
+        return edges.filter((edge) => {
+            // 양쪽 노드가 모두 표시되는 경우만 포함
+            if (!filteredNodeIds.has(edge.sourceNodeId) || !filteredNodeIds.has(edge.targetNodeId)) {
+                return false;
+            }
+            // HS 코드 필터 적용: 선택된 HS 코드의 엣지만 표시
+            if (filters.hsCode !== 'all' && edge.attributes.hsCode !== filters.hsCode) {
+                return false;
+            }
+            return true;
+        });
+    }, [edges, filteredNodes, filters.hsCode]);
 
     // 노드 클릭 핸들러
     const handleNodeClick = useCallback(

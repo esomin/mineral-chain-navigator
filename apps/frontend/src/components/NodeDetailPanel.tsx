@@ -1,5 +1,17 @@
-import type { SupplyChainNode, SupplyChainEdge } from '@navigator/shared';
+import type { SupplyChainNode, SupplyChainEdge, HsCodeCategory } from '@navigator/shared';
 import { getCountryDisplayName, getNodeTypeLabel } from '../utils/graph-helpers';
+
+// HS 코드 카테고리 한글 라벨 매핑
+const HS_CODE_CATEGORY_LABELS: Record<HsCodeCategory, string> = {
+    raw_material: '원자재 (HS 2530.90)',
+    lithium_carbonate: '탄산리튬 (HS 2836.91)',
+    lithium_hydroxide: '수산화리튬 (HS 2825.20)',
+};
+
+/** HS 코드 카테고리를 한글 라벨로 변환 */
+function getHsCodeCategoryLabel(category: string): string {
+    return HS_CODE_CATEGORY_LABELS[category as HsCodeCategory] ?? category;
+}
 
 export interface NodeDetailPanelProps {
     node: SupplyChainNode;
@@ -86,6 +98,14 @@ export function NodeDetailPanel({ node, connectedEdges, riskScore, onClose, onOp
                                 {node.metadata.capacityUnit}
                             </td>
                         </tr>
+                        {node.metadata.hsCodeCategory && (
+                            <tr>
+                                <td style={{ padding: '4px 8px', color: '#999' }}>HS 코드 분류</td>
+                                <td style={{ padding: '4px 8px' }}>
+                                    {getHsCodeCategoryLabel(node.metadata.hsCodeCategory)}
+                                </td>
+                            </tr>
+                        )}
                         <tr>
                             <td style={{ padding: '4px 8px', color: '#999' }}>리스크 점수</td>
                             <td style={{ padding: '4px 8px' }}>

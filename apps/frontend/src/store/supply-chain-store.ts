@@ -1,11 +1,15 @@
 import { create } from 'zustand';
 import type { SupplyChainNode, SupplyChainEdge, NodeType, Country, RiskScore } from '@navigator/shared';
 
+// HS 코드 필터 옵션
+export type HsCodeFilter = 'all' | '2530.90' | '2836.91' | '2825.20';
+
 // 그래프 필터 상태
 export interface GraphFilters {
     nodeTypes: NodeType[];
     countries: Country[];
     riskLevel: 'all' | 'low' | 'medium' | 'high';
+    hsCode: HsCodeFilter;
 }
 
 // 공급망 그래프 전역 상태
@@ -39,6 +43,7 @@ const initialFilters: GraphFilters = {
     nodeTypes: [],
     countries: [],
     riskLevel: 'all',
+    hsCode: 'all',
 };
 
 // Zustand 스토어 생성 - 공급망 그래프 상태 관리

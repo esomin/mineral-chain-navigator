@@ -1,13 +1,14 @@
 import { useCallback } from 'react';
 import type { NodeType, Country } from '@navigator/shared';
 import { useSupplyChainStore } from '../store/supply-chain-store';
+import type { HsCodeFilter } from '../store/supply-chain-store';
 import { getCountryDisplayName } from '../utils/graph-helpers';
 
 // 필터 가능한 노드 타입 목록
 const NODE_TYPES: NodeType[] = ['Resource', 'Mine', 'Refinery', 'Factory'];
 
-// 필터 가능한 국가 목록 (N/A 제외)
-const COUNTRIES: Country[] = ['SouthKorea', 'Japan', 'China', 'Chile', 'UnitedStates'];
+// 필터 가능한 국가 목록 (N/A 제외, 7개국 전체)
+const COUNTRIES: Country[] = ['SouthKorea', 'Japan', 'China', 'Chile', 'UnitedStates', 'Australia', 'Argentina'];
 
 // 리스크 레벨 옵션
 const RISK_LEVELS = [
@@ -16,6 +17,14 @@ const RISK_LEVELS = [
     { value: 'medium', label: '중위험 (34-66)' },
     { value: 'high', label: '고위험 (67-100)' },
 ] as const;
+
+// HS 코드 필터 옵션
+const HS_CODE_OPTIONS: { value: HsCodeFilter; label: string }[] = [
+    { value: 'all', label: '전체' },
+    { value: '2530.90', label: 'HS 2530.90' },
+    { value: '2836.91', label: 'HS 2836.91' },
+    { value: '2825.20', label: 'HS 2825.20' },
+];
 
 // 노드 타입 한글 라벨
 const NODE_TYPE_LABELS: Record<NodeType, string> = {
@@ -88,6 +97,14 @@ export function FilterBar() {
     const handleRiskLevelChange = useCallback(
         (level: 'all' | 'low' | 'medium' | 'high') => {
             setFilters({ riskLevel: level });
+        },
+        [setFilters],
+    );
+
+    // HS 코드 필터 변경 핸들러
+    const handleHsCodeChange = useCallback(
+        (hsCode: HsCodeFilter) => {
+            setFilters({ hsCode });
         },
         [setFilters],
     );
@@ -217,6 +234,40 @@ export function FilterBar() {
                         onClick={() => handleRiskLevelChange(value)}
                         aria-pressed={filters.riskLevel === value}
                         style={getTagStyle(filters.riskLevel === value)}
+                    >
+                        {label}
+                    </button>
+                ))}
+            </fieldset>
+
+            {/* HS 코드 필터 - 태그 버튼 (단일 선택) */}
+            <fieldset
+                style={{
+                    border: 'none',
+                    padding: 0,
+                    margin: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                }}
+            >
+                <legend
+                    style={{
+                        fontSize: '0.75rem',
+                        fontWeight: 'bold',
+                        color: '#555',
+                        float: 'left',
+                        marginRight: '0.5rem',
+                    }}
+                >
+                    HS 코드
+                </legend>
+                {HS_CODE_OPTIONS.map(({ value, label }) => (
+                    <button
+                        key={value}
+                        onClick={() => handleHsCodeChange(value)}
+                        aria-pressed={filters.hsCode === value}
+                        style={getTagStyle(filters.hsCode === value)}
                     >
                         {label}
                     </button>

@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import type { Country, DisruptionType, DeficitResult } from '@navigator/shared';
+import type { Country, DisruptionType } from '@navigator/shared';
 import { useSupplyChainStore } from '../store/supply-chain-store';
 import { useSimulationStore } from '../store/simulation-store';
 import type { HistoryEntry } from '../store/simulation-store';
@@ -12,12 +12,14 @@ const DISRUPTION_TYPE_LABELS: Record<DisruptionType, string> = {
     natural_disaster: '자연재해',
 };
 
-// 국가 바로가기 버튼 설정
+// 국가 바로가기 버튼 설정 (7개국)
 const COUNTRY_SHORTCUTS: { country: Country; label: string }[] = [
+    { country: 'Australia', label: '🇦🇺 호주' },
+    { country: 'Chile', label: '🇨🇱 칠레' },
+    { country: 'Argentina', label: '🇦🇷 아르헨티나' },
+    { country: 'China', label: '🇨🇳 중국' },
     { country: 'SouthKorea', label: '🇰🇷 한국' },
     { country: 'Japan', label: '🇯🇵 일본' },
-    { country: 'China', label: '🇨🇳 중국' },
-    { country: 'Chile', label: '🇨🇱 칠레' },
     { country: 'UnitedStates', label: '🇺🇸 미국' },
 ];
 

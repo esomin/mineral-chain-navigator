@@ -42,7 +42,7 @@ describe('supply-chain-store - 뷰 전환 시 상태 보존', () => {
             sourceNodeId: 'M-01',
             targetNodeId: 'RF-01',
             type: 'Supply',
-            attributes: { volume: 5000, price: 150000, unitPrice: 30, priceType: 'fob' },
+            attributes: { volume: 5000, price: 150000, unitPrice: 30, priceType: 'fob', hsCode: '2825.20' },
             createdAt: new Date('2025-01-01'),
             updatedAt: new Date('2025-01-01'),
         },
