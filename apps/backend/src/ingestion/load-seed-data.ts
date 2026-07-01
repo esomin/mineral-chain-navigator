@@ -9,7 +9,7 @@ import type {
     RawDataRecord,
 } from '@navigator/shared';
 import { deserializeNode, deserializeEdge } from '@navigator/shared';
-import { normalizeRecord } from './normalize.js';
+import { normalizeRecord } from '@navigator/pipeline';
 
 /**
  * 시드 데이터 로딩 결과를 담는 인터페이스.
