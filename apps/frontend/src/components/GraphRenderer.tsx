@@ -260,9 +260,6 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [nodes, edges, riskScores]);
 
-    // 이전 클러스터링 상태 추적 (전환 방향 판별용)
-    const prevIsClusteredRef = useRef(isClustered);
-
     // LOD 클러스터링 변경 시 그래프 데이터 업데이트
     useEffect(() => {
         if (!graphRef.current || graphRef.current.destroyed || !isGraphReady || nodes.length === 0) return;
@@ -276,95 +273,10 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
         // 실행 중인 레이아웃 계산 중단 (force-layout 무한 틱 및 데이터 충돌 방지)
         graph.stopLayout?.();
         const data = buildGraphData();
-        const wasClusteredBefore = prevIsClusteredRef.current;
-        prevIsClusteredRef.current = isClustered;
-
-        // 클러스터 → 개별 전환: force-layout 재실행 (노드가 겹치지 않도록)
-        const needsLayout = wasClusteredBefore && !isClustered;
 
         try {
-            if (needsLayout) {
-                // 클러스터 → 개별: 클러스터 위치 기반으로 멤버 노드 초기 좌표 설정
-                const positionMap = new Map<string, { x: number; y: number }>();
-                const currentData = graph.getData();
-                for (const node of currentData.nodes || []) {
-                    const id = (node as Record<string, unknown>).id as string;
-                    const style = (node as Record<string, unknown>).style as Record<string, unknown> | undefined;
-                    if (id && style?.x != null && style?.y != null) {
-                        positionMap.set(id, { x: style.x as number, y: style.y as number });
-                    }
-                }
-
-                // 각 멤버 노드를 클러스터 위치 근처에 약간의 오프셋으로 배치
-                for (let i = 0; i < data.nodes.length; i++) {
-                    const node = data.nodes[i];
-                    const nodeAny = node as Record<string, unknown>;
-                    const nodeId = nodeAny.id as string;
-
-                    if (positionMap.has(nodeId)) {
-                        // 이전에 개별 노드였으면 그 위치 유지
-                        const pos = positionMap.get(nodeId)!;
-                        nodeAny.style = { ...((nodeAny.style as Record<string, unknown>) || {}), x: pos.x, y: pos.y };
-                    } else {
-                        // 클러스터에서 풀려난 노드: 클러스터가 있던 위치 근처에 분산 배치
-                        const nodeData = nodeAny.data as Record<string, unknown> | undefined;
-                        const country = nodeData?.country as string;
-                        const clusterPos = positionMap.get(`cluster-${country}`);
-                        if (clusterPos) {
-                            // 인덱스 기반 원형 분산 (결정적)
-                            const angle = (i * 2.4); // 황금각 근사
-                            const radius = 30 + (i % 3) * 20;
-                            nodeAny.style = {
-                                ...((nodeAny.style as Record<string, unknown>) || {}),
-                                x: clusterPos.x + Math.cos(angle) * radius,
-                                y: clusterPos.y + Math.sin(angle) * radius,
-                            };
-                        }
-                    }
-                }
-
-                graph.setData(data);
-                graph.render();
-            } else {
-                // 개별 → 클러스터 전환: 위치 보존
-                const positionMap = new Map<string, { x: number; y: number }>();
-                const currentData = graph.getData();
-                for (const node of currentData.nodes || []) {
-                    const id = (node as Record<string, unknown>).id as string;
-                    const style = (node as Record<string, unknown>).style as Record<string, unknown> | undefined;
-                    if (id && style?.x != null && style?.y != null) {
-                        positionMap.set(id, { x: style.x as number, y: style.y as number });
-                    }
-                }
-
-                for (const node of data.nodes) {
-                    const nodeAny = node as Record<string, unknown>;
-                    const nodeId = nodeAny.id as string;
-                    const nodeData = nodeAny.data as Record<string, unknown> | undefined;
-
-                    if (positionMap.has(nodeId)) {
-                        const pos = positionMap.get(nodeId)!;
-                        nodeAny.style = { ...((nodeAny.style as Record<string, unknown>) || {}), x: pos.x, y: pos.y };
-                    } else if (nodeData?.isCluster && nodeData?.memberNodeIds) {
-                        const memberIds = nodeData.memberNodeIds as string[];
-                        let sumX = 0, sumY = 0, count = 0;
-                        for (const mid of memberIds) {
-                            if (positionMap.has(mid)) {
-                                const p = positionMap.get(mid)!;
-                                sumX += p.x;
-                                sumY += p.y;
-                                count++;
-                            }
-                        }
-                        if (count > 0) {
-                            nodeAny.style = { ...((nodeAny.style as Record<string, unknown>) || {}), x: sumX / count, y: sumY / count };
-                        }
-                    }
-                }
-
-                graph.setData(data);
-                graph.draw();
-            }
+            graph.setData(data);
+            graph.render().catch(() => {});
         } catch {
             // 그래프 인스턴스 파괴 중 호출되면 무시
         }
