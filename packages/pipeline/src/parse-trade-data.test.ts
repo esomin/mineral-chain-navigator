@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { parseTradeData, COMTRADE_COUNTRY_CODES } from './parse-trade-data.js';
+import { parseTradeData, COMTRADE_COUNTRY_CODES, HS_CODE_CATEGORIES, VALID_HS_CODE_SET } from './parse-trade-data.js';
 import type { ComtradeRecord } from './parse-trade-data.js';
 
 /** 테스트용 기본 Comtrade 레코드 생성 헬퍼 */
@@ -23,12 +23,14 @@ function makeRecord(overrides: Partial<ComtradeRecord> = {}): ComtradeRecord {
 
 /** 테스트용 existingNodeIds (모든 seed 노드 포함) */
 const ALL_NODE_IDS = new Set([
-    'RF-01', 'RF-02', 'RF-03', 'RF-04', 'RF-05',
-    'F-01', 'F-02', 'F-03', 'F-04', 'F-05',
+    'R-01',
+    'M-01', 'M-02', 'M-03', 'M-04', 'M-05', 'M-06', 'M-07',
+    'RF-01', 'RF-02', 'RF-03', 'RF-04', 'RF-05', 'RF-06', 'RF-07', 'RF-08',
+    'F-01', 'F-02', 'F-03', 'F-04', 'F-05', 'F-06', 'F-07',
 ]);
 
 describe('parseTradeData', () => {
-    describe('valid record parsing', () => {
+    describe('valid record parsing (HS 282520)', () => {
         it('should parse an import record with correct volume and price', () => {
             const records = [makeRecord()];
             const result = parseTradeData(records, ALL_NODE_IDS);
@@ -48,19 +50,17 @@ describe('parseTradeData', () => {
             expect(result.edges[0].type).toBe('Delivery');
         });
 
-        it('should generate correct edge ID format', () => {
+        it('should generate correct edge ID format including HS code', () => {
             const result = parseTradeData([makeRecord()], ALL_NODE_IDS);
-            // China → SouthKorea, 2025
-            expect(result.edges[0].id).toBe('E-TRADE-China-SouthKorea-2025');
+            // China → SouthKorea, HS 282520, 2025
+            expect(result.edges[0].id).toBe('E-TRADE-China-SouthKorea-282520-2025');
         });
 
         it('should map import flow (M): partner=source, reporter=target', () => {
-            // reporter=410(KR), partner=156(CN), flow=M
-            // → source=China(RF-01), target=SouthKorea(F-01)
             const result = parseTradeData([makeRecord()], ALL_NODE_IDS);
             const edge = result.edges[0];
 
-            expect(edge.sourceNodeId).toBe('RF-01'); // China primary refinery
+            expect(edge.sourceNodeId).toBe('RF-01'); // China hydroxide refinery
             expect(edge.targetNodeId).toBe('F-01'); // SouthKorea primary factory
         });
 
@@ -73,7 +73,7 @@ describe('parseTradeData', () => {
             const result = parseTradeData([record], ALL_NODE_IDS);
             const edge = result.edges[0];
 
-            expect(edge.sourceNodeId).toBe('RF-03'); // Chile primary refinery
+            expect(edge.sourceNodeId).toBe('RF-03'); // Chile hydroxide refinery
             expect(edge.targetNodeId).toBe('F-01'); // SouthKorea primary factory
         });
 
@@ -113,6 +113,40 @@ describe('parseTradeData', () => {
         });
     });
 
+    describe('HS 253090 (원자재) 파싱', () => {
+        it('should accept HS code 253090 and route mine to refinery', () => {
+            const record = makeRecord({
+                cmdCode: '253090',
+                reporterCode: 36,  // Australia (exporter)
+                partnerCode: 156,  // China (importer)
+                flowCode: 'X',
+            });
+            const result = parseTradeData([record], ALL_NODE_IDS);
+
+            expect(result.errors).toHaveLength(0);
+            expect(result.edges[0].sourceNodeId).toBe('M-04'); // Greenbushes mine
+            expect(result.edges[0].targetNodeId).toBe('RF-01'); // China refinery
+            expect(result.edges[0].attributes.hsCode).toBe('253090');
+        });
+    });
+
+    describe('HS 283691 (탄산리튬) 파싱', () => {
+        it('should accept HS code 283691 and route refinery to factory', () => {
+            const record = makeRecord({
+                cmdCode: '283691',
+                reporterCode: 152, // Chile (exporter)
+                partnerCode: 156,  // China (importer)
+                flowCode: 'X',
+            });
+            const result = parseTradeData([record], ALL_NODE_IDS);
+
+            expect(result.errors).toHaveLength(0);
+            expect(result.edges[0].sourceNodeId).toBe('RF-03'); // SQM carbonate refinery
+            expect(result.edges[0].targetNodeId).toBe('F-04');  // CATL factory
+            expect(result.edges[0].attributes.hsCode).toBe('283691');
+        });
+    });
+
     describe('IRA compliance', () => {
         it('should set iraCompliant=true for Chile→SouthKorea route', () => {
             const record = makeRecord({ reporterCode: 410, partnerCode: 152 });
@@ -122,6 +156,17 @@ describe('parseTradeData', () => {
 
         it('should set iraCompliant=true for Chile→UnitedStates route', () => {
             const record = makeRecord({ reporterCode: 842, partnerCode: 152 });
+            const result = parseTradeData([record], ALL_NODE_IDS);
+            expect(result.edges[0].attributes.iraCompliant).toBe(true);
+        });
+
+        it('should set iraCompliant=true for Australia→UnitedStates route', () => {
+            const record = makeRecord({
+                cmdCode: '253090',
+                reporterCode: 36,  // Australia (exporter)
+                partnerCode: 842,  // US (importer)
+                flowCode: 'X',
+            });
             const result = parseTradeData([record], ALL_NODE_IDS);
             expect(result.edges[0].attributes.iraCompliant).toBe(true);
         });
@@ -159,7 +204,7 @@ describe('parseTradeData', () => {
 
         it('should reject records with unknown partner country code', () => {
             const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
-            const record = makeRecord({ partnerCode: 276 }); // Germany - not in 5 countries
+            const record = makeRecord({ partnerCode: 276 }); // Germany - not in 7 countries
             const result = parseTradeData([record], ALL_NODE_IDS);
 
             expect(result.edges).toHaveLength(0);
@@ -170,7 +215,7 @@ describe('parseTradeData', () => {
 
         it('should reject records with unknown flow code', () => {
             const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
-            const record = makeRecord({ flowCode: 'R' }); // Re-export - unsupported
+            const record = makeRecord({ flowCode: 'R' });
             const result = parseTradeData([record], ALL_NODE_IDS);
 
             expect(result.edges).toHaveLength(0);
@@ -202,23 +247,57 @@ describe('parseTradeData', () => {
             expect(result.errors).toHaveLength(1);
             consoleSpy.mockRestore();
         });
+
+        it('should reject when source country has no node for given HS code', () => {
+            const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+            // Japan exports hydroxide to Korea — but Japan has no hydroxide refinery
+            const record = makeRecord({
+                reporterCode: 392, // Japan
+                partnerCode: 410, // Korea
+                flowCode: 'X',
+            });
+            const result = parseTradeData([record], ALL_NODE_IDS);
+
+            expect(result.edges).toHaveLength(0);
+            expect(result.errors).toHaveLength(1);
+            expect(result.errors[0]).toContain('No hydroxide refinery node mapped');
+            consoleSpy.mockRestore();
+        });
+
+        it('should reject when target country has no node for given HS code', () => {
+            const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+            // Chile imports hydroxide from China — but Chile has no hydroxide factory
+            const record = makeRecord({
+                reporterCode: 152, // Chile
+                partnerCode: 156, // China
+                flowCode: 'M',
+            });
+            const result = parseTradeData([record], ALL_NODE_IDS);
+
+            expect(result.edges).toHaveLength(0);
+            expect(result.errors).toHaveLength(1);
+            expect(result.errors[0]).toContain('No hydroxide factory node mapped');
+            consoleSpy.mockRestore();
+        });
     });
 
-    describe('country code mapping', () => {
-        it('should export correct country code mapping', () => {
+    describe('country code mapping (7개국)', () => {
+        it('should export correct country code mapping for all 7 countries', () => {
             expect(COMTRADE_COUNTRY_CODES[410]).toBe('SouthKorea');
             expect(COMTRADE_COUNTRY_CODES[392]).toBe('Japan');
             expect(COMTRADE_COUNTRY_CODES[156]).toBe('China');
             expect(COMTRADE_COUNTRY_CODES[152]).toBe('Chile');
             expect(COMTRADE_COUNTRY_CODES[842]).toBe('UnitedStates');
+            expect(COMTRADE_COUNTRY_CODES[36]).toBe('Australia');
+            expect(COMTRADE_COUNTRY_CODES[32]).toBe('Argentina');
         });
 
-        it('should map all valid export→import country pairs correctly', () => {
+        it('should map all valid hydroxide export→import country pairs correctly', () => {
             const pairs: Array<[number, number, string, string]> = [
-                [392, 156, 'RF-01', 'F-03'], // Japan imports from China
-                [392, 152, 'RF-03', 'F-03'], // Japan imports from Chile
-                [410, 842, 'RF-05', 'F-01'], // Korea imports from US
-                [842, 152, 'RF-03', 'F-05'], // US imports from Chile
+                [392, 156, 'RF-01', 'F-03'], // Japan imports hydroxide from China
+                [392, 152, 'RF-03', 'F-03'], // Japan imports hydroxide from Chile
+                [410, 842, 'RF-05', 'F-01'], // Korea imports hydroxide from US
+                [842, 152, 'RF-03', 'F-05'], // US imports hydroxide from Chile
             ];
 
             for (const [reporter, partner, expectedSource, expectedTarget] of pairs) {
@@ -229,37 +308,20 @@ describe('parseTradeData', () => {
                 expect(result.edges[0].targetNodeId).toBe(expectedTarget);
             }
         });
+    });
 
-        it('should reject when source country has no refinery (e.g. Japan as exporter)', () => {
-            const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
-            // Japan exports to Korea — but Japan has no refinery node
-            const record = makeRecord({
-                reporterCode: 392, // Japan
-                partnerCode: 410, // Korea
-                flowCode: 'X',
-            });
-            const result = parseTradeData([record], ALL_NODE_IDS);
-
-            expect(result.edges).toHaveLength(0);
-            expect(result.errors).toHaveLength(1);
-            expect(result.errors[0]).toContain('No refinery node mapped');
-            consoleSpy.mockRestore();
+    describe('HS code categories export', () => {
+        it('should export correct HS code category mapping', () => {
+            expect(HS_CODE_CATEGORIES['253090']).toBe('raw_material');
+            expect(HS_CODE_CATEGORIES['283691']).toBe('lithium_carbonate');
+            expect(HS_CODE_CATEGORIES['282520']).toBe('lithium_hydroxide');
         });
 
-        it('should reject when target country has no factory (e.g. Chile as importer)', () => {
-            const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
-            // Chile imports from China — but Chile has no factory node
-            const record = makeRecord({
-                reporterCode: 152, // Chile
-                partnerCode: 156, // China
-                flowCode: 'M',
-            });
-            const result = parseTradeData([record], ALL_NODE_IDS);
-
-            expect(result.edges).toHaveLength(0);
-            expect(result.errors).toHaveLength(1);
-            expect(result.errors[0]).toContain('No factory node mapped');
-            consoleSpy.mockRestore();
+        it('should export valid HS code set with 3 codes', () => {
+            expect(VALID_HS_CODE_SET.size).toBe(3);
+            expect(VALID_HS_CODE_SET.has('253090')).toBe(true);
+            expect(VALID_HS_CODE_SET.has('283691')).toBe(true);
+            expect(VALID_HS_CODE_SET.has('282520')).toBe(true);
         });
     });
 

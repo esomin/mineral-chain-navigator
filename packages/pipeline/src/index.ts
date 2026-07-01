@@ -7,7 +7,7 @@
 export { normalizeRecord } from './normalize.js';
 
 // 무역 데이터 파싱
-export { parseTradeData, COMTRADE_COUNTRY_CODES } from './parse-trade-data.js';
+export { parseTradeData, COMTRADE_COUNTRY_CODES, HS_CODE_CATEGORIES, VALID_HS_CODE_SET } from './parse-trade-data.js';
 export type { ComtradeRecord, TradeParseResult } from './parse-trade-data.js';
 
 // 가격 데이터 로딩
