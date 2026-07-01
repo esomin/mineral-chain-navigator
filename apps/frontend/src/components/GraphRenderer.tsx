@@ -30,6 +30,8 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
     const [zoomLevel, setZoomLevel] = useState(1.2);
     // 클러스터링 토글 버튼 상태 — 버튼으로만 제어
     const [clusteringEnabled, setClusteringEnabled] = useState(false);
+    // 그래프의 비동기 render가 완료되었는지 여부
+    const [isGraphReady, setIsGraphReady] = useState(false);
 
     // 노드 클릭 핸들러를 ref로 보관 (리렌더링 방지)
     const onNodeClickRef = useRef(onNodeClick);
@@ -97,6 +99,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
         }
 
         isInitialRenderRef.current = true;
+        setIsGraphReady(false);
         const container = containerRef.current;
         const data = buildGraphData();
 
@@ -233,11 +236,20 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
         });
 
         // 비동기 렌더링 실행
-        graph.render();
-        // 초기 렌더 완료 표시 (LOD effect 활성화)
-        isInitialRenderRef.current = false;
+        let active = true;
+        graph.render()
+            .then(() => {
+                if (active && !graph.destroyed) {
+                    setIsGraphReady(true);
+                }
+            })
+            .catch((err) => {
+                console.warn('G6 render failed or was interrupted:', err);
+            });
 
         return () => {
+            active = false;
+            setIsGraphReady(false);
             if (graphRef.current) {
                 graphRef.current.destroy();
                 graphRef.current = null;
@@ -253,9 +265,12 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
 
     // LOD 클러스터링 변경 시 그래프 데이터 업데이트
     useEffect(() => {
-        if (!graphRef.current || nodes.length === 0) return;
+        if (!graphRef.current || graphRef.current.destroyed || !isGraphReady || nodes.length === 0) return;
         // 초기 렌더 중에는 무시 (위 effect에서 이미 데이터 설정됨)
-        if (isInitialRenderRef.current) return;
+        if (isInitialRenderRef.current) {
+            isInitialRenderRef.current = false;
+            return;
+        }
 
         const graph = graphRef.current;
         const data = buildGraphData();
@@ -351,11 +366,11 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
         } catch {
             // 그래프 인스턴스 파괴 중 호출되면 무시
         }
-    }, [isClustered, lodResult, buildGraphData, nodes.length]);
+    }, [isClustered, lodResult, buildGraphData, nodes.length, isGraphReady]);
 
     // 전파 경로 하이라이트 효과: highlightedPath 변경 시 노드/엣지 상태 토글
     useEffect(() => {
-        if (!graphRef.current) return;
+        if (!graphRef.current || graphRef.current.destroyed || !isGraphReady) return;
         const graph = graphRef.current;
 
         try {
@@ -395,7 +410,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
         } catch {
             // 그래프 인스턴스 파괴 중 호출 시 무시
         }
-    }, [highlightedPath]);
+    }, [highlightedPath, isGraphReady]);
 
     return (
         <div
