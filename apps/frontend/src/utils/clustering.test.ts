@@ -51,17 +51,19 @@ describe('computeLODClusters', () => {
             const nodes = createMasterNodes();
             const result = computeLODClusters(nodes, LOD_THRESHOLDS.CLUSTER_ZOOM + 0.1);
 
-            expect(result.clusters).toHaveLength(0);
-            expect(result.visibleNodes).toHaveLength(14);
+            // 태스크 8.4.1 변경: computeLODClusters는 줌 레벨과 무관하게 항상 클러스터링 적용
+            // 2개 이상 노드가 있는 국가는 클러스터로 묶임 (중국, 한국, 미국, 칠레)
+            expect(result.clusters.length).toBeGreaterThan(0);
             expect(result.totalMemberCount).toBe(14);
         });
 
-        it('높은 줌 레벨에서도 클러스터링이 없어야 한다', () => {
+        it('높은 줌 레벨에서도 클러스터링이 동일하게 적용되어야 한다', () => {
             const nodes = createMasterNodes();
             const result = computeLODClusters(nodes, 2.0);
 
-            expect(result.clusters).toHaveLength(0);
-            expect(result.visibleNodes).toHaveLength(14);
+            // 태스크 8.4.1 변경: 줌 레벨과 무관하게 국가별 클러스터링이 항상 적용됨
+            expect(result.clusters.length).toBeGreaterThan(0);
+            expect(result.totalMemberCount).toBe(14);
         });
     });
 

@@ -35,7 +35,7 @@ interface ArcData extends SupplyChainEdge {
 
 /**
  * Deck.gl + Maplibre 기반 GIS 지도 뷰 컴포넌트.
- * - ScatterplotLayer로 14개 마스터 노드를 지리 좌표에 표시
+ * - ScatterplotLayer로 27개 마스터 노드를 지리 좌표에 표시
  * - ArcLayer로 물류 경로(엣지) 라인 렌더링
  * - 레이어 토글 (노드 타입, 리스크 레벨, 무역량)
  * - 노드/경로 호버 시 툴팁 표시

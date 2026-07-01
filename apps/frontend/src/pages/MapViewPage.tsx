@@ -8,7 +8,7 @@ import { RiskScore } from '@navigator/shared/src/types/risk';
 
 /**
  * GIS 지도 뷰 페이지 (Phase 2).
- * Deck.gl 기반 세계 지도에 14개 마스터 노드와 물류 경로를 시각화한다.
+ * Deck.gl 기반 세계 지도에 27개 마스터 노드와 물류 경로를 시각화한다.
  * GraphView와 동일한 Zustand 스토어를 공유하여 상태 동기화를 유지한다.
  */
 export function MapViewPage() {

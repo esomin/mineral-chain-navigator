@@ -48,11 +48,13 @@ function getPointColor(score: number | undefined): string {
 // 아크 색상 반환 (소스 노드 국가 기반) — 밝은 파스텔 톤 + 투명도로 지구본 위 가독성 확보
 function getArcColor(sourceCountry: string): [string, string] {
     const colors: Record<string, [string, string]> = {
-        China: ['rgba(255, 160, 120, 0.75)', 'rgba(255, 160, 120, 0.35)'],       // 밝은 살몬(연한 주황)
-        Chile: ['rgba(220, 220, 220, 0.8)', 'rgba(220, 220, 220, 0.4)'],        // 밝은 회색 (지구본 배경 대비 무채색)
-        UnitedStates: ['rgba(180, 160, 255, 0.75)', 'rgba(180, 160, 255, 0.35)'], // 연한 라벤더
-        SouthKorea: ['rgba(100, 220, 240, 0.75)', 'rgba(100, 220, 240, 0.35)'],  // 밝은 시안
-        Japan: ['rgba(255, 170, 210, 0.75)', 'rgba(255, 170, 210, 0.35)'],       // 연한 분홍
+        China: ['rgba(255, 160, 120, 0.75)', 'rgba(255, 160, 120, 0.35)'],         // 밝은 살몬(연한 주황)
+        Chile: ['rgba(220, 220, 220, 0.8)', 'rgba(220, 220, 220, 0.4)'],           // 밝은 회색 (지구본 배경 대비 무채색)
+        UnitedStates: ['rgba(180, 160, 255, 0.75)', 'rgba(180, 160, 255, 0.35)'],  // 연한 라벤더
+        SouthKorea: ['rgba(100, 220, 240, 0.75)', 'rgba(100, 220, 240, 0.35)'],    // 밝은 시안
+        Japan: ['rgba(255, 170, 210, 0.75)', 'rgba(255, 170, 210, 0.35)'],         // 연한 분홍
+        Australia: ['rgba(120, 177, 220, 0.75)', 'rgba(120, 177, 220, 0.35)'],     // 밝은 초록
+        Argentina: ['rgba(255, 220, 100, 0.75)', 'rgba(255, 220, 100, 0.35)'],     // 밝은 노랑
     };
     return colors[sourceCountry] || ['rgba(200, 200, 200, 0.65)', 'rgba(200, 200, 200, 0.3)'];
 }
@@ -60,7 +62,9 @@ function getArcColor(sourceCountry: string): [string, string] {
 /**
  * 3D 지구본 뷰 컴포넌트.
  * Globe.gl을 활용하여 리튬 공급망 경로를 아크로 렌더링한다.
- * Requirements 10.1, 10.2, 10.3, 10.4 구현.
+ * - 27개 마스터 노드 포인트 표시 (호주, 아르헨티나 신규 노드 포함, 태스크 18 확장)
+ * - 7개국 간 공급망 아크 렌더링 (국가별 색상 구분)
+ * - Requirements 10.1, 10.2, 10.3, 10.4 구현.
  */
 export function GlobeView({ nodes, edges, riskScores, arcWeightMode, onNodeClick }: GlobeViewProps) {
     const containerRef = useRef<HTMLDivElement>(null);
