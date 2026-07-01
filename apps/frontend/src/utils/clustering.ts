@@ -1,12 +1,8 @@
 /**
  * LOD (Level of Detail) 클러스터링 유틸리티.
  *
- * 줌 레벨에 따라 노드를 집계/클러스터링하여
- * 성능을 최적화하고 시각적 혼잡도를 줄인다.
- *
- * 클러스터링 기준: 국가(country)별 그룹핑
- * - 줌 레벨이 임계값 이하일 때 국가 단위로 클러스터 생성
- * - 클러스터 내 노드 수, 총 생산량, 평균 리스크 점수 등 집계 정보 포함
+ * 국가(country)별 그룹핑으로 클러스터를 생성한다.
+ * 줌 레벨과 무관하게 버튼 토글로 제어된다.
  */
 
 import type { NodeType, Country } from '@navigator/shared';
@@ -42,33 +38,22 @@ export interface LODResult {
     totalMemberCount: number; // 불변식: 전체 노드 수와 동일해야 함
 }
 
-// 줌 레벨 임계값 설정
+// 하위 호환을 위해 유지 (내부적으로 사용되지 않음)
 export const LOD_THRESHOLDS = {
-    /** 이 줌 레벨 이하에서는 국가별 클러스터링 적용, 이상이면 모든 노드 개별 표시 */
     CLUSTER_ZOOM: 1.0,
 } as const;
 
 /**
- * 줌 레벨에 따른 LOD 클러스터링 수행.
- *
- * - zoomLevel <= CLUSTER_ZOOM: 국가별 클러스터링 (최소 2개 노드)
- * - zoomLevel > CLUSTER_ZOOM: 모든 노드 개별 표시 (클러스터링 없음)
+ * 국가별 LOD 클러스터링 수행.
+ * 줌 레벨과 무관하게 항상 클러스터링을 적용한다.
+ * 최소 2개 노드가 있는 국가만 클러스터로 묶는다.
  *
  * 불변식: clusters.totalMemberCount === 원본 노드 수
  */
 export function computeLODClusters(
     nodes: ClusterableNode[],
-    zoomLevel: number,
+    _zoomLevel: number,
 ): LODResult {
-    // 줌 레벨이 임계값 초과이면 클러스터링 없음
-    if (zoomLevel > LOD_THRESHOLDS.CLUSTER_ZOOM) {
-        return {
-            clusters: [],
-            visibleNodes: nodes.map((n) => n.id),
-            totalMemberCount: nodes.length,
-        };
-    }
-
     // 국가별 노드 그룹핑
     const countryGroups = new Map<Country, ClusterableNode[]>();
     for (const node of nodes) {
@@ -84,18 +69,14 @@ export function computeLODClusters(
 
     for (const [country, group] of countryGroups) {
         if (group.length >= minNodesForCluster) {
-            // 클러스터 생성
-            const cluster = createCluster(country, group);
-            clusters.push(cluster);
+            clusters.push(createCluster(country, group));
         } else {
-            // 개별 노드로 표시
             for (const node of group) {
                 visibleNodes.push(node.id);
             }
         }
     }
 
-    // 불변식 검증: 전체 멤버 수 보존
     const totalMemberCount =
         clusters.reduce((sum, c) => sum + c.memberCount, 0) + visibleNodes.length;
 
@@ -111,20 +92,15 @@ export function computeLODClusters(
  * 중심점(centroid)은 멤버 노드 좌표의 평균으로 계산한다.
  */
 function createCluster(country: Country, members: ClusterableNode[]): ClusterResult {
-    // 중심점 계산 (좌표 평균)
     const centroid = {
         latitude: members.reduce((sum, n) => sum + n.coordinates.latitude, 0) / members.length,
         longitude: members.reduce((sum, n) => sum + n.coordinates.longitude, 0) / members.length,
     };
 
-    // 총 생산량 합산
     const totalCapacity = members.reduce((sum, n) => sum + n.productionCapacity, 0);
-
-    // 평균 리스크 점수
     const averageRiskScore =
         members.reduce((sum, n) => sum + n.riskScore, 0) / members.length;
 
-    // 국가 표시명 매핑
     const countryLabels: Record<Country, string> = {
         SouthKorea: '한국',
         Japan: '일본',
@@ -151,7 +127,6 @@ function createCluster(country: Country, members: ClusterableNode[]): ClusterRes
 
 /**
  * SupplyChainNode를 클러스터링 가능 형식으로 변환.
- * Web Worker에 전달하기 위해 직렬화 가능한 단순 객체로 변환한다.
  */
 export function toClusterableNodes(
     nodes: Array<{

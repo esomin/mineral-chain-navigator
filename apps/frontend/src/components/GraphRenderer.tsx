@@ -21,24 +21,25 @@ export interface GraphRendererProps {
  * - production_capacity에 비례하는 노드 크기
  * - 리스크 점수 기반 색상 코딩 (green/yellow/red)
  * - Canvas 렌더링으로 60fps 최적화
- * - LOD (Level of Detail) 클러스터링: 줌 아웃 시 국가별 노드 집계
+ * - LOD 국가별 클러스터링: 우상단 버튼으로 토글 (정사각형 표시)
  * - Web Worker 기반 레이아웃 계산 오프로드
  */
 export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlightedPath }: GraphRendererProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const graphRef = useRef<Graph | null>(null);
     const [zoomLevel, setZoomLevel] = useState(1.2);
+    // 클러스터링 토글 버튼 상태 — 버튼으로만 제어
+    const [clusteringEnabled, setClusteringEnabled] = useState(false);
 
     // 노드 클릭 핸들러를 ref로 보관 (리렌더링 방지)
     const onNodeClickRef = useRef(onNodeClick);
     onNodeClickRef.current = onNodeClick;
 
-    // LOD 클러스터링 (Web Worker 기반)
+    // LOD 클러스터링 (Web Worker 기반) — enabled = 버튼 state로만 제어
     const { lodResult, isClustered } = useLODClustering({
         nodes,
         riskScores,
-        zoomLevel,
-        enabled: true,
+        enabled: clusteringEnabled,
     });
 
     // G6 데이터 형식으로 변환 (LOD 클러스터링 적용)
@@ -113,6 +114,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
                 },
             },
             // 노드 스타일 매핑 — data 속성 기반 동적 스타일
+            // 클러스터 노드: 원(circle), 일반 노드: 원(circle)
             node: {
                 type: 'circle',
                 style: {
@@ -130,21 +132,19 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
                     },
                     lineWidth: (d: Record<string, unknown>) => {
                         const nodeData = d?.data as Record<string, unknown> | undefined;
-                        // 리스크 수준에 따른 테두리 두께 (data에서 동적 결정)
                         return (nodeData?.strokeWidth as number) || 2;
                     },
-                    lineDash: (d: Record<string, unknown>) => {
-                        const nodeData = d?.data as Record<string, unknown> | undefined;
-                        // 클러스터 노드는 점선 테두리
-                        return (nodeData?.isCluster as boolean) ? [4, 4] : [0, 0];
-                    },
+                    // 클러스터 정사각형: 실선 테두리, 일반 노드: 점선 없음
+                    lineDash: () => [0, 0],
+                    // 클러스터 노드 불투명 배경
+                    fillOpacity: () => 1,
                     labelText: (d: Record<string, unknown>) => {
                         const nodeData = d?.data as Record<string, unknown> | undefined;
                         return (nodeData?.label as string) || '';
                     },
                     labelFontSize: (d: Record<string, unknown>) => {
                         const nodeData = d?.data as Record<string, unknown> | undefined;
-                        return (nodeData?.isCluster as boolean) ? 12 : 10;
+                        return (nodeData?.isCluster as boolean) ? 13 : 10;
                     },
                     labelFontWeight: (d: Record<string, unknown>) => {
                         const nodeData = d?.data as Record<string, unknown> | undefined;
@@ -409,22 +409,63 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
             aria-label="리튬 공급망 그래프 시각화"
             role="img"
         >
-            {/* 줌 레벨 표시 */}
+            {/* 우상단 컨트롤: 줌 레벨 표시 + 클러스터링 토글 버튼 (세로 배치) */}
             <div
                 style={{
                     position: 'absolute',
                     top: '0.5rem',
                     right: '1.0rem',
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    border: '1px solid #d9d9d9',
-                    borderRadius: '4px',
-                    padding: '4px 8px',
-                    fontSize: '0.7rem',
-                    color: '#333',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'stretch',
+                    gap: '0.25rem',
                     zIndex: 5,
                 }}
             >
-                Zoom Level: {zoomLevel.toFixed(2)}
+                {/* 줌 레벨 표시 */}
+                <div
+                    style={{
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        border: '1px solid #d9d9d9',
+                        borderRadius: '4px',
+                        padding: '4px 8px',
+                        fontSize: '0.7rem',
+                        color: '#333',
+                        textAlign: 'center',
+                    }}
+                >
+                    Zoom: {zoomLevel.toFixed(2)}
+                </div>
+
+                {/* 국가별 클러스터링 토글 버튼 — 줌 표시와 동일 가로 길이의 정사각형 */}
+                <button
+                    onClick={() => setClusteringEnabled((prev) => !prev)}
+                    aria-pressed={clusteringEnabled}
+                    title={clusteringEnabled ? 'Country Level Clustering 해제' : 'Country Level Clustering 활성화'}
+                    style={{
+                        aspectRatio: '1 / 1',
+                        width: '100%',
+                        borderRadius: '4px',
+                        border: clusteringEnabled ? '2px solid #1890ff' : '1px solid #d9d9d9',
+                        background: clusteringEnabled ? '#e6f7ff' : 'rgba(255,255,255,0.9)',
+                        color: clusteringEnabled ? '#1890ff' : '#aaa',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px',
+                        lineHeight: 1.3,
+                        padding: '6px 4px',
+                    }}
+                >
+                    <span style={{ fontSize: '0.65rem', fontWeight: clusteringEnabled ? 'bold' : 'normal', textAlign: 'center' }}>
+                        Country Level
+                    </span>
+                    <span style={{ fontSize: '0.7rem', fontWeight: clusteringEnabled ? 'bold' : 'normal', textAlign: 'center' }}>
+                        Clustering
+                    </span>
+                </button>
             </div>
         </div>
     );

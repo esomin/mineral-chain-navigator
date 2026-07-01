@@ -2,7 +2,9 @@
  * LOD 클러스터링을 위한 React 훅.
  *
  * Web Worker를 통해 메인 스레드를 블로킹하지 않고
- * 줌 레벨에 따른 노드 클러스터링을 수행한다.
+ * 국가별 노드 클러스터링을 수행한다.
+ *
+ * 줌 레벨과 무관하게 enabled 플래그로만 클러스터링 여부를 제어한다.
  */
 
 import { useEffect, useRef, useCallback, useState } from 'react';
@@ -13,7 +15,9 @@ import type { WorkerMessage, WorkerResponse } from '../workers/layout-worker';
 export interface UseLODClusteringOptions {
     nodes: SupplyChainNode[];
     riskScores: Map<string, number>;
-    zoomLevel: number;
+    /** 하위 호환을 위해 유지 — 클러스터링 트리거에는 사용되지 않음 */
+    zoomLevel?: number;
+    /** true이면 클러스터링 수행, false이면 개별 노드 표시 */
     enabled?: boolean;
 }
 
@@ -28,15 +32,14 @@ let requestCounter = 0;
 /**
  * Web Worker 기반 LOD 클러스터링 훅.
  *
- * - 줌 레벨이 변경될 때마다 Worker에 클러스터링 연산 요청
- * - Worker 응답을 받아 LODResult 상태 업데이트
+ * - enabled가 true로 바뀌면 Worker에 클러스터링 연산 요청
+ * - enabled가 false이면 빈 결과 반환 (개별 노드 표시)
  * - Worker 생성/파괴 라이프사이클 자동 관리
  */
 export function useLODClustering({
     nodes,
     riskScores,
-    zoomLevel,
-    enabled = true,
+    enabled = false,
 }: UseLODClusteringOptions): UseLODClusteringResult {
     const workerRef = useRef<Worker | null>(null);
     const [lodResult, setLodResult] = useState<LODResult | null>(null);
@@ -45,9 +48,6 @@ export function useLODClustering({
 
     // Worker 초기화
     useEffect(() => {
-        if (!enabled) return;
-
-        // Vite의 ?worker import를 사용하여 Worker 생성
         const worker = new Worker(
             new URL('../workers/layout-worker.ts', import.meta.url),
             { type: 'module' },
@@ -56,7 +56,7 @@ export function useLODClustering({
         worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
             const { type, payload, requestId } = event.data;
 
-            // 최신 요청의 응답만 처리 (이전 요청 결과 무시)
+            // 최신 요청의 응답만 처리
             if (requestId !== latestRequestId.current) return;
 
             if (type === 'clusters-result') {
@@ -79,7 +79,7 @@ export function useLODClustering({
             worker.terminate();
             workerRef.current = null;
         };
-    }, [enabled]);
+    }, []);
 
     // 클러스터링 계산 요청
     const requestClustering = useCallback(() => {
@@ -89,29 +89,29 @@ export function useLODClustering({
         latestRequestId.current = requestId;
         setIsComputing(true);
 
-        // 노드를 직렬화 가능 형식으로 변환
         const clusterableNodes = toClusterableNodes(nodes, riskScores);
 
         const message: WorkerMessage = {
             type: 'compute-clusters',
-            payload: { nodes: clusterableNodes, zoomLevel },
+            // zoomLevel은 Worker 내부에서 사용하지 않으므로 0 전달
+            payload: { nodes: clusterableNodes, zoomLevel: 0 },
             requestId,
         };
 
         workerRef.current.postMessage(message);
-    }, [nodes, riskScores, zoomLevel]);
+    }, [nodes, riskScores]);
 
-    // 줌 레벨 또는 노드 변경 시 클러스터링 재계산
+    // enabled 또는 노드 변경 시 클러스터링 재계산
     useEffect(() => {
         if (!enabled) {
             setLodResult(null);
             return;
         }
         requestClustering();
-    }, [requestClustering, enabled]);
+    }, [enabled, requestClustering]);
 
-    // 현재 클러스터링이 활성화된 상태인지
-    const isClustered = zoomLevel <= LOD_THRESHOLDS.CLUSTER_ZOOM && (lodResult?.clusters.length ?? 0) > 0;
+    // enabled이고 클러스터 결과가 있을 때만 클러스터링 활성
+    const isClustered = enabled && (lodResult?.clusters.length ?? 0) > 0;
 
     return {
         lodResult,
@@ -119,3 +119,6 @@ export function useLODClustering({
         isClustered,
     };
 }
+
+// 하위 호환을 위해 LOD_THRESHOLDS re-export
+export { LOD_THRESHOLDS };
