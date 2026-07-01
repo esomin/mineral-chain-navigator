@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback, useState, useMemo } from 'react';
 import { Graph } from '@antv/g6';
 import type { SupplyChainNode, SupplyChainEdge } from '@navigator/shared';
 import { getNodeRadius, getCountryColor, getRiskStroke } from '../utils/graph-helpers';
@@ -25,6 +25,13 @@ export interface GraphRendererProps {
  * - Web Worker 기반 레이아웃 계산 오프로드
  */
 export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlightedPath }: GraphRendererProps) {
+    // 복잡도 감소를 위해 'Resource' 노드 및 관련 엣지 필터링
+    const filteredNodes = useMemo(() => nodes.filter((n) => n.type !== 'Resource'), [nodes]);
+    const filteredEdges = useMemo(() => {
+        const resourceNodeIds = new Set(nodes.filter((n) => n.type === 'Resource').map((n) => n.id));
+        return edges.filter((e) => !resourceNodeIds.has(e.sourceNodeId) && !resourceNodeIds.has(e.targetNodeId));
+    }, [nodes, edges]);
+
     const containerRef = useRef<HTMLDivElement>(null);
     const graphRef = useRef<Graph | null>(null);
     const [zoomLevel, setZoomLevel] = useState(1.2);
@@ -39,7 +46,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
 
     // LOD 클러스터링 (Web Worker 기반) — enabled = 버튼 state로만 제어
     const { lodResult, isClustered } = useLODClustering({
-        nodes,
+        nodes: filteredNodes,
         riskScores,
         enabled: clusteringEnabled,
     });
@@ -57,22 +64,22 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
 
             // 개별 표시 노드
             for (const nodeId of lodResult.visibleNodes) {
-                const node = nodes.find((n) => n.id === nodeId);
+                const node = filteredNodes.find((n) => n.id === nodeId);
                 if (node) {
                     g6Nodes.push(buildRegularNode(node, riskScores));
                 }
             }
 
             // 클러스터 간 및 클러스터-노드 간 엣지 생성
-            const g6Edges = buildClusteredEdges(edges, lodResult, nodes);
+            const g6Edges = buildClusteredEdges(filteredEdges, lodResult, filteredNodes);
 
             return { nodes: g6Nodes, edges: g6Edges };
         }
 
         // 클러스터링 비활성: 모든 노드 개별 렌더링
-        const g6Nodes = nodes.map((node) => buildRegularNode(node, riskScores));
+        const g6Nodes = filteredNodes.map((node) => buildRegularNode(node, riskScores));
 
-        const g6Edges = edges.map((edge) => ({
+        const g6Edges = filteredEdges.map((edge) => ({
             id: edge.id,
             source: edge.sourceNodeId,
             target: edge.targetNodeId,
@@ -83,14 +90,14 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
         }));
 
         return { nodes: g6Nodes, edges: g6Edges };
-    }, [nodes, edges, riskScores, isClustered, lodResult]);
+    }, [filteredNodes, filteredEdges, riskScores, isClustered, lodResult]);
 
     // 초기 렌더 완료 여부 — afterrender에서 불필요한 재렌더 방지
     const isInitialRenderRef = useRef(true);
 
     // G6 그래프 인스턴스 초기화 (노드/엣지 원본 데이터 변경 시만 재생성)
     useEffect(() => {
-        if (!containerRef.current || nodes.length === 0) return;
+        if (!containerRef.current || filteredNodes.length === 0) return;
 
         // 기존 그래프 정리
         if (graphRef.current) {
@@ -110,7 +117,27 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
             layout: {
                 type: 'd3-force',
                 preventOverlap: true,
-                linkDistance: 150,
+                linkDistance: (edge: any) => {
+                    const edgeType = edge.data?.edgeType; // 'Supply' | 'Delivery'
+                    const volume = edge.data?.volume ?? 0;
+
+                    // 1. 타입별 기본 거리 설정
+                    let baseDistance = edgeType === 'Supply' ? 150 : 300;
+
+                    // 2. 속성(거래량)별 가중치 조절: 거래량이 클수록 긴밀한 관계이므로 노드 거리를 단축 (최대 40px)
+                    if (volume > 0) {
+                        const maxReduction = 40;
+                        const minVol = 1000;
+                        const maxVol = 50000000;
+                        const logVol = Math.log(Math.max(minVol, Math.min(maxVol, volume)));
+                        const logMin = Math.log(minVol);
+                        const logMax = Math.log(maxVol);
+                        const reduction = ((logVol - logMin) / (logMax - logMin)) * maxReduction;
+                        baseDistance -= reduction;
+                    }
+
+                    return baseDistance;
+                },
                 nodeStrength: -400,
                 collide: {
                     strength: 0.8,
@@ -258,11 +285,11 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
         // 의존성: 원본 데이터(nodes, edges, riskScores)가 변경될 때만 그래프 재생성
         // buildGraphData를 의존성에서 제거하여 LOD 상태 변경으로 인한 불필요한 재생성 방지
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [nodes, edges, riskScores]);
+    }, [filteredNodes, filteredEdges, riskScores]);
 
     // LOD 클러스터링 변경 시 그래프 데이터 업데이트
     useEffect(() => {
-        if (!graphRef.current || graphRef.current.destroyed || !isGraphReady || nodes.length === 0) return;
+        if (!graphRef.current || graphRef.current.destroyed || !isGraphReady || filteredNodes.length === 0) return;
         // 초기 렌더 중에는 무시 (위 effect에서 이미 데이터 설정됨)
         if (isInitialRenderRef.current) {
             isInitialRenderRef.current = false;
@@ -276,11 +303,11 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
 
         try {
             graph.setData(data);
-            graph.render().catch(() => {});
+            graph.render().catch(() => { });
         } catch {
             // 그래프 인스턴스 파괴 중 호출되면 무시
         }
-    }, [isClustered, lodResult, buildGraphData, nodes.length, isGraphReady]);
+    }, [isClustered, lodResult, buildGraphData, filteredNodes.length, isGraphReady]);
 
     // 전파 경로 하이라이트 효과: highlightedPath 변경 시 노드/엣지 상태 토글
     useEffect(() => {

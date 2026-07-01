@@ -3,11 +3,11 @@ import { useSupplyChainStore } from '../store/supply-chain-store';
 import type { HsCodeFilter } from '../store/supply-chain-store';
 
 // HS 코드 필터 옵션
-const HS_CODE_OPTIONS: { value: HsCodeFilter; label: string; description: string }[] = [
-    { value: 'all', label: '전체', description: '모든 물질 흐름' },
-    { value: '2530.90', label: 'HS 2530.90', description: '리튬 광석 (Mine → Refinery)' },
-    { value: '2836.91', label: 'HS 2836.91', description: '탄산리튬 (Refinery → LFP Factory)' },
-    { value: '2825.20', label: 'HS 2825.20', description: '수산화리튬 (Refinery → NCM Factory)' },
+const HS_CODE_OPTIONS: { value: HsCodeFilter; label: string; hoverText: string; description: string }[] = [
+    { value: 'all', label: '전체', hoverText: '모든 물질 흐름', description: '모든 물질 흐름' },
+    { value: '2530.90', label: '리튬 광석', hoverText: 'HS 2530.90', description: '리튬 광석 (Mine → Refinery)' },
+    { value: '2836.91', label: '탄산리튬', hoverText: 'HS 2836.91', description: '탄산리튬 (Refinery → LFP Factory)' },
+    { value: '2825.20', label: '수산화리튬', hoverText: 'HS 2825.20', description: '수산화리튬 (Refinery → NCM Factory)' },
 ];
 
 /**
@@ -30,15 +30,15 @@ export function FilterBar() {
             role="toolbar"
             aria-label="HS 코드 필터"
         >
-            <span className="text-xs font-bold text-gray-500 mr-1">물질 계층</span>
-            {HS_CODE_OPTIONS.map(({ value, label, description }) => {
+            <span className="text-xs font-bold text-gray-500 mr-1">품목명</span>
+            {HS_CODE_OPTIONS.map(({ value, label, hoverText }) => {
                 const isActive = filters.hsCode === value;
                 return (
                     <button
                         key={value}
                         onClick={() => handleHsCodeChange(value)}
                         aria-pressed={isActive}
-                        title={description}
+                        title={hoverText}
                         className={`px-3 py-1 rounded text-xs border transition-colors cursor-pointer ${isActive
                                 ? 'border-blue-300 bg-blue-50 text-blue-600 font-medium'
                                 : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-100'
