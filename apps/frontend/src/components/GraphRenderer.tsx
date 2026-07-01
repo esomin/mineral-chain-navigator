@@ -273,6 +273,8 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
         }
 
         const graph = graphRef.current;
+        // 실행 중인 레이아웃 계산 중단 (force-layout 무한 틱 및 데이터 충돌 방지)
+        graph.stopLayout?.();
         const data = buildGraphData();
         const wasClusteredBefore = prevIsClusteredRef.current;
         prevIsClusteredRef.current = isClustered;
