@@ -92,10 +92,9 @@ export function GraphView() {
 
     // HS 코드 필터 적용 시 해당 엣지에 연결된 노드 ID 집합 계산
     const hsCodeFilteredNodeIds = useMemo(() => {
-        if (filters.hsCode === 'all') return null; // null = 필터 비활성
         const nodeIds = new Set<string>();
         for (const edge of edges) {
-            if (edge.attributes.hsCode === filters.hsCode) {
+            if (filters.hsCode.includes(edge.attributes.hsCode)) {
                 nodeIds.add(edge.sourceNodeId);
                 nodeIds.add(edge.targetNodeId);
             }
@@ -107,12 +106,12 @@ export function GraphView() {
     const filteredNodes = useMemo(() => {
         return nodes.filter((node) => {
             // HS 코드 필터: 해당 HS 코드 엣지에 연결된 노드만 표시
-            if (hsCodeFilteredNodeIds !== null && !hsCodeFilteredNodeIds.has(node.id)) {
+            if (hsCodeFilteredNodeIds && !hsCodeFilteredNodeIds.has(node.id)) {
                 return false;
             }
             return true;
         });
-    }, [nodes, filters.hsCode, hsCodeFilteredNodeIds]);
+    }, [nodes, hsCodeFilteredNodeIds]);
 
     // 필터링된 노드에 연결된 엣지만 포함 + HS 코드 필터 적용
     const filteredEdges = useMemo(() => {
@@ -123,7 +122,7 @@ export function GraphView() {
                 return false;
             }
             // HS 코드 필터 적용: 선택된 HS 코드의 엣지만 표시
-            if (filters.hsCode !== 'all' && edge.attributes.hsCode !== filters.hsCode) {
+            if (!filters.hsCode.includes(edge.attributes.hsCode)) {
                 return false;
             }
             return true;
@@ -322,7 +321,7 @@ export function GraphView() {
                             한국
                         </span>
                         <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, background: 'rgba(139, 90, 43, 0.8)', borderRadius: '50%' }} />{' '}
+                            <span style={{ display: 'inline-block', width: 12, height: 12, background: 'rgba(93, 52, 14, 0.8)', borderRadius: '50%' }} />{' '}
                             중국
                         </span>
                         <span>
@@ -336,6 +335,35 @@ export function GraphView() {
                         <span>
                             <span style={{ display: 'inline-block', width: 12, height: 12, background: 'rgba(255, 105, 180, 0.8)', borderRadius: '50%' }} />{' '}
                             일본
+                        </span>
+                        <span>
+                            <span style={{ display: 'inline-block', width: 12, height: 12, background: 'rgba(117, 190, 233, 0.8)', borderRadius: '50%' }} />{' '}
+                            아르헨티나
+                        </span>
+                        <span>
+                            <span style={{ display: 'inline-block', width: 12, height: 12, background: 'rgba(255, 193, 7, 0.8)', borderRadius: '50%' }} />{' '}
+                            호주
+                        </span>
+                    </div>
+                    <div style={{ fontWeight: 'bold', marginBottom: '6px' }}>노드 타입</div>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                        <span>
+                            <svg width="12" height="12" viewBox="0 0 12 12" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }}>
+                                <polygon points="6,1 11,11 1,11" fill="#888" stroke="#555" strokeWidth="1" />
+                            </svg>{' '}
+                            광산
+                        </span>
+                        <span>
+                            <svg width="12" height="12" viewBox="0 0 12 12" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }}>
+                                <polygon points="6,1 11,6 6,11 1,6" fill="#888" stroke="#555" strokeWidth="1" />
+                            </svg>{' '}
+                            정제소
+                        </span>
+                        <span>
+                            <svg width="12" height="12" viewBox="0 0 12 12" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }}>
+                                <circle cx="6" cy="6" r="5" fill="#888" stroke="#555" strokeWidth="1" />
+                            </svg>{' '}
+                            공장
                         </span>
                     </div>
                     <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>리스크 (테두리)</div>

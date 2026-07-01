@@ -83,10 +83,9 @@ export function MapViewPage() {
 
     // 필터링된 노드 (HS 코드 필터 적용)
     const filteredNodes = useMemo(() => {
-        if (filters.hsCode === 'all') return nodes;
         const nodeIds = new Set<string>();
         for (const edge of edges) {
-            if (edge.attributes.hsCode === filters.hsCode) {
+            if (filters.hsCode.includes(edge.attributes.hsCode)) {
                 nodeIds.add(edge.sourceNodeId);
                 nodeIds.add(edge.targetNodeId);
             }
@@ -101,7 +100,7 @@ export function MapViewPage() {
             (edge) =>
                 filteredNodeIds.has(edge.sourceNodeId) &&
                 filteredNodeIds.has(edge.targetNodeId) &&
-                (filters.hsCode === 'all' || edge.attributes.hsCode === filters.hsCode),
+                filters.hsCode.includes(edge.attributes.hsCode),
         );
     }, [edges, filteredNodes, filters.hsCode]);
 

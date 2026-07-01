@@ -117,27 +117,28 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
             layout: {
                 type: 'd3-force',
                 preventOverlap: true,
-                linkDistance: (edge: any) => {
-                    const edgeType = edge.data?.edgeType; // 'Supply' | 'Delivery'
-                    const volume = edge.data?.volume ?? 0;
+                linkDistance: 150,
+                // linkDistance: (edge: any) => {
+                //     const edgeType = edge.data?.edgeType; // 'Supply' | 'Delivery'
+                //     const volume = edge.data?.volume ?? 0;
 
-                    // 1. 타입별 기본 거리 설정
-                    let baseDistance = edgeType === 'Supply' ? 150 : 300;
+                //     // 1. 타입별 기본 거리 설정
+                //     let baseDistance = edgeType === 'Supply' ? 150 : 300;
 
-                    // 2. 속성(거래량)별 가중치 조절: 거래량이 클수록 긴밀한 관계이므로 노드 거리를 단축 (최대 40px)
-                    if (volume > 0) {
-                        const maxReduction = 40;
-                        const minVol = 1000;
-                        const maxVol = 50000000;
-                        const logVol = Math.log(Math.max(minVol, Math.min(maxVol, volume)));
-                        const logMin = Math.log(minVol);
-                        const logMax = Math.log(maxVol);
-                        const reduction = ((logVol - logMin) / (logMax - logMin)) * maxReduction;
-                        baseDistance -= reduction;
-                    }
+                //     // 2. 속성(거래량)별 가중치 조절: 거래량이 클수록 긴밀한 관계이므로 노드 거리를 단축 (최대 40px)
+                //     if (volume > 0) {
+                //         const maxReduction = 40;
+                //         const minVol = 1000;
+                //         const maxVol = 50000000;
+                //         const logVol = Math.log(Math.max(minVol, Math.min(maxVol, volume)));
+                //         const logMin = Math.log(minVol);
+                //         const logMax = Math.log(maxVol);
+                //         const reduction = ((logVol - logMin) / (logMax - logMin)) * maxReduction;
+                //         baseDistance -= reduction;
+                //     }
 
-                    return baseDistance;
-                },
+                //     return baseDistance;
+                // },
                 nodeStrength: -400,
                 collide: {
                     strength: 0.8,
@@ -146,7 +147,15 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
             // 노드 스타일 매핑 — data 속성 기반 동적 스타일
             // 클러스터 노드: 원(circle), 일반 노드: 원(circle)
             node: {
-                type: 'circle',
+                type: (d: Record<string, unknown>) => {
+                    const nodeData = d?.data as Record<string, unknown> | undefined;
+                    if (nodeData?.isCluster) return 'circle';
+                    const nodeType = nodeData?.nodeType as string;
+                    if (nodeType === 'Mine') return 'triangle';
+                    if (nodeType === 'Refinery') return 'diamond';
+                    if (nodeType === 'Factory') return 'circle';
+                    return 'circle';
+                },
                 style: {
                     size: (d: Record<string, unknown>) => {
                         const nodeData = d?.data as Record<string, unknown> | undefined;
@@ -235,7 +244,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
             // 줌 범위 제한 (최소 0.5, 최대 3.0)
             zoomRange: [0.5, 3.0],
             // 자동 뷰핏
-            autoFit: 'view',
+            // autoFit: 'view',
             // 데이터 설정
             data,
         });
@@ -442,6 +451,8 @@ const COUNTRY_LABEL_KO: Record<string, string> = {
     China: '중국',
     Chile: '칠레',
     UnitedStates: '미국',
+    Argentina: '아르헨티나',
+    Australia: '호주',
     NA: '기타',
 };
 

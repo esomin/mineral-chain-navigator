@@ -3,8 +3,7 @@ import { useSupplyChainStore } from '../store/supply-chain-store';
 import type { HsCodeFilter } from '../store/supply-chain-store';
 
 // HS 코드 필터 옵션
-const HS_CODE_OPTIONS: { value: HsCodeFilter; label: string; hoverText: string; description: string }[] = [
-    { value: 'all', label: '전체', hoverText: '모든 물질 흐름', description: '모든 물질 흐름' },
+const HS_CODE_OPTIONS: { value: string; label: string; hoverText: string; description: string }[] = [
     { value: '2530.90', label: '리튬 광석', hoverText: 'HS 2530.90', description: '리튬 광석 (Mine → Refinery)' },
     { value: '2836.91', label: '탄산리튬', hoverText: 'HS 2836.91', description: '탄산리튬 (Refinery → LFP Factory)' },
     { value: '2825.20', label: '수산화리튬', hoverText: 'HS 2825.20', description: '수산화리튬 (Refinery → NCM Factory)' },
@@ -18,10 +17,22 @@ export function FilterBar() {
     const { filters, setFilters } = useSupplyChainStore();
 
     const handleHsCodeChange = useCallback(
-        (hsCode: HsCodeFilter) => {
-            setFilters({ hsCode });
+        (hsCode: string) => {
+            const current = filters.hsCode;
+            let next: string[];
+            if (current.includes(hsCode)) {
+                // 이미 선택된 상태이면 해제 (단, 최소 1개는 활성화되어야 함)
+                if (current.length > 1) {
+                    next = current.filter((c) => c !== hsCode);
+                } else {
+                    return; // 최소 1개 선택 유지
+                }
+            } else {
+                next = [...current, hsCode];
+            }
+            setFilters({ hsCode: next });
         },
-        [setFilters],
+        [filters.hsCode, setFilters],
     );
 
     return (
@@ -32,7 +43,7 @@ export function FilterBar() {
         >
             <span className="text-xs font-bold text-gray-500 mr-1">품목명</span>
             {HS_CODE_OPTIONS.map(({ value, label, hoverText }) => {
-                const isActive = filters.hsCode === value;
+                const isActive = filters.hsCode.includes(value);
                 return (
                     <button
                         key={value}
@@ -48,9 +59,9 @@ export function FilterBar() {
                     </button>
                 );
             })}
-            {filters.hsCode !== 'all' && (
+            {filters.hsCode.length > 0 && (
                 <span className="text-xs text-gray-400 ml-1">
-                    — {HS_CODE_OPTIONS.find((o) => o.value === filters.hsCode)?.description}
+                    — {filters.hsCode.map((val) => HS_CODE_OPTIONS.find((o) => o.value === val)?.description).join(', ')}
                 </span>
             )}
         </div>

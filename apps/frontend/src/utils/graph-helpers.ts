@@ -86,9 +86,11 @@ export function getNodeTypeLabel(type: string): string {
 const COUNTRY_COLORS: Record<string, string> = {
     SouthKorea: 'rgba(0, 188, 212, 0.8)',      // 시안
     China: 'rgba(93, 52, 14, 0.8)',            // 브라운
-    Chile: 'rgba(0,57,166, 0.8)',
+    Chile: 'rgba(0, 57, 166, 0.8)',            // 파랑
     UnitedStates: 'rgba(123, 104, 238, 0.8)', // 보라
     Japan: 'rgba(255, 105, 180, 0.8)',         // 핑크
+    Argentina: 'rgba(117, 190, 233, 0.8)',     // 하늘색
+    Australia: 'rgba(255, 193, 7, 0.8)',       // 금색
     NA: 'rgba(136, 136, 136, 0.8)',           // 회색
 };
 
@@ -128,6 +130,8 @@ export function getCountryDisplayName(country: string): string {
         China: '중국',
         Chile: '칠레',
         UnitedStates: '미국',
+        Argentina: '아르헨티나',
+        Australia: '호주',
         NA: 'N/A',
     };
     return names[country] || country;

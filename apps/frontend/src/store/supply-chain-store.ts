@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { SupplyChainNode, SupplyChainEdge, RiskScore } from '@navigator/shared';
 
 // HS 코드 필터 옵션
-export type HsCodeFilter = 'all' | '2530.90' | '2836.91' | '2825.20';
+export type HsCodeFilter = string[];
 
 // 그래프 필터 상태 (HS 코드 필터만 유지)
 export interface GraphFilters {
@@ -37,7 +37,7 @@ export interface SupplyChainState {
 
 // 초기 필터 상태
 const initialFilters: GraphFilters = {
-    hsCode: 'all',
+    hsCode: ['2825.20'],
 };
 
 // Zustand 스토어 생성 - 공급망 그래프 상태 관리

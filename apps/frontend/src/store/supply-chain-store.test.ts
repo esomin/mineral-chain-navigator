@@ -90,11 +90,11 @@ describe('supply-chain-store - 뷰 전환 시 상태 보존', () => {
         const store = useSupplyChainStore.getState();
 
         // HS 코드 필터 설정
-        store.setFilters({ hsCode: '2825.20' });
+        store.setFilters({ hsCode: ['2825.20'] });
 
         // 뷰 전환 시뮬레이션: 스토어 상태 재접근
         const stateAfterSwitch = useSupplyChainStore.getState();
-        expect(stateAfterSwitch.filters.hsCode).toBe('2825.20');
+        expect(stateAfterSwitch.filters.hsCode).toEqual(['2825.20']);
     });
 
     it('riskScores가 뷰 전환 후에도 유지된다', () => {
@@ -133,7 +133,7 @@ describe('supply-chain-store - 뷰 전환 시 상태 보존', () => {
         store.setEdges(mockEdges);
         store.setRiskScores(mockRiskScores);
         store.selectNode('RF-01');
-        store.setFilters({ hsCode: '2825.20' });
+        store.setFilters({ hsCode: ['2825.20'] });
 
         // 뷰 전환 시뮬레이션: 모든 상태가 보존되는지 확인
         const state = useSupplyChainStore.getState();
@@ -141,7 +141,7 @@ describe('supply-chain-store - 뷰 전환 시 상태 보존', () => {
         expect(state.edges).toHaveLength(1);
         expect(state.riskScores).toHaveLength(2);
         expect(state.selectedNodeId).toBe('RF-01');
-        expect(state.filters.hsCode).toBe('2825.20');
+        expect(state.filters.hsCode).toEqual(['2825.20']);
     });
 
     it('reset 호출 시 riskScores도 함께 초기화된다', () => {
