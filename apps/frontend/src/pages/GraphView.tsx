@@ -135,7 +135,7 @@ export function GraphView() {
 
     // 노드 클릭 핸들러
     const handleNodeClick = useCallback(
-        (nodeId: string) => {
+        (nodeId: string | null) => {
             selectNode(nodeId === selectedNodeId ? null : nodeId);
             // 다른 노드 선택 시 역추적 패널 닫기
             setShowTraceability(false);

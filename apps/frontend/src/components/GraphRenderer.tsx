@@ -10,7 +10,7 @@ export interface GraphRendererProps {
     nodes: SupplyChainNode[];
     edges: SupplyChainEdge[];
     riskScores: Map<string, number>;
-    onNodeClick?: (nodeId: string) => void;
+    onNodeClick?: (nodeId: string | null) => void;
     highlightedPath?: {
         nodeIds: string[];
         edgeIds: string[];
@@ -219,9 +219,9 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
                         shadowBlur: 6,
                     },
                     inactive: {
-                        opacity: 0.2,
-                        fillOpacity: 0.2,
-                        strokeOpacity: 0.2,
+                        opacity: 0.4,
+                        fillOpacity: 0.4,
+                        strokeOpacity: 0.4,
                     },
                     propagation: {
                         stroke: '#ff4d4f',
@@ -273,12 +273,18 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
 
         graphRef.current = graph;
 
-        // 노드 클릭 이벤트 바인딩
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        graph.on('node:click', (event: any) => {
-            const targetId = event?.target?.id;
-            if (onNodeClickRef.current && targetId) {
-                onNodeClickRef.current(targetId);
+        // 그래프 클릭 이벤트 통합 바인딩 (노드 클릭 선택 및 빈 바탕 클릭 해제)
+        graph.on('click', (event: any) => {
+            const targetType = event?.targetType;
+            if (targetType === 'node') {
+                const targetId = event?.target?.id;
+                if (onNodeClickRef.current && targetId) {
+                    onNodeClickRef.current(targetId);
+                }
+            } else if (targetType === 'canvas') {
+                if (onNodeClickRef.current) {
+                    onNodeClickRef.current(null);
+                }
             }
         });
 
@@ -342,7 +348,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
 
     // 그래프 요소 비주얼 상태(하이라이트, 선택, 전파 경로) 통합 업데이트 (G6 공식 State 시스템 활용)
     useEffect(() => {
-        if (!graphRef.current || graphRef.current.destroyed || !isGraphReady) return;
+        if (!graphRef.current || graphRef.current.destroyed) return;
         const graph = graphRef.current;
 
         try {
