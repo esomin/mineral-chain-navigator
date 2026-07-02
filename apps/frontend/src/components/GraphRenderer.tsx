@@ -4,6 +4,7 @@ import type { SupplyChainNode, SupplyChainEdge } from '@navigator/shared';
 import { getNodeRadius, getCountryColor, getRiskStroke } from '../utils/graph-helpers';
 import { useLODClustering } from '../hooks/useLODClustering';
 import type { ClusterResult } from '../utils/clustering';
+import { useSupplyChainStore } from '../store/supply-chain-store';
 
 export interface GraphRendererProps {
     nodes: SupplyChainNode[];
@@ -39,6 +40,9 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
     const [clusteringEnabled, setClusteringEnabled] = useState(false);
     // 그래프의 비동기 render가 완료되었는지 여부
     const [isGraphReady, setIsGraphReady] = useState(false);
+
+    // 스토어에서 선택된 노드 상태 조회
+    const { selectedNodeId } = useSupplyChainStore();
 
     // 노드 클릭 핸들러를 ref로 보관 (리렌더링 방지)
     const onNodeClickRef = useRef(onNodeClick);
@@ -175,8 +179,10 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
                     },
                     // 클러스터 정사각형: 실선 테두리, 일반 노드: 점선 없음
                     lineDash: () => [0, 0],
-                    // 클러스터 노드 불투명 배경
-                    fillOpacity: () => 1,
+                    // 기본 불투명도 명시 (state 해제 시 정상 복원되도록 보장)
+                    opacity: 1.0,
+                    fillOpacity: 1.0,
+                    strokeOpacity: 1.0,
                     labelText: (d: Record<string, unknown>) => {
                         const nodeData = d?.data as Record<string, unknown> | undefined;
                         return (nodeData?.label as string) || '';
@@ -193,7 +199,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
                     labelPlacement: 'bottom',
                     labelOffsetY: 4,
                 },
-                // 상태별 스타일 (호버, 선택, 전파경로)
+                // 상태별 스타일 (호버, 선택, 전파경로, 비선택)
                 state: {
                     selected: {
                         stroke: '#1890ff',
@@ -205,6 +211,17 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
                         lineWidth: 3,
                         shadowColor: 'rgba(0, 0, 0, 0.15)',
                         shadowBlur: 6,
+                    },
+                    highlight: {
+                        stroke: '#1890ff',
+                        lineWidth: 3.5,
+                        shadowColor: 'rgba(24, 144, 255, 0.25)',
+                        shadowBlur: 6,
+                    },
+                    inactive: {
+                        opacity: 0.2,
+                        fillOpacity: 0.2,
+                        strokeOpacity: 0.2,
                     },
                     propagation: {
                         stroke: '#ff4d4f',
@@ -222,11 +239,16 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
                     lineWidth: 1.5,
                     endArrow: true,
                     endArrowSize: 6,
+                    // 기본 불투명도 명시 (state 해제 시 정상 복원되도록 보장)
+                    opacity: 1.0,
                 },
                 state: {
                     highlight: {
                         stroke: '#1890ff',
                         lineWidth: 2.5,
+                    },
+                    inactive: {
+                        opacity: 0.2,
                     },
                     propagation: {
                         stroke: '#ff4d4f',
@@ -318,7 +340,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
         }
     }, [isClustered, lodResult, buildGraphData, filteredNodes.length, isGraphReady]);
 
-    // 전파 경로 하이라이트 효과: highlightedPath 변경 시 노드/엣지 상태 토글
+    // 그래프 요소 비주얼 상태(하이라이트, 선택, 전파 경로) 통합 업데이트 (G6 공식 State 시스템 활용)
     useEffect(() => {
         if (!graphRef.current || graphRef.current.destroyed || !isGraphReady) return;
         const graph = graphRef.current;
@@ -326,41 +348,95 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
         try {
             const data = graph.getData();
 
-            // 기존 propagation 상태 제거
+            // 1. 선택 노드 및 이웃 노드 판단을 위한 도우미 세트
+            const isHighlightedNode = (id: string) => {
+                if (highlightedPath) {
+                    return highlightedPath.nodeIds.includes(id);
+                }
+                if (selectedNodeId) {
+                    if (id === selectedNodeId) return true;
+                    return filteredEdges.some((e) =>
+                        (e.sourceNodeId === selectedNodeId && e.targetNodeId === id) ||
+                        (e.targetNodeId === selectedNodeId && e.sourceNodeId === id)
+                    );
+                }
+                return false;
+            };
+
+            const isHighlightedEdge = (edgeId: string, sourceId: string, targetId: string) => {
+                if (highlightedPath) {
+                    return highlightedPath.edgeIds.includes(edgeId);
+                }
+                if (selectedNodeId) {
+                    return sourceId === selectedNodeId || targetId === selectedNodeId;
+                }
+                return false;
+            };
+
+            const hasActiveSelection = !!selectedNodeId || !!highlightedPath;
+
+            // 2. 모든 노드/엣지 상태 배치 맵 구성
+            const nodeStatesMap: Record<string, string[]> = {};
+            const edgeStatesMap: Record<string, string[]> = {};
+
+            // 모든 노드 상태 계산
             for (const node of data.nodes || []) {
-                const nodeId = (node as Record<string, unknown>).id as string;
-                if (nodeId) {
-                    graph.setElementState(nodeId, []);
+                const nodeId = node.id as string;
+                if (!nodeId) continue;
+
+                const states: string[] = [];
+
+                if (hasActiveSelection) {
+                    if (highlightedPath && highlightedPath.nodeIds.includes(nodeId)) {
+                        states.push('propagation');
+                    } else if (selectedNodeId === nodeId) {
+                        states.push('selected');
+                    } else {
+                        if (isHighlightedNode(nodeId)) {
+                            states.push('highlight');
+                        } else {
+                            states.push('inactive');
+                        }
+                    }
                 }
-            }
-            for (const edge of data.edges || []) {
-                const edgeId = (edge as Record<string, unknown>).id as string;
-                if (edgeId) {
-                    graph.setElementState(edgeId, []);
-                }
+
+                nodeStatesMap[nodeId] = states;
             }
 
-            // 새로운 전파 경로가 있으면 propagation 상태 적용
-            if (highlightedPath) {
-                for (const nodeId of highlightedPath.nodeIds) {
-                    try {
-                        graph.setElementState(nodeId, ['propagation']);
-                    } catch {
-                        // 노드가 현재 그래프에 없으면 무시
+            // 모든 엣지 상태 계산
+            for (const edge of data.edges || []) {
+                const edgeId = edge.id as string;
+                const sourceId = edge.source as string;
+                const targetId = edge.target as string;
+                if (!edgeId) continue;
+
+                const states: string[] = [];
+
+                if (hasActiveSelection) {
+                    if (highlightedPath && highlightedPath.edgeIds.includes(edgeId)) {
+                        states.push('propagation');
+                    } else {
+                        if (isHighlightedEdge(edgeId, sourceId, targetId)) {
+                            states.push('highlight');
+                        } else {
+                            states.push('inactive');
+                        }
                     }
                 }
-                for (const edgeId of highlightedPath.edgeIds) {
-                    try {
-                        graph.setElementState(edgeId, ['propagation']);
-                    } catch {
-                        // 엣지가 현재 그래프에 없으면 무시
-                    }
-                }
+
+                edgeStatesMap[edgeId] = states;
             }
-        } catch {
-            // 그래프 인스턴스 파괴 중 호출 시 무시
+
+            // 3. G6 공식 일괄 배치 업데이트 호출
+            graph.setElementState(nodeStatesMap);
+            graph.setElementState(edgeStatesMap);
+
+            // G6 엔진에 즉시 다시 그리기 요청
+            graph.draw();
+        } catch (err) {
+            console.warn('G6 visual state update failed:', err);
         }
-    }, [highlightedPath, isGraphReady]);
+    }, [selectedNodeId, highlightedPath, filteredEdges, isGraphReady]);
 
     return (
         <div
