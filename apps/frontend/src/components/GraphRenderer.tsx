@@ -348,100 +348,107 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
 
     // 그래프 요소 비주얼 상태(하이라이트, 선택, 전파 경로) 통합 업데이트 (G6 공식 State 시스템 활용)
     useEffect(() => {
-        if (!graphRef.current || graphRef.current.destroyed) return;
+        if (!graphRef.current || graphRef.current.destroyed || !isGraphReady) return;
         const graph = graphRef.current;
 
-        try {
-            const data = graph.getData();
+        // G6 렌더링 엔진 안정화 및 레이아웃 틱과의 동기화를 위해 50ms 지연 실행
+        const timer = setTimeout(() => {
+            if (graph.destroyed) return;
 
-            // 1. 선택 노드 및 이웃 노드 판단을 위한 도우미 세트
-            const isHighlightedNode = (id: string) => {
-                if (highlightedPath) {
-                    return highlightedPath.nodeIds.includes(id);
-                }
-                if (selectedNodeId) {
-                    if (id === selectedNodeId) return true;
-                    return filteredEdges.some((e) =>
-                        (e.sourceNodeId === selectedNodeId && e.targetNodeId === id) ||
-                        (e.targetNodeId === selectedNodeId && e.sourceNodeId === id)
-                    );
-                }
-                return false;
-            };
+            try {
+                const data = graph.getData();
 
-            const isHighlightedEdge = (edgeId: string, sourceId: string, targetId: string) => {
-                if (highlightedPath) {
-                    return highlightedPath.edgeIds.includes(edgeId);
-                }
-                if (selectedNodeId) {
-                    return sourceId === selectedNodeId || targetId === selectedNodeId;
-                }
-                return false;
-            };
+                // 1. 선택 노드 및 이웃 노드 판단을 위한 도우미 세트
+                const isHighlightedNode = (id: string) => {
+                    if (highlightedPath) {
+                        return highlightedPath.nodeIds.includes(id);
+                    }
+                    if (selectedNodeId) {
+                        if (id === selectedNodeId) return true;
+                        return filteredEdges.some((e) =>
+                            (e.sourceNodeId === selectedNodeId && e.targetNodeId === id) ||
+                            (e.targetNodeId === selectedNodeId && e.sourceNodeId === id)
+                        );
+                    }
+                    return false;
+                };
 
-            const hasActiveSelection = !!selectedNodeId || !!highlightedPath;
+                const isHighlightedEdge = (edgeId: string, sourceId: string, targetId: string) => {
+                    if (highlightedPath) {
+                        return highlightedPath.edgeIds.includes(edgeId);
+                    }
+                    if (selectedNodeId) {
+                        return sourceId === selectedNodeId || targetId === selectedNodeId;
+                    }
+                    return false;
+                };
 
-            // 2. 모든 노드/엣지 상태 배치 맵 구성
-            const nodeStatesMap: Record<string, string[]> = {};
-            const edgeStatesMap: Record<string, string[]> = {};
+                const hasActiveSelection = !!selectedNodeId || !!highlightedPath;
 
-            // 모든 노드 상태 계산
-            for (const node of data.nodes || []) {
-                const nodeId = node.id as string;
-                if (!nodeId) continue;
+                // 2. 모든 노드/엣지 상태 배치 맵 구성
+                const nodeStatesMap: Record<string, string[]> = {};
+                const edgeStatesMap: Record<string, string[]> = {};
 
-                const states: string[] = [];
+                // 모든 노드 상태 계산
+                for (const node of data.nodes || []) {
+                    const nodeId = node.id as string;
+                    if (!nodeId) continue;
 
-                if (hasActiveSelection) {
-                    if (highlightedPath && highlightedPath.nodeIds.includes(nodeId)) {
-                        states.push('propagation');
-                    } else if (selectedNodeId === nodeId) {
-                        states.push('selected');
-                    } else {
-                        if (isHighlightedNode(nodeId)) {
-                            states.push('highlight');
+                    const states: string[] = [];
+
+                    if (hasActiveSelection) {
+                        if (highlightedPath && highlightedPath.nodeIds.includes(nodeId)) {
+                            states.push('propagation');
+                        } else if (selectedNodeId === nodeId) {
+                            states.push('selected');
                         } else {
-                            states.push('inactive');
+                            if (isHighlightedNode(nodeId)) {
+                                states.push('highlight');
+                            } else {
+                                states.push('inactive');
+                            }
                         }
                     }
+
+                    nodeStatesMap[nodeId] = states;
                 }
 
-                nodeStatesMap[nodeId] = states;
-            }
+                // 모든 엣지 상태 계산
+                for (const edge of data.edges || []) {
+                    const edgeId = edge.id as string;
+                    const sourceId = edge.source as string;
+                    const targetId = edge.target as string;
+                    if (!edgeId) continue;
 
-            // 모든 엣지 상태 계산
-            for (const edge of data.edges || []) {
-                const edgeId = edge.id as string;
-                const sourceId = edge.source as string;
-                const targetId = edge.target as string;
-                if (!edgeId) continue;
+                    const states: string[] = [];
 
-                const states: string[] = [];
-
-                if (hasActiveSelection) {
-                    if (highlightedPath && highlightedPath.edgeIds.includes(edgeId)) {
-                        states.push('propagation');
-                    } else {
-                        if (isHighlightedEdge(edgeId, sourceId, targetId)) {
-                            states.push('highlight');
+                    if (hasActiveSelection) {
+                        if (highlightedPath && highlightedPath.edgeIds.includes(edgeId)) {
+                            states.push('propagation');
                         } else {
-                            states.push('inactive');
+                            if (isHighlightedEdge(edgeId, sourceId, targetId)) {
+                                states.push('highlight');
+                            } else {
+                                states.push('inactive');
+                            }
                         }
                     }
+
+                    edgeStatesMap[edgeId] = states;
                 }
 
-                edgeStatesMap[edgeId] = states;
+                // 3. G6 공식 일괄 배치 업데이트 호출
+                graph.setElementState(nodeStatesMap);
+                graph.setElementState(edgeStatesMap);
+
+                // G6 엔진에 즉시 다시 그리기 요청
+                graph.draw();
+            } catch (err) {
+                console.warn('G6 visual state update failed:', err);
             }
+        }, 50);
 
-            // 3. G6 공식 일괄 배치 업데이트 호출
-            graph.setElementState(nodeStatesMap);
-            graph.setElementState(edgeStatesMap);
-
-            // G6 엔진에 즉시 다시 그리기 요청
-            graph.draw();
-        } catch (err) {
-            console.warn('G6 visual state update failed:', err);
-        }
+        return () => clearTimeout(timer);
     }, [selectedNodeId, highlightedPath, filteredEdges, isGraphReady]);
 
     return (
