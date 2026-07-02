@@ -244,7 +244,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
             // 줌 범위 제한 (최소 0.5, 최대 3.0)
             zoomRange: [0.5, 3.0],
             // 자동 뷰핏
-            // autoFit: 'view',
+            autoFit: 'view',
             // 데이터 설정
             data,
         });
@@ -402,34 +402,39 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
                     Zoom: {zoomLevel.toFixed(2)}
                 </div>
 
-                {/* 국가별 클러스터링 토글 버튼 — 줌 표시와 동일 가로 길이의 정사각형 */}
+                {/* 국가별 클러스터링 토글 버튼 */}
                 <button
+                    disabled={!isGraphReady}
                     onClick={() => setClusteringEnabled((prev) => !prev)}
                     aria-pressed={clusteringEnabled}
-                    title={clusteringEnabled ? 'Country Level Clustering 해제' : 'Country Level Clustering 활성화'}
+                    title={
+                        !isGraphReady
+                            ? '그래프 렌더링 중...'
+                            : clusteringEnabled
+                                ? 'Country Level Clustering 해제'
+                                : 'Country Level Clustering 활성화'
+                    }
                     style={{
-                        aspectRatio: '1 / 1',
+                        aspectRatio: '2 / 1',
                         width: '100%',
+                        background: clusteringEnabled ? '#e6f7ff' : 'rgba(255, 255, 255, 0.9)',
+                        border: clusteringEnabled ? '1px solid #1890ff' : '1px solid #d9d9d9',
                         borderRadius: '4px',
-                        border: clusteringEnabled ? '2px solid #1890ff' : '1px solid #d9d9d9',
-                        background: clusteringEnabled ? '#e6f7ff' : 'rgba(255,255,255,0.9)',
-                        color: clusteringEnabled ? '#1890ff' : '#aaa',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '4px',
-                        lineHeight: 1.3,
-                        padding: '6px 4px',
+                        padding: '4px 8px',
+                        fontSize: '0.7rem',
+                        color: !isGraphReady
+                            ? '#bfbfbf'
+                            : clusteringEnabled
+                                ? '#1890ff'
+                                : '#333',
+                        cursor: isGraphReady ? 'pointer' : 'not-allowed',
+                        opacity: isGraphReady ? 1 : 0.6,
+                        textAlign: 'center',
+                        transition: 'all 0.2s',
+                        fontWeight: clusteringEnabled ? 'bold' : 'normal',
                     }}
                 >
-                    <span style={{ fontSize: '0.65rem', fontWeight: clusteringEnabled ? 'bold' : 'normal', textAlign: 'center' }}>
-                        Country Level
-                    </span>
-                    <span style={{ fontSize: '0.7rem', fontWeight: clusteringEnabled ? 'bold' : 'normal', textAlign: 'center' }}>
-                        Clustering
-                    </span>
+                    Country Clustering
                 </button>
             </div>
         </div>
