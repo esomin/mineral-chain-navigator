@@ -164,17 +164,17 @@ export function GraphView() {
         [nodes, selectedNodeId],
     );
 
-    // 선택된 노드에 연결된 엣지
+    // 선택된 노드에 연결된 엣지 (필터가 적용된 엣지 목록을 바탕으로 매핑)
     const connectedEdges = useMemo(
         () =>
             selectedNodeId
-                ? edges.filter(
+                ? filteredEdges.filter(
                     (e) =>
                         e.sourceNodeId === selectedNodeId ||
                         e.targetNodeId === selectedNodeId,
                 )
                 : [],
-        [edges, selectedNodeId],
+        [filteredEdges, selectedNodeId],
     );
 
     return (
