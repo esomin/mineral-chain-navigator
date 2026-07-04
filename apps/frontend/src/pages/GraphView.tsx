@@ -210,7 +210,7 @@ export function GraphView() {
                     >
                         <GiDiamonds color='#4796e3' size={16} /> AI 인사이트
                     </button>
-                    <ViewSwitcher currentView="graph" />
+                    {/* <ViewSwitcher currentView="graph" /> */}
                 </div>
             </header>
 
@@ -370,7 +370,7 @@ export function GraphView() {
                             공장
                         </span>
                     </div>
-                    <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>리스크 (테두리)</div>
+                    <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>리스크</div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                         <span>
                             <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', border: '2px solid #52c41a', background: '#b7eb8f' }} />{' '}

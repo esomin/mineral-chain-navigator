@@ -146,7 +146,7 @@ export function MapViewPage() {
                     </p>
                 </div>
                 {/* 뷰 전환 스위처 */}
-                <ViewSwitcher currentView="map" />
+                {/* <ViewSwitcher currentView="map" /> */}
             </header>
 
             {/* 필터 컨트롤 바 */}

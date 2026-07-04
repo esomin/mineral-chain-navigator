@@ -175,7 +175,7 @@ export function GlobeViewPage() {
                         </button>
                     </div>
                     {/* 뷰 전환 스위처 */}
-                    <ViewSwitcher currentView="globe" />
+                    {/* <ViewSwitcher currentView="globe" /> */}
                 </div>
             </header>
 
