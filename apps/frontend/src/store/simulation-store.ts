@@ -82,33 +82,51 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
     setTargetId: (targetId) =>
         set((state) => ({
             currentDisruption: { ...state.currentDisruption, targetId },
+            error: null,
         })),
 
     // 충격 대상 유형 설정 (node/edge)
     setTargetType: (targetType) =>
         set((state) => ({
             currentDisruption: { ...state.currentDisruption, targetType },
+            error: null,
         })),
 
     // 충격 유형 설정
     setDisruptionType: (disruptionType) =>
         set((state) => ({
             currentDisruption: { ...state.currentDisruption, disruptionType },
+            error: null,
         })),
 
     // 심각도 설정
     setSeverity: (severity) =>
         set((state) => ({
             currentDisruption: { ...state.currentDisruption, severity },
+            error: null,
         })),
 
     // 현재 설정을 충격 목록에 추가
     addDisruption: () => {
-        const { currentDisruption } = get();
+        const { currentDisruption, disruptions } = get();
         if (!currentDisruption.targetId) return;
+
+        // 동일 노드에 동일 충격 유형이 이미 존재하는지 검증
+        const isDuplicate = disruptions.some(
+            (d) =>
+                d.targetId === currentDisruption.targetId &&
+                d.disruptionType === currentDisruption.disruptionType
+        );
+
+        if (isDuplicate) {
+            set({ error: '이미 동일한 노드와 충격 유형의 이벤트가 존재합니다.' });
+            return;
+        }
+
         const disruption: Disruption = { ...currentDisruption };
         set((state) => ({
             disruptions: [...state.disruptions, disruption],
+            error: null,
         }));
     },
 

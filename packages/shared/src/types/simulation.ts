@@ -1,6 +1,11 @@
 // Simulation Engine Types (Phase 2)
 
-export type DisruptionType = 'export_restriction' | 'facility_closure' | 'strike' | 'natural_disaster';
+export type DisruptionType =
+    | 'export_restriction'  // 수출 통제
+    | 'logistics_disruption' // 물류 마비
+    | 'facility_closure'     // 조업 중단
+    | 'stockpile_policy'     // 비축 정책
+    | 'demand_shock'         // 수요 충격
 
 export interface Disruption {
     targetId: string;

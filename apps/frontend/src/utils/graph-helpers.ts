@@ -72,12 +72,12 @@ export function getNodeRadius(
  */
 export function getNodeTypeLabel(type: string): string {
     const labels: Record<string, string> = {
-        Resource: 'R',
-        Mine: 'M',
-        Refinery: 'RF',
-        Factory: 'F',
+        Resource: '매장된 자원',
+        Mine: '광산',
+        Refinery: '제련소',
+        Factory: '공장',
     };
-    return labels[type] || '?';
+    return labels[type] || type;
 }
 
 /**

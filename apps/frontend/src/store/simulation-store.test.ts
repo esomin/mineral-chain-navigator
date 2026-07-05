@@ -72,6 +72,21 @@ describe('SimulationStore - 충격 목록 관리', () => {
         expect(useSimulationStore.getState().disruptions).toHaveLength(0);
     });
 
+    it('동일한 노드와 충격 유형의 이벤트가 이미 존재하면 중복 추가를 차단하고 에러를 설정해야 한다', () => {
+        const store = useSimulationStore.getState();
+        store.setTargetId('RF-01');
+        store.setDisruptionType('facility_closure');
+        store.setSeverity(0.7);
+        store.addDisruption();
+
+        expect(useSimulationStore.getState().disruptions).toHaveLength(1);
+
+        // 다시 동일하게 추가 시도
+        useSimulationStore.getState().addDisruption();
+        expect(useSimulationStore.getState().disruptions).toHaveLength(1);
+        expect(useSimulationStore.getState().error).toBe('이미 동일한 노드와 충격 유형의 이벤트가 존재합니다.');
+    });
+
     it('특정 인덱스의 충격을 삭제할 수 있어야 한다', () => {
         useSimulationStore.setState({
             disruptions: [

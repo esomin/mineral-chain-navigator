@@ -9,6 +9,7 @@ import { SimulationPanel } from '../components/SimulationPanel';
 import { ViewSwitcher } from '../components/ViewSwitcher';
 import { AIInsightPanel } from '../components/AIInsightPanel';
 import { GiDiamonds } from 'react-icons/gi';
+import { Button } from '../components/ui/button';
 // 공급망 그래프 시각화 페이지 (Phase 1 메인 뷰)
 export function GraphView() {
     const { nodes, edges, selectedNodeId, filters, riskScores, setNodes, setEdges, setRiskScores, selectNode, setLoading, isLoading } =
@@ -188,28 +189,24 @@ export function GraphView() {
                 </div>
                 {/* 뷰 전환 스위처 */}
                 <div className="flex items-center gap-3">
-                    <button
+                    <Button
                         onClick={() => setShowSimulation(!showSimulation)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors cursor-pointer ${showSimulation
-                            ? 'bg-green-500 text-white border-green-500'
-                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
-                            }`}
+                        variant={showSimulation ? 'secondary' : 'outline'}
+                        className="font-semibold shadow-xs"
                         aria-label="시뮬레이션 패널 토글"
                         aria-pressed={showSimulation}
                     >
-                        ⚡ 시뮬레이션
-                    </button>
-                    <button
+                        ▶ 시뮬레이션
+                    </Button>
+                    <Button
                         onClick={() => setShowAIPanel(!showAIPanel)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors cursor-pointer ${showAIPanel
-                            ? 'bg-blue-500 text-white border-blue-500'
-                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
-                            }`}
+                        variant={showAIPanel ? 'default' : 'outline'}
+                        className="font-semibold shadow-xs"
                         aria-label="AI 인사이트 패널 토글"
                         aria-pressed={showAIPanel}
                     >
-                        <GiDiamonds color='#4796e3' size={16} /> AI 인사이트
-                    </button>
+                        <GiDiamonds color={showAIPanel ? '#93c5fd' : '#4796e3'} size={16} /> AI 인사이트
+                    </Button>
                     {/* <ViewSwitcher currentView="graph" /> */}
                 </div>
             </header>
