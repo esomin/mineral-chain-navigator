@@ -380,429 +380,424 @@ export function SimulationPanel() {
 
     return (
         <div
-            className="absolute top-0 left-0 h-screen flex font-sans z-[5] pointer-events-none"
+            className="absolute top-0 left-0 h-full flex font-sans z-[5] pointer-events-none"
             role="region"
             aria-label="시뮬레이션 제어 패널 그룹"
         >
             {/* 1열: 시뮬레이션 설정 및 입력 폼 */}
             <aside
-                className="w-[400px] h-full overflow-y-auto bg-white border-r border-slate-200 p-4 pb-12 shadow-md flex flex-col pointer-events-auto relative"
+                className="w-[380px] h-full bg-white border-r border-slate-200 p-4 pr-2 shadow-md flex flex-col pointer-events-auto relative"
                 aria-label="시뮬레이션 입력 및 설정 제어"
             >
                 {/* 헤더 */}
-                <h2 className="text-base font-bold text-slate-900 mb-2 tracking-tight flex items-center justify-between">
+                <h2 className="text-base font-bold text-slate-900 mb-2 tracking-tight flex items-center justify-between pr-4">
                     시뮬레이션 제어
                 </h2>
 
+                <div className="flex-1 min-h-0 overflow-y-auto space-y-3 p-1">
+                    {/* 시나리오 구성 UI */}
+                    <Card className="border border-slate-150 bg-slate-50/50 shadow-sm mb-3">
+                        <CardHeader className="p-2.5 pb-0">
+                            <CardTitle className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                충격 시나리오 구성
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-2.5 pt-2">
+                            {/* 대상 유형 선택 */}
+                            <div className="mb-2">
+                                <label
+                                    htmlFor="sim-target-type"
+                                    className="block text-[11px] font-medium text-slate-600 mb-1"
+                                >
+                                    대상 유형
+                                </label>
+                                <Select
+                                    value={currentDisruption.targetType}
+                                    onValueChange={(val) => {
+                                        setTargetType(val as 'node' | 'edge');
+                                        setTargetId('');
+                                        setSelectedCountry('ALL');
+                                        setSelectedNodeType('ALL');
+                                        setSelectedSourceNodeId('ALL');
+                                    }}
+                                >
+                                    <SelectTrigger id="sim-target-type" size="sm" className="w-full bg-white border border-slate-200 text-[11px]">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent position="popper">
+                                        <SelectItem value="node">시설 (노드)</SelectItem>
+                                        <SelectItem value="edge">경로 (엣지)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
 
+                            {/* 대상 지정 선택 */}
+                            <div className="mb-2">
+                                <label
+                                    htmlFor="sim-target-id"
+                                    className="block text-[11px] font-medium text-slate-600 mb-1"
+                                >
+                                    {currentDisruption.targetType === 'node' ? '대상 시설 (노드)' : '대상 경로 (엣지)'}
+                                </label>
 
-                {/* 시나리오 구성 UI */}
-                <Card className="border border-slate-150 bg-slate-50/50 shadow-sm mb-3">
-                    <CardHeader className="p-2.5 pb-0">
-                        <CardTitle className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                            충격 시나리오 구성
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-2.5 pt-2 overflow-y-auto">
-                        {/* 대상 유형 선택 */}
-                        <div className="mb-2">
-                            <label
-                                htmlFor="sim-target-type"
-                                className="block text-[11px] font-medium text-slate-600 mb-1"
-                            >
-                                대상 유형
-                            </label>
-                            <Select
-                                value={currentDisruption.targetType}
-                                onValueChange={(val) => {
-                                    setTargetType(val as 'node' | 'edge');
-                                    setTargetId('');
-                                    setSelectedCountry('ALL');
-                                    setSelectedNodeType('ALL');
-                                    setSelectedSourceNodeId('ALL');
-                                }}
-                            >
-                                <SelectTrigger id="sim-target-type" className="w-full bg-white border border-slate-200 h-8 text-xs">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent position="popper">
-                                    <SelectItem value="node">시설 (노드)</SelectItem>
-                                    <SelectItem value="edge">경로 (엣지)</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        {/* 대상 지정 선택 */}
-                        <div className="mb-2">
-                            <label
-                                htmlFor="sim-target-id"
-                                className="block text-[11px] font-medium text-slate-600 mb-1"
-                            >
-                                {currentDisruption.targetType === 'node' ? '대상 시설 (노드)' : '대상 경로 (엣지)'}
-                            </label>
-
-                            {/* 노드 타겟팅 활성화 및 국가/시설유형 가로 필터 렌더링 */}
-                            {currentDisruption.targetType === 'node' && (
-                                <div className="flex gap-2 mb-1.5">
-                                    <div className="flex-1">
-                                        <Select
-                                            value={selectedCountry}
-                                            onValueChange={(val) => {
-                                                setSelectedCountry(val);
-                                                setTargetId('');
-                                            }}
-                                        >
-                                            <SelectTrigger className="w-full bg-white border border-slate-200 text-xs h-8">
-                                                <SelectValue placeholder="국가 필터" />
-                                            </SelectTrigger>
-                                            <SelectContent position="popper">
-                                                {countryOptions.map((opt) => (
-                                                    <SelectItem key={opt.value} value={opt.value}>
-                                                        {opt.label}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="flex-1">
-                                        <Select
-                                            value={selectedNodeType}
-                                            onValueChange={(val) => {
-                                                setSelectedNodeType(val);
-                                                setTargetId('');
-                                            }}
-                                        >
-                                            <SelectTrigger className="w-full bg-white border border-slate-200 text-xs h-8">
-                                                <SelectValue placeholder="시설 종류 필터" />
-                                            </SelectTrigger>
-                                            <SelectContent position="popper">
-                                                {nodeTypeOptions.map((opt) => (
-                                                    <SelectItem key={opt.value} value={opt.value}>
-                                                        {opt.label}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* [분기 1] 노드 타겟팅일 때의 노드 선택 UI */}
-                            {currentDisruption.targetType === 'node' && (
-                                <>
-                                    {targetOptions.length === 1 ? (
-                                        <div className="p-2 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-800 shadow-xs">
-                                            <span className="truncate">{targetOptions[0].label}</span>
+                                {/* 노드 타겟팅 활성화 및 국가/시설유형 가로 필터 렌더링 */}
+                                {currentDisruption.targetType === 'node' && (
+                                    <div className="flex gap-2 mb-1.5">
+                                        <div className="flex-1">
+                                            <Select
+                                                value={selectedCountry}
+                                                onValueChange={(val) => {
+                                                    setSelectedCountry(val);
+                                                    setTargetId('');
+                                                }}
+                                            >
+                                                <SelectTrigger
+                                                    size="sm"
+                                                    className="w-full bg-white border border-slate-200 text-[11px]">
+                                                    <SelectValue placeholder="국가 필터" />
+                                                </SelectTrigger>
+                                                <SelectContent position="popper">
+                                                    {countryOptions.map((opt) => (
+                                                        <SelectItem key={opt.value} value={opt.value}>
+                                                            {opt.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
                                         </div>
-                                    ) : targetOptions.length === 0 ? (
-                                        <div className="p-2 bg-red-50/50 border border-red-150 rounded-md text-xs font-semibold text-red-600 flex items-center gap-1.5">
-                                            <span>⚠ 조건에 일치하는 시설이 없습니다.</span>
+                                        <div className="flex-1">
+                                            <Select
+                                                value={selectedNodeType}
+                                                onValueChange={(val) => {
+                                                    setSelectedNodeType(val);
+                                                    setTargetId('');
+                                                }}
+                                            >
+                                                <SelectTrigger size="sm" className="w-full bg-white border border-slate-200 text-[11px]">
+                                                    <SelectValue placeholder="시설 종류 필터" />
+                                                </SelectTrigger>
+                                                <SelectContent position="popper">
+                                                    {nodeTypeOptions.map((opt) => (
+                                                        <SelectItem key={opt.value} value={opt.value}>
+                                                            {opt.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
                                         </div>
-                                    ) : (
-                                        <Select
-                                            value={currentDisruption.targetId}
-                                            onValueChange={(val) => setTargetId(val)}
-                                        >
-                                            <SelectTrigger id="sim-target-id" className="w-full bg-white border border-slate-200 h-8 text-xs">
-                                                <SelectValue placeholder="-- 선택 --" />
-                                            </SelectTrigger>
-                                            <SelectContent position="popper">
-                                                {targetOptions.map((opt) => (
-                                                    <SelectItem key={opt.id} value={opt.id}>
-                                                        {opt.label}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                </>
-                            )}
-
-                            {/* [분기 2] 엣지 타겟팅일 때의 출발지 -> 도착지 다단계 필터 UI */}
-                            {currentDisruption.targetType === 'edge' && (
-                                <div className="space-y-2">
-                                    {/* 1. 출발 시설 선택 */}
-                                    <div>
-                                        <Select
-                                            value={selectedSourceNodeId}
-                                            onValueChange={(val) => {
-                                                setSelectedSourceNodeId(val);
-                                                setTargetId('');
-                                            }}
-                                        >
-                                            <SelectTrigger className="w-full bg-white border border-slate-200 text-xs h-8">
-                                                <SelectValue placeholder="-- 출발 시설 선택 --" />
-                                            </SelectTrigger>
-                                            <SelectContent position="popper">
-                                                <SelectItem value="ALL">-- 출발 시설 선택 --</SelectItem>
-                                                {sourceNodeOptions.map((opt) => (
-                                                    <SelectItem key={opt.id} value={opt.id}>
-                                                        {opt.label}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
                                     </div>
+                                )}
 
-                                    {/* 2. 도착 시설(최종 엣지) 선택 */}
-                                    <div>
-                                        {selectedSourceNodeId === 'ALL' ? (
-                                            <div className="p-2 bg-slate-50 border border-slate-200 border-dashed rounded-md text-[11px] text-slate-400 text-center">
-                                                출발 시설을 먼저 선택해주세요.
+                                {/* [분기 1] 노드 타겟팅일 때의 노드 선택 UI */}
+                                {currentDisruption.targetType === 'node' && (
+                                    <>
+                                        {targetOptions.length === 1 ? (
+                                            <div className="p-2 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-800 shadow-xs">
+                                                <span className="truncate">{targetOptions[0].label}</span>
                                             </div>
-                                        ) : targetEdgeOptions.length === 0 ? (
-                                            <div className="p-2 bg-red-50/30 border border-red-100 rounded-md text-[11px] text-red-500 text-center">
-                                                출발하는 경로가 존재하지 않습니다.
-                                            </div>
-                                        ) : targetEdgeOptions.length === 1 ? (
-                                            <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-800 shadow-xs flex items-center justify-between w-full overflow-hidden min-w-0">
-                                                <span className="truncate flex-1 min-w-0 text-left">➔ {targetEdgeOptions[0].targetLabel}</span>
+                                        ) : targetOptions.length === 0 ? (
+                                            <div className="p-2 bg-red-50/50 border border-red-150 rounded-md text-xs font-semibold text-red-600 flex items-center gap-1.5">
+                                                <span>⚠ 조건에 일치하는 시설이 없습니다.</span>
                                             </div>
                                         ) : (
                                             <Select
                                                 value={currentDisruption.targetId}
                                                 onValueChange={(val) => setTargetId(val)}
                                             >
-                                                <SelectTrigger className="w-full bg-white border border-slate-200 text-xs h-8 overflow-hidden max-w-[328px] min-w-0">
-                                                    <SelectValue placeholder="-- 도착 시설(경로) 선택 --" />
+                                                <SelectTrigger id="sim-target-id" size="sm" className="w-full bg-white border border-slate-200 text-[11px]">
+                                                    <SelectValue placeholder="-- 선택 --" />
                                                 </SelectTrigger>
-                                                <SelectContent position="popper" className="max-w-[328px] w-full">
-                                                    {targetEdgeOptions.map((opt) => (
-                                                        <SelectItem key={opt.edgeId} value={opt.edgeId} className="w-full overflow-hidden">
-                                                            <span className="truncate flex-1 min-w-0 text-left">➔ {opt.targetLabel}</span>
+                                                <SelectContent position="popper">
+                                                    {targetOptions.map((opt) => (
+                                                        <SelectItem key={opt.id} value={opt.id}>
+                                                            {opt.label}
                                                         </SelectItem>
                                                     ))}
                                                 </SelectContent>
                                             </Select>
                                         )}
-                                    </div>
+                                    </>
+                                )}
 
-                                    {/* 선택된 엣지의 수송 물량을 하단에 기울임꼴로 표시 */}
-                                    {selectedEdge && (
-                                        <div className="text-[11px] text-slate-400 mt-1 font-normal italic">
-                                            * 해당 경로 수송 물량: {selectedEdge.attributes.volume ?? 0}t
+                                {/* [분기 2] 엣지 타겟팅일 때의 출발지 -> 도착지 다단계 필터 UI */}
+                                {currentDisruption.targetType === 'edge' && (
+                                    <div className="space-y-2">
+                                        {/* 1. 출발 시설 선택 */}
+                                        <div>
+                                            <Select
+                                                value={selectedSourceNodeId}
+                                                onValueChange={(val) => {
+                                                    setSelectedSourceNodeId(val);
+                                                    setTargetId('');
+                                                }}
+                                            >
+                                                <SelectTrigger size="sm" className="w-full bg-white border border-slate-200 text-[11px]">
+                                                    <SelectValue placeholder="-- 출발 시설 선택 --" />
+                                                </SelectTrigger>
+                                                <SelectContent position="popper">
+                                                    <SelectItem value="ALL">-- 출발 시설 선택 --</SelectItem>
+                                                    {sourceNodeOptions.map((opt) => (
+                                                        <SelectItem key={opt.id} value={opt.id}>
+                                                            {opt.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
                                         </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
 
-                        {/* 충격 유형 선택 */}
-                        <div className="mb-2">
-                            <label
-                                htmlFor="sim-disruption-type"
-                                className="block text-[11px] font-medium text-slate-600 mb-1"
+                                        {/* 2. 도착 시설(최종 엣지) 선택 */}
+                                        <div>
+                                            {selectedSourceNodeId === 'ALL' ? (
+                                                <div className="p-2 bg-slate-50 border border-slate-200 border-dashed rounded-md text-[11px] text-slate-400 text-center">
+                                                    출발 시설을 먼저 선택해주세요.
+                                                </div>
+                                            ) : targetEdgeOptions.length === 0 ? (
+                                                <div className="p-2 bg-red-50/30 border border-red-100 rounded-md text-[11px] text-red-500 text-center">
+                                                    출발하는 경로가 존재하지 않습니다.
+                                                </div>
+                                            ) : targetEdgeOptions.length === 1 ? (
+                                                <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-800 shadow-xs flex items-center justify-between w-full overflow-hidden min-w-0">
+                                                    <span className="truncate flex-1 min-w-0 text-left">➔ {targetEdgeOptions[0].targetLabel}</span>
+                                                </div>
+                                            ) : (
+                                                <Select
+                                                    value={currentDisruption.targetId}
+                                                    onValueChange={(val) => setTargetId(val)}
+                                                >
+                                                    <SelectTrigger size="sm" className="w-full bg-white border border-slate-200 text-[11px] overflow-hidden max-w-[328px] min-w-0">
+                                                        <SelectValue placeholder="-- 도착 시설(경로) 선택 --" />
+                                                    </SelectTrigger>
+                                                    <SelectContent position="popper" className="max-w-[328px] w-full">
+                                                        {targetEdgeOptions.map((opt) => (
+                                                            <SelectItem key={opt.edgeId} value={opt.edgeId} className="w-full overflow-hidden">
+                                                                <span className="truncate flex-1 min-w-0 text-left">➔ {opt.targetLabel}</span>
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            )}
+                                        </div>
+
+                                        {/* 선택된 엣지의 수송 물량을 하단에 기울임꼴로 표시 */}
+                                        {selectedEdge && (
+                                            <div className="text-[11px] text-slate-400 mt-1 font-normal italic">
+                                                * 해당 경로 수송 물량: {selectedEdge.attributes.volume ?? 0}t
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* 충격 유형 선택 */}
+                            <div className="mb-2">
+                                <label
+                                    htmlFor="sim-disruption-type"
+                                    className="block text-[11px] font-medium text-slate-600 mb-1"
+                                >
+                                    충격 유형
+                                </label>
+                                <Select
+                                    value={currentDisruption.disruptionType}
+                                    onValueChange={handleDisruptionTypeChange}
+                                >
+                                    <SelectTrigger id="sim-disruption-type" size="sm" className="w-full bg-white border border-slate-200 text-[11px]">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent position="popper">
+                                        {Object.entries(DISRUPTION_TYPE_CONFIGS).map(([value, config]) => (
+                                            <SelectItem key={value} value={value}>
+                                                {config.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <div className="text-[11px] text-slate-400 mt-1 font-normal leading-normal italic">
+                                    {DISRUPTION_TYPE_CONFIGS[currentDisruption.disruptionType]?.description}
+                                </div>
+                            </div>
+
+                            {/* 동적 충격 강도 슬라이더 */}
+                            {(() => {
+                                const config = DISRUPTION_TYPE_CONFIGS[currentDisruption.disruptionType];
+                                if (!config) return null;
+                                return (
+                                    <div className="mb-3">
+                                        <label
+                                            htmlFor="sim-severity"
+                                            className="block text-[11px] font-medium text-slate-600 mb-1"
+                                        >
+                                            {config.sliderLabel}: <span className="font-semibold text-slate-900">{config.formatValue(currentDisruption.severity)}</span>
+                                        </label>
+                                        <Slider
+                                            id="sim-severity"
+                                            min={config.min}
+                                            max={config.max}
+                                            step={config.step}
+                                            value={[currentDisruption.severity]}
+                                            onValueChange={(val) => setSeverity(val[0])}
+                                            className="py-1"
+                                            aria-label={`${config.sliderLabel} 슬라이더`}
+                                        />
+                                        <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                                            <span>{config.minLabel}</span>
+                                            <span>{config.maxLabel}</span>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+
+                            {/* 충격 추가 버튼 */}
+                            <Button
+                                onClick={handleAddDisruption}
+                                disabled={!currentDisruption.targetId}
+                                variant={currentDisruption.targetId ? "default" : "secondary"}
+                                size="sm"
+                                className="w-full h-8 text-xs font-semibold"
+                                aria-label="충격 이벤트 추가"
                             >
-                                충격 유형
-                            </label>
-                            <Select
-                                value={currentDisruption.disruptionType}
-                                onValueChange={handleDisruptionTypeChange}
-                            >
-                                <SelectTrigger id="sim-disruption-type" className="w-full bg-white border border-slate-200 h-8 text-xs">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent position="popper">
-                                    {Object.entries(DISRUPTION_TYPE_CONFIGS).map(([value, config]) => (
-                                        <SelectItem key={value} value={value}>
-                                            {config.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <div className="text-[11px] text-slate-400 mt-1 font-normal leading-normal italic">
-                                {DISRUPTION_TYPE_CONFIGS[currentDisruption.disruptionType]?.description}
+                                + 충격 이벤트 추가
+                            </Button>
+                        </CardContent>
+                    </Card>
+
+
+                    {/* 시나리오 프리셋 */}
+                    <Card className="border border-slate-150 bg-slate-50/50 shadow-sm mb-4">
+                        <CardHeader className="p-3.5 pb-0">
+                            <CardTitle className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                시나리오 프리셋
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-3.5 pt-3">
+                            <div className="space-y-2">
+                                {SCENARIO_PRESETS.map((preset) => {
+                                    const isSelected = currentDisruption.disruptionType === preset.config.disruptionType &&
+                                        currentDisruption.targetType === preset.config.targetType &&
+                                        currentDisruption.targetId === preset.config.targetId &&
+                                        Math.abs(currentDisruption.severity - preset.config.severity) < 0.01;
+
+                                    return (
+                                        <button
+                                            key={preset.id}
+                                            onClick={() => handleApplyPreset(preset)}
+                                            className={`w-full text-left p-2 rounded-md border transition-all duration-200 cursor-pointer ${isSelected
+                                                ? 'bg-slate-100 border-slate-400 shadow-xs'
+                                                : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50 hover:shadow-xs'
+                                                }`}
+                                            aria-label={`프리셋 적용: ${preset.name}`}
+                                        >
+                                            <div className="text-xs font-bold text-slate-800 mb-1 leading-tight">
+                                                {preset.name}
+                                            </div>
+                                            <div className="text-[10px] text-slate-500 font-normal leading-none">
+                                                {preset.config.targetType === 'node'
+                                                    ? (preset.config.country === 'ALL'
+                                                        ? '모든 국가'
+                                                        : `${getCountryDisplayName(preset.config.country || '')} ${getNodeTypeLabel(preset.config.nodeType || '')}`)
+                                                    : (preset.config.sourceNodeId === 'M-04'
+                                                        ? '호주 광산 ➔ 중국 제련소'
+                                                        : '경로 선택됨')
+                                                }
+                                                {' • '}
+                                                {DISRUPTION_TYPE_CONFIGS[preset.config.disruptionType]?.label}
+                                                {' • '}
+                                                {DISRUPTION_TYPE_CONFIGS[preset.config.disruptionType]?.formatValue(preset.config.severity)}
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* 추가된 충격 목록 */}
+                    {disruptions.length > 0 && (
+                        <div className="mb-4">
+                            <div className="flex items-center justify-between mb-2">
+                                <h3 className="text-xs font-bold text-slate-700">
+                                    충격 이벤트 목록 ({disruptions.length})
+                                </h3>
+                                <Button
+                                    variant="destructive"
+                                    size="xs"
+                                    onClick={clearDisruptions}
+                                    aria-label="충격 목록 전체 삭제"
+                                >
+                                    전체 삭제
+                                </Button>
+                            </div>
+                            <ul className="m-0 p-0 list-none space-y-1.5" aria-label="충격 이벤트 목록">
+                                {disruptions.map((d, i) => (
+                                    <li
+                                        key={i}
+                                        className="flex items-center justify-between p-2 bg-slate-50 border border-slate-200/60 rounded-md text-xs text-slate-700 shadow-xs"
+                                    >
+                                        <span className="truncate pr-2 font-medium">
+                                            [시설] {(() => {
+                                                const node = nodes.find((n) => n.id === d.targetId);
+                                                return node ? `${node.name} (${getCountryDisplayName(node.country)})` : d.targetId;
+                                            })()} • {DISRUPTION_TYPE_CONFIGS[d.disruptionType]?.label || d.disruptionType} • {DISRUPTION_TYPE_CONFIGS[d.disruptionType]?.formatValue(d.severity) || d.severity}
+                                        </span>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon-xs"
+                                            onClick={() => removeDisruption(i)}
+                                            className="text-slate-400 hover:text-red-500 hover:bg-transparent"
+                                            aria-label={`충격 ${i + 1} 삭제`}
+                                        >
+                                            ✕
+                                        </Button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
+                    {/* 시뮬레이션 실행 버튼 */}
+                    <Button
+                        onClick={handleRunSimulation}
+                        disabled={isRunning || disruptions.length === 0}
+                        variant="secondary"
+                        className="w-full h-9 mb-3 shadow-sm font-semibold"
+                        aria-label="시뮬레이션 실행"
+                    >
+                        {isRunning ? '실행 중...' : '▶ 시뮬레이션 실행'}
+                    </Button>
+
+                    {/* 로딩 상태 & 3초 타임아웃 인디케이터 */}
+                    {isRunning && (
+                        <div
+                            className="mb-4"
+                            role="progressbar"
+                            aria-valuemin={0}
+                            aria-valuemax={3}
+                            aria-valuenow={Math.min(elapsedSeconds, 3)}
+                            aria-label="시뮬레이션 실행 진행률"
+                        >
+                            <div className="flex justify-between text-[11px] font-medium text-slate-500 mb-1">
+                                <span>실행 중...</span>
+                                <span>{Math.min(elapsedSeconds, 3).toFixed(1)}s / 3.0s</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-slate-900 rounded-full transition-all duration-100 ease-linear"
+                                    style={{ width: `${timeoutProgress}%` }}
+                                />
                             </div>
                         </div>
+                    )}
 
-                        {/* 동적 충격 강도 슬라이더 */}
-                        {(() => {
-                            const config = DISRUPTION_TYPE_CONFIGS[currentDisruption.disruptionType];
-                            if (!config) return null;
-                            return (
-                                <div className="mb-3">
-                                    <label
-                                        htmlFor="sim-severity"
-                                        className="block text-[11px] font-medium text-slate-600 mb-1"
-                                    >
-                                        {config.sliderLabel}: <span className="font-semibold text-slate-900">{config.formatValue(currentDisruption.severity)}</span>
-                                    </label>
-                                    <Slider
-                                        id="sim-severity"
-                                        min={config.min}
-                                        max={config.max}
-                                        step={config.step}
-                                        value={[currentDisruption.severity]}
-                                        onValueChange={(val) => setSeverity(val[0])}
-                                        className="py-1"
-                                        aria-label={`${config.sliderLabel} 슬라이더`}
-                                    />
-                                    <div className="flex justify-between text-[10px] text-slate-400 mt-1">
-                                        <span>{config.minLabel}</span>
-                                        <span>{config.maxLabel}</span>
-                                    </div>
-                                </div>
-                            );
-                        })()}
-
-                        {/* 충격 추가 버튼 */}
-                        <Button
-                            onClick={handleAddDisruption}
-                            disabled={!currentDisruption.targetId}
-                            variant={currentDisruption.targetId ? "default" : "secondary"}
-                            size="sm"
-                            className="w-full h-8 text-xs font-semibold"
-                            aria-label="충격 이벤트 추가"
+                    {/* 에러 메시지 */}
+                    {error && (
+                        <div
+                            className="p-3 bg-red-50 border border-red-100 text-red-700 rounded-md text-xs mb-3 font-medium flex items-center gap-1.5"
+                            role="alert"
+                            aria-live="assertive"
                         >
-                            + 충격 이벤트 추가
-                        </Button>
-                    </CardContent>
-                </Card>
-
-
-                {/* 시나리오 프리셋 */}
-                <Card className="border border-slate-150 bg-slate-50/50 shadow-sm mb-4">
-                    <CardHeader className="p-3.5 pb-0">
-                        <CardTitle className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                            시나리오 프리셋
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-3.5 pt-3 overflow-y-auto max-h-[300px]">
-                        <div className="space-y-2">
-                            {SCENARIO_PRESETS.map((preset) => {
-                                const isSelected = currentDisruption.disruptionType === preset.config.disruptionType &&
-                                    currentDisruption.targetType === preset.config.targetType &&
-                                    currentDisruption.targetId === preset.config.targetId &&
-                                    Math.abs(currentDisruption.severity - preset.config.severity) < 0.01;
-
-                                return (
-                                    <button
-                                        key={preset.id}
-                                        onClick={() => handleApplyPreset(preset)}
-                                        className={`w-full text-left p-2 rounded-md border transition-all duration-200 cursor-pointer ${isSelected
-                                            ? 'bg-slate-100 border-slate-400 shadow-xs'
-                                            : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50 hover:shadow-xs'
-                                            }`}
-                                        aria-label={`프리셋 적용: ${preset.name}`}
-                                    >
-                                        <div className="flex items-center justify-between gap-2 mb-1.5">
-                                            <span className="text-xs font-bold text-slate-800 leading-tight">
-                                                {preset.name}
-                                            </span>
-                                            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded border border-slate-200 bg-slate-100 text-slate-500">
-                                                {preset.badge}
-                                            </span>
-                                        </div>
-                                        <p className="text-[10px] text-slate-500 font-normal leading-tight mb-2">
-                                            {preset.description}
-                                        </p>
-                                        <div className="flex items-center justify-between text-[10px] font-medium text-slate-400 border-t border-slate-100 pt-1.5">
-                                            <span>
-                                                {preset.config.targetType === 'node'
-                                                    ? `대상: ${preset.config.country === 'ALL' ? '모든 국가' : getCountryDisplayName(preset.config.country || '')} ${getNodeTypeLabel(preset.config.nodeType || '')}`
-                                                    : `대상 경로: ${preset.config.sourceNodeId === 'M-04' ? '호주 광산 ➔ 중국 제련소' : '경로 선택됨'}`
-                                                }
-                                            </span>
-                                            <span className="font-semibold text-slate-500">
-                                                {DISRUPTION_TYPE_CONFIGS[preset.config.disruptionType]?.label} ({
-                                                    DISRUPTION_TYPE_CONFIGS[preset.config.disruptionType]?.formatValue(preset.config.severity)
-                                                })
-                                            </span>
-                                        </div>
-                                    </button>
-                                );
-                            })}
+                            ⚠ {error}
                         </div>
-                    </CardContent>
-                </Card>
-
-                {/* 추가된 충격 목록 */}
-                {disruptions.length > 0 && (
-                    <div className="mb-4">
-                        <div className="flex items-center justify-between mb-2">
-                            <h3 className="text-xs font-bold text-slate-700">
-                                충격 이벤트 목록 ({disruptions.length})
-                            </h3>
-                            <Button
-                                variant="destructive"
-                                size="xs"
-                                onClick={clearDisruptions}
-                                aria-label="충격 목록 전체 삭제"
-                            >
-                                전체 삭제
-                            </Button>
-                        </div>
-                        <ul className="m-0 p-0 list-none space-y-1.5" aria-label="충격 이벤트 목록">
-                            {disruptions.map((d, i) => (
-                                <li
-                                    key={i}
-                                    className="flex items-center justify-between p-2 bg-slate-50 border border-slate-200/60 rounded-md text-xs text-slate-700 shadow-xs"
-                                >
-                                    <span className="truncate pr-2 font-medium">
-                                        [시설] {(() => {
-                                            const node = nodes.find((n) => n.id === d.targetId);
-                                            return node ? `${node.name} (${getCountryDisplayName(node.country)})` : d.targetId;
-                                        })()} • {DISRUPTION_TYPE_CONFIGS[d.disruptionType]?.label || d.disruptionType} • {DISRUPTION_TYPE_CONFIGS[d.disruptionType]?.formatValue(d.severity) || d.severity}
-                                    </span>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon-xs"
-                                        onClick={() => removeDisruption(i)}
-                                        className="text-slate-400 hover:text-red-500 hover:bg-transparent"
-                                        aria-label={`충격 ${i + 1} 삭제`}
-                                    >
-                                        ✕
-                                    </Button>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
-
-                {/* 시뮬레이션 실행 버튼 */}
-                <Button
-                    onClick={handleRunSimulation}
-                    disabled={isRunning || disruptions.length === 0}
-                    variant="secondary"
-                    className="w-full h-9 mb-3 shadow-sm font-semibold"
-                    aria-label="시뮬레이션 실행"
-                >
-                    {isRunning ? '실행 중...' : '▶ 시뮬레이션 실행'}
-                </Button>
-
-                {/* 로딩 상태 & 3초 타임아웃 인디케이터 */}
-                {isRunning && (
-                    <div
-                        className="mb-4"
-                        role="progressbar"
-                        aria-valuemin={0}
-                        aria-valuemax={3}
-                        aria-valuenow={Math.min(elapsedSeconds, 3)}
-                        aria-label="시뮬레이션 실행 진행률"
-                    >
-                        <div className="flex justify-between text-[11px] font-medium text-slate-500 mb-1">
-                            <span>실행 중...</span>
-                            <span>{Math.min(elapsedSeconds, 3).toFixed(1)}s / 3.0s</span>
-                        </div>
-                        <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-slate-900 rounded-full transition-all duration-100 ease-linear"
-                                style={{ width: `${timeoutProgress}%` }}
-                            />
-                        </div>
-                    </div>
-                )}
-
-                {/* 에러 메시지 */}
-                {error && (
-                    <div
-                        className="p-3 bg-red-50 border border-red-100 text-red-700 rounded-md text-xs mb-3 font-medium flex items-center gap-1.5"
-                        role="alert"
-                        aria-live="assertive"
-                    >
-                        ⚠ {error}
-                    </div>
-                )}
+                    )}
+                </div>
 
             </aside>
 
