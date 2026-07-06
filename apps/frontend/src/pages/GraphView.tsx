@@ -184,7 +184,7 @@ export function GraphView() {
                 <div>
                     <h1 style={{ margin: 0, fontSize: '1.25rem' }}>Mineral Chain Navigator</h1>
                     <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: '#666' }}>
-                        리튬(HS 2825.20) 공급망 그래프 시각화 • 노드: {filteredNodes.length}/{nodes.length} | 엣지: {filteredEdges.length}/{edges.length}
+                        리튬 공급망 그래프 시각화 • 노드: {filteredNodes.length}/{nodes.length} | 엣지: {filteredEdges.length}/{edges.length}
                     </p>
                 </div>
                 {/* 뷰 전환 스위처 */}
