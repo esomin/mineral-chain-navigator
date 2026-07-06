@@ -15,6 +15,7 @@ export interface GraphRendererProps {
         nodeIds: string[];
         edgeIds: string[];
     } | null;
+    isSimulationOpen?: boolean;
 }
 
 /**
@@ -25,7 +26,7 @@ export interface GraphRendererProps {
  * - LOD 국가별 클러스터링: 우상단 버튼으로 토글 (정사각형 표시)
  * - Web Worker 기반 레이아웃 계산 오프로드
  */
-export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlightedPath }: GraphRendererProps) {
+export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlightedPath, isSimulationOpen }: GraphRendererProps) {
     // 복잡도 감소를 위해 'Resource' 노드 및 관련 엣지 필터링
     const filteredNodes = useMemo(() => nodes.filter((n) => n.type !== 'Resource'), [nodes]);
     const filteredEdges = useMemo(() => {
@@ -48,11 +49,11 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
     const onNodeClickRef = useRef(onNodeClick);
     onNodeClickRef.current = onNodeClick;
 
-    // LOD 클러스터링 (Web Worker 기반) — enabled = 버튼 state로만 제어
+    // LOD 클러스터링 (Web Worker 기반) — enabled = 버튼 state 및 시뮬레이션 상태 기준 제어
     const { lodResult, isClustered } = useLODClustering({
         nodes: filteredNodes,
         riskScores,
-        enabled: clusteringEnabled,
+        enabled: isSimulationOpen ? false : clusteringEnabled,
     });
 
     // G6 데이터 형식으로 변환 (LOD 클러스터링 적용)
@@ -493,34 +494,36 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
 
                 {/* 국가별 클러스터링 토글 버튼 */}
                 <button
-                    disabled={!isGraphReady}
+                    disabled={isSimulationOpen || !isGraphReady}
                     onClick={() => setClusteringEnabled((prev) => !prev)}
                     aria-pressed={clusteringEnabled}
                     title={
                         !isGraphReady
                             ? '그래프 렌더링 중...'
-                            : clusteringEnabled
-                                ? 'Country Level Clustering 해제'
-                                : 'Country Level Clustering 활성화'
+                            : isSimulationOpen
+                                ? '시뮬레이션 모드에서는 국가 클러스터링을 사용할 수 없습니다'
+                                : clusteringEnabled
+                                    ? 'Country Level Clustering 해제'
+                                    : 'Country Level Clustering 활성화'
                     }
                     style={{
                         aspectRatio: '2 / 1',
                         width: '100%',
-                        background: clusteringEnabled ? '#e6f7ff' : 'rgba(255, 255, 255, 0.9)',
-                        border: clusteringEnabled ? '1px solid #1890ff' : '1px solid #d9d9d9',
+                        background: isSimulationOpen ? '#f5f5f5' : clusteringEnabled ? '#e6f7ff' : 'rgba(255, 255, 255, 0.9)',
+                        border: isSimulationOpen ? '1px solid #d9d9d9' : clusteringEnabled ? '1px solid #1890ff' : '1px solid #d9d9d9',
                         borderRadius: '4px',
                         padding: '4px 8px',
                         fontSize: '0.7rem',
-                        color: !isGraphReady
+                        color: (!isGraphReady || isSimulationOpen)
                             ? '#bfbfbf'
                             : clusteringEnabled
                                 ? '#1890ff'
                                 : '#333',
-                        cursor: isGraphReady ? 'pointer' : 'not-allowed',
-                        opacity: isGraphReady ? 1 : 0.6,
+                        cursor: (isGraphReady && !isSimulationOpen) ? 'pointer' : 'not-allowed',
+                        opacity: (isGraphReady && !isSimulationOpen) ? 1 : 0.5,
                         textAlign: 'center',
                         transition: 'all 0.2s',
-                        fontWeight: clusteringEnabled ? 'bold' : 'normal',
+                        fontWeight: clusteringEnabled && !isSimulationOpen ? 'bold' : 'normal',
                     }}
                 >
                     Country Clustering

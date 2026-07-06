@@ -255,6 +255,7 @@ export function GraphView() {
                         riskScores={riskScoreMap}
                         onNodeClick={handleNodeClick}
                         highlightedPath={highlightedPath}
+                        isSimulationOpen={showSimulation}
                     />
                 )}
 
