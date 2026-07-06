@@ -91,7 +91,85 @@ const DISRUPTION_TYPE_CONFIGS: Partial<Record<DisruptionType, DisruptionTypeConf
     },
 };
 
-// 국가 바로가기 버튼 설정은 주석 처리됨 (시나리오 프리셋으로 대체)
+interface ScenarioPreset {
+    id: string;
+    name: string;
+    description: string;
+    badge: string;
+    badgeColor: string;
+    config: {
+        targetType: 'node' | 'edge';
+        country?: string;
+        nodeType?: string;
+        sourceNodeId?: string;
+        targetId: string;
+        disruptionType: DisruptionType;
+        severity: number;
+    };
+}
+
+const SCENARIO_PRESETS: ScenarioPreset[] = [
+    {
+        id: 'ai-ess-demand',
+        name: 'AI 데이터센터발 ESS용 리튬 수요 폭발',
+        description: 'AI 데이터센터 인프라 확대로 인해 글로벌 배터리 및 전기차 제조 공장의 리튬 수요가 50% 급증합니다.',
+        badge: '수요',
+        badgeColor: 'bg-blue-50 text-blue-700 border-blue-200',
+        config: {
+            targetType: 'node',
+            country: 'ALL',
+            nodeType: 'Factory',
+            disruptionType: 'demand_shock',
+            severity: 0.5,
+            targetId: 'F-01',
+        },
+    },
+    {
+        id: 'china-export-restriction',
+        name: '중국 리튬 수출 통제',
+        description: '중국이 주요 리튬 제품에 대한 국가 안보 목적의 수출 통제를 단행하여 물량의 80%가 제한됩니다.',
+        badge: '지정학',
+        badgeColor: 'bg-red-50 text-red-700 border-red-200',
+        config: {
+            targetType: 'node',
+            country: 'China',
+            nodeType: 'Refinery',
+            disruptionType: 'export_restriction',
+            severity: 0.8,
+            targetId: 'RF-01',
+        },
+    },
+    {
+        id: 'latin-nationalization',
+        name: '남미 리튬 삼각지대 국유화',
+        description: '칠레 염호 광산 국유화 및 환경 규제 강화로 인해 유통 물량의 30%가 정부 비축분으로 격리됩니다.',
+        badge: '정책',
+        badgeColor: 'bg-amber-50 text-amber-700 border-amber-200',
+        config: {
+            targetType: 'node',
+            country: 'Chile',
+            nodeType: 'Mine',
+            disruptionType: 'stockpile_policy',
+            severity: 0.3,
+            targetId: 'M-01',
+        },
+    },
+    {
+        id: 'sea-route-blockade',
+        name: '주요 해상 경로 봉쇄',
+        description: '호주-중국 간 수송 항로에 해상 물류 마비가 발생하여 인도 기일이 3.0배로 지연됩니다.',
+        badge: '물류',
+        badgeColor: 'bg-purple-50 text-purple-700 border-purple-200',
+        config: {
+            targetType: 'edge',
+            sourceNodeId: 'M-04',
+            disruptionType: 'logistics_disruption',
+            severity: 3.0,
+            targetId: 'E-M04-RF01',
+        },
+    },
+];
+
 
 /**
  * Simulation Controls 사이드 패널 컴포넌트.
@@ -131,6 +209,25 @@ export function SimulationPanel() {
     const [selectedCountry, setSelectedCountry] = useState<string>('ALL');
     const [selectedNodeType, setSelectedNodeType] = useState<string>('ALL');
     const [selectedSourceNodeId, setSelectedSourceNodeId] = useState<string>('ALL');
+
+    // 프리셋 적용 핸들러
+    const handleApplyPreset = useCallback((preset: ScenarioPreset) => {
+        setTargetType(preset.config.targetType);
+
+        if (preset.config.targetType === 'node') {
+            setSelectedCountry(preset.config.country || 'ALL');
+            setSelectedNodeType(preset.config.nodeType || 'ALL');
+            setSelectedSourceNodeId('ALL');
+        } else {
+            setSelectedCountry('ALL');
+            setSelectedNodeType('ALL');
+            setSelectedSourceNodeId(preset.config.sourceNodeId || 'ALL');
+        }
+
+        setDisruptionType(preset.config.disruptionType);
+        setSeverity(preset.config.severity);
+        setTargetId(preset.config.targetId);
+    }, [setTargetType, setDisruptionType, setSeverity, setTargetId]);
 
     // 사용 가능한 국가 필터 옵션
     const countryOptions = useMemo(() => {
@@ -277,33 +374,31 @@ export function SimulationPanel() {
 
     return (
         <aside
-            className="absolute top-0 left-0 w-[432px] !h-screen !max-h-screen !overflow-y-auto bg-white border-r border-slate-200 p-4 pb-12 shadow-md z-[5] flex flex-col font-sans"
+            className="absolute top-0 left-0 w-[400px] !h-screen !max-h-screen !overflow-y-auto bg-white border-r border-slate-200 p-4 pb-12 shadow-md z-[5] flex flex-col font-sans"
             aria-label="시뮬레이션 제어 패널"
             role="region"
         >
             {/* 헤더 */}
-            <h2 className="text-base font-bold text-slate-900 mb-4 tracking-tight flex items-center justify-between">
+            <h2 className="text-base font-bold text-slate-900 mb-2 tracking-tight flex items-center justify-between">
                 시뮬레이션 제어
             </h2>
 
             {/* 글로벌 필터 자동 설정 안내 배너 */}
-            <div className="p-3 bg-blue-50/80 border border-blue-100 rounded-md text-[11px] leading-relaxed text-blue-800 mb-4 shadow-xs">
-                <div className="font-bold flex items-center gap-1 mb-0.5">
-                    시뮬레이션 모드 활성화됨
-                </div>
-                <p className="text-blue-700 font-normal">
+            <div className="p-3 bg-blue-50/80 border border-blue-100 rounded-md text-[11px] leading-relaxed text-blue-800 mb-2 shadow-xs">
+                <span className="font-bold mr-1">시뮬레이션 모드 활성화됨:</span>
+                <span className="text-blue-700 font-normal">
                     영향 경로의 누락 없는 시각화를 위해 모든 국가 및 품목 필터가 자동으로 전체 활성화되었습니다.
-                </p>
+                </span>
             </div>
 
             {/* 시나리오 구성 UI */}
-            <Card className="border border-slate-150 bg-slate-50/50 shadow-sm mb-4 min-h-[440px]">
+            <Card className="border border-slate-150 bg-slate-50/50 shadow-sm mb-4">
                 <CardHeader className="p-3.5 pb-0">
                     <CardTitle className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                         충격 시나리오 구성
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="p-3.5 pt-3 overflow-y-auto">
+                <CardContent className="p-3.5 pt-3 overflow-y-auto min-h-[420px]">
                     {/* 대상 유형 선택 */}
                     <div className="mb-3">
                         <label
@@ -610,7 +705,51 @@ export function SimulationPanel() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-3.5 pt-3">
-                    {/* 시나리오 프리셋 목록 (다음 단계에서 연동) */}
+                    <div className="space-y-2">
+                        {SCENARIO_PRESETS.map((preset) => {
+                            const isSelected = currentDisruption.disruptionType === preset.config.disruptionType &&
+                                currentDisruption.targetType === preset.config.targetType &&
+                                currentDisruption.targetId === preset.config.targetId &&
+                                Math.abs(currentDisruption.severity - preset.config.severity) < 0.01;
+
+                            return (
+                                <button
+                                    key={preset.id}
+                                    onClick={() => handleApplyPreset(preset)}
+                                    className={`w-full text-left p-3 rounded-lg border transition-all duration-200 cursor-pointer ${isSelected
+                                            ? 'bg-slate-100 border-slate-400 shadow-xs'
+                                            : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50 hover:shadow-xs'
+                                        }`}
+                                    aria-label={`프리셋 적용: ${preset.name}`}
+                                >
+                                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                                        <span className="text-[11px] font-bold text-slate-800 leading-tight">
+                                            {preset.name}
+                                        </span>
+                                        <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full border ${preset.badgeColor}`}>
+                                            {preset.badge}
+                                        </span>
+                                    </div>
+                                    <p className="text-[10px] text-slate-500 font-normal leading-normal mb-2">
+                                        {preset.description}
+                                    </p>
+                                    <div className="flex items-center justify-between text-[9px] font-medium text-slate-400 border-t border-slate-100 pt-1.5">
+                                        <span>
+                                            {preset.config.targetType === 'node'
+                                                ? `대상: ${preset.config.country === 'ALL' ? '모든 국가' : getCountryDisplayName(preset.config.country || '')} ${getNodeTypeLabel(preset.config.nodeType || '')}`
+                                                : `대상 경로: ${preset.config.sourceNodeId === 'M-04' ? '호주 광산 ➔ 중국 제련소' : '경로 선택됨'}`
+                                            }
+                                        </span>
+                                        <span className="font-semibold text-slate-600">
+                                            {DISRUPTION_TYPE_CONFIGS[preset.config.disruptionType]?.label} ({
+                                                DISRUPTION_TYPE_CONFIGS[preset.config.disruptionType]?.formatValue(preset.config.severity)
+                                            })
+                                        </span>
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
                 </CardContent>
             </Card>
 
@@ -665,13 +804,13 @@ export function SimulationPanel() {
             )}
 
             {/* 시뮬레이션 이력 섹션 */}
-            {/* {historyEntries.length > 0 && (
+            {historyEntries.length > 0 && (
                 <SimulationHistorySection
                     entries={historyEntries}
                     isLoading={isLoadingHistory}
                     onEntryClick={handleHistoryClick}
                 />
-            )} */}
+            )}
         </aside>
     );
 }
@@ -727,7 +866,7 @@ function SimulationResultSection({
                     ✕
                 </Button>
             </CardHeader>
-            <CardContent className="p-3.5 pt-3 overflow-y-auto">
+            <CardContent className="p-3.5 pt-3">
                 <div className="grid grid-cols-3 gap-2 text-xs mb-3 text-slate-700 bg-white border border-slate-100 rounded-md p-2 shadow-xs">
                     <div className="text-center border-r border-slate-100">
                         <div className="text-[10px] text-slate-400">영향 노드</div>
@@ -744,7 +883,7 @@ function SimulationResultSection({
                 </div>
 
                 {sortedDeficits.length > 0 && (
-                    <div className="max-h-[150px] overflow-y-auto border border-slate-100 rounded-md bg-white shadow-xs">
+                    <div className="border border-slate-100 rounded-md bg-white shadow-xs max-h-[220px] overflow-y-auto">
                         <table className="w-full text-xs border-collapse" aria-label="부족률 테이블">
                             <thead>
                                 <tr className="bg-slate-50 border-b border-slate-100 text-slate-500">
