@@ -807,7 +807,7 @@ export function SimulationPanel() {
                     }`}
                 aria-label="시뮬레이션 결과 및 이력"
             >
-                <div className="w-[380px] h-full overflow-y-auto p-4 flex flex-col">
+                <div className="w-[380px] h-full p-4 flex flex-col space-y-3">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-sm font-bold text-slate-900 tracking-tight">
                             시뮬레이션 결과 및 이력
@@ -879,7 +879,7 @@ function SimulationResultSection({
 
     return (
         <Card
-            className="border border-emerald-100 bg-emerald-50/15 mb-3 shadow-xs"
+            className="border border-emerald-100 bg-emerald-50/15 flex-1 min-h-0 flex flex-col shadow-xs"
             aria-label="시뮬레이션 결과"
             role="region"
         >
@@ -897,7 +897,7 @@ function SimulationResultSection({
                     ✕
                 </Button>
             </CardHeader>
-            <CardContent className="p-3.5 pt-3">
+            <CardContent className="p-3.5 pt-3 flex-1 min-h-0 flex flex-col">
                 <div className="grid grid-cols-3 gap-2 text-xs mb-3 text-slate-700 bg-white border border-slate-100 rounded-md p-2 shadow-xs">
                     <div className="text-center border-r border-slate-100">
                         <div className="text-[10px] text-slate-400">영향 노드</div>
@@ -914,7 +914,7 @@ function SimulationResultSection({
                 </div>
 
                 {sortedDeficits.length > 0 && (
-                    <div className="border border-slate-100 rounded-md bg-white shadow-xs min-h-[280px] max-h-[400px] overflow-y-auto">
+                    <div className="border border-slate-100 rounded-md bg-white shadow-xs flex-1 min-h-0 overflow-y-auto">
                         <table className="w-full text-xs border-collapse" aria-label="부족률 테이블">
                             <thead>
                                 <tr className="bg-slate-50 border-b border-slate-100 text-slate-500">
@@ -962,13 +962,13 @@ function SimulationHistorySection({
     onEntryClick: (scenarioId: string) => void;
 }) {
     return (
-        <Card className="border border-slate-150 bg-slate-50/50 shadow-sm mt-4">
+        <Card className="border border-slate-150 bg-slate-50/50 flex flex-col h-[40%] min-h-[200px] shadow-sm">
             <CardHeader className="p-3.5 pb-0">
                 <CardTitle className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                     시뮬레이션 이력 ({entries.length})
                 </CardTitle>
             </CardHeader>
-            <CardContent className="p-3.5 pt-3 overflow-y-auto overflow-y-auto">
+            <CardContent className="p-3.5 pt-3 flex-1 min-h-0 flex flex-col">
                 {isLoading && (
                     <div className="text-xs text-slate-400 mb-2 flex items-center gap-1.5">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse"></span>
@@ -977,7 +977,7 @@ function SimulationHistorySection({
                 )}
 
                 <ul
-                    className="m-0 p-0 list-none max-h-[220px] overflow-y-auto space-y-2"
+                    className="m-0 p-0 list-none flex-1 min-h-0 overflow-y-auto space-y-1"
                     aria-label="시뮬레이션 이력 목록"
                     role="list"
                 >
