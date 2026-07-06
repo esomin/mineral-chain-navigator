@@ -99,7 +99,7 @@ const DISRUPTION_TYPE_CONFIGS: Partial<Record<DisruptionType, DisruptionTypeConf
  * Requirements 7.5 구현.
  */
 export function SimulationPanel() {
-    const { nodes, edges } = useSupplyChainStore();
+    const { nodes, edges, setFilters } = useSupplyChainStore();
     const {
         currentDisruption,
         disruptions,
@@ -227,15 +227,27 @@ export function SimulationPanel() {
         return edges.find((e) => e.id === currentDisruption.targetId);
     }, [edges, currentDisruption.targetType, currentDisruption.targetId]);
 
+    // 컴포넌트 마운트 시(시뮬레이션 모드 진입 시) 글로벌 필터 전체 선택 처리
+    useEffect(() => {
+        setFilters({
+            hsCode: ['2530.90', '2836.91', '2825.20'],
+            countries: ['SouthKorea', 'China', 'Chile', 'UnitedStates', 'Japan', 'Argentina', 'Australia'],
+        });
+    }, [setFilters]);
+
     // 충격 추가 핸들러
     const handleAddDisruption = useCallback(() => {
         addDisruption();
     }, [addDisruption]);
 
-    // 시뮬레이션 실행 핸들러
+    // 시뮬레이션 실행 핸들러 (실행 시 모든 품목 및 국가 필터를 전체 활성화하여 데이터 정합성 보장)
     const handleRunSimulation = useCallback(() => {
+        setFilters({
+            hsCode: ['2530.90', '2836.91', '2825.20'],
+            countries: ['SouthKorea', 'China', 'Chile', 'UnitedStates', 'Japan', 'Argentina', 'Australia'],
+        });
         runSimulation();
-    }, [runSimulation]);
+    }, [runSimulation, setFilters]);
 
     // 이력 항목 클릭 핸들러
     const handleHistoryClick = useCallback(
@@ -265,7 +277,7 @@ export function SimulationPanel() {
 
     return (
         <aside
-            className="absolute top-0 left-0 w-[360px] h-full bg-white border-r border-slate-200 p-4 overflow-y-auto shadow-md z-[5] flex flex-col font-sans"
+            className="absolute top-0 left-0 w-[432px] !h-screen !max-h-screen !overflow-y-auto bg-white border-r border-slate-200 p-4 pb-12 shadow-md z-[5] flex flex-col font-sans"
             aria-label="시뮬레이션 제어 패널"
             role="region"
         >
@@ -274,14 +286,24 @@ export function SimulationPanel() {
                 시뮬레이션 제어
             </h2>
 
+            {/* 글로벌 필터 자동 설정 안내 배너 */}
+            <div className="p-3 bg-blue-50/80 border border-blue-100 rounded-md text-[11px] leading-relaxed text-blue-800 mb-4 shadow-xs">
+                <div className="font-bold flex items-center gap-1 mb-0.5">
+                    시뮬레이션 모드 활성화됨
+                </div>
+                <p className="text-blue-700 font-normal">
+                    영향 경로의 누락 없는 시각화를 위해 모든 국가 및 품목 필터가 자동으로 전체 활성화되었습니다.
+                </p>
+            </div>
+
             {/* 시나리오 구성 UI */}
-            <Card className="border border-slate-150 bg-slate-50/50 shadow-sm mb-4">
+            <Card className="border border-slate-150 bg-slate-50/50 shadow-sm mb-4 min-h-[440px]">
                 <CardHeader className="p-3.5 pb-0">
                     <CardTitle className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                         충격 시나리오 구성
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="p-3.5 pt-3">
+                <CardContent className="p-3.5 pt-3 overflow-y-auto">
                     {/* 대상 유형 선택 */}
                     <div className="mb-3">
                         <label
@@ -643,13 +665,13 @@ export function SimulationPanel() {
             )}
 
             {/* 시뮬레이션 이력 섹션 */}
-            {historyEntries.length > 0 && (
+            {/* {historyEntries.length > 0 && (
                 <SimulationHistorySection
                     entries={historyEntries}
                     isLoading={isLoadingHistory}
                     onEntryClick={handleHistoryClick}
                 />
-            )}
+            )} */}
         </aside>
     );
 }
@@ -705,7 +727,7 @@ function SimulationResultSection({
                     ✕
                 </Button>
             </CardHeader>
-            <CardContent className="p-3.5 pt-3">
+            <CardContent className="p-3.5 pt-3 overflow-y-auto">
                 <div className="grid grid-cols-3 gap-2 text-xs mb-3 text-slate-700 bg-white border border-slate-100 rounded-md p-2 shadow-xs">
                     <div className="text-center border-r border-slate-100">
                         <div className="text-[10px] text-slate-400">영향 노드</div>
@@ -776,7 +798,7 @@ function SimulationHistorySection({
                     시뮬레이션 이력 ({entries.length})
                 </CardTitle>
             </CardHeader>
-            <CardContent className="p-3.5 pt-3">
+            <CardContent className="p-3.5 pt-3 overflow-y-auto overflow-y-auto">
                 {isLoading && (
                     <div className="text-xs text-slate-400 mb-2 flex items-center gap-1.5">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse"></span>
@@ -785,7 +807,7 @@ function SimulationHistorySection({
                 )}
 
                 <ul
-                    className="margin-0 padding-0 list-none max-h-[160px] overflow-y-auto space-y-1.5"
+                    className="margin-0 padding-0 list-none max-h-[160px]"
                     aria-label="시뮬레이션 이력 목록"
                     role="list"
                 >
