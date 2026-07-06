@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useEffect } from 'react';
+import { useCallback, useMemo, useEffect, useState } from 'react';
 import type { Country, DisruptionType } from '@navigator/shared';
 import { useSupplyChainStore } from '../store/supply-chain-store';
 import { useSimulationStore } from '../store/simulation-store';
@@ -122,23 +122,78 @@ export function SimulationPanel() {
         loadHistoryResult,
     } = useSimulationStore();
 
-    // 충격 대상 유형을 항상 '노드'로 고정
-    useEffect(() => {
-        setTargetType('node');
-    }, [setTargetType]);
+    // '매장된 자원'을 제외한 유효 시설 노드 목록 생성
+    const activeNodes = useMemo(() => {
+        return nodes.filter((n) => n.type !== 'Resource');
+    }, [nodes]);
 
-    // 선택 가능한 노드 항목 목록 (유저가 읽기 쉬운 라벨명 적용 - 노드 전용)
+    // 필터링 상태 추가
+    const [selectedCountry, setSelectedCountry] = useState<string>('ALL');
+    const [selectedNodeType, setSelectedNodeType] = useState<string>('ALL');
+
+    // 사용 가능한 국가 필터 옵션
+    const countryOptions = useMemo(() => {
+        const countries = Array.from(new Set(activeNodes.map((n) => n.country)));
+        return [
+            { value: 'ALL', label: '모든 국가' },
+            ...countries.map((c) => ({
+                value: c,
+                label: getCountryDisplayName(c),
+            })).sort((a, b) => a.label.localeCompare(b.label, 'ko')),
+        ];
+    }, [activeNodes]);
+
+    // 사용 가능한 시설 유형 필터 옵션
+    const nodeTypeOptions = useMemo(() => {
+        const types = Array.from(new Set(activeNodes.map((n) => n.type)));
+        return [
+            { value: 'ALL', label: '모든 시설 종류' },
+            ...types.map((t) => ({
+                value: t,
+                label: getNodeTypeLabel(t),
+            })).sort((a, b) => a.label.localeCompare(b.label, 'ko')),
+        ];
+    }, [activeNodes]);
+
+    // 선택 가능한 노드 항목 목록 (필터 조건 적용)
     const targetOptions = useMemo(() => {
-        return nodes.map((n) => {
-            const countryStr = getCountryDisplayName(n.country);
-            const typeStr = getNodeTypeLabel(n.type);
-            const labelSuffix = n.country === 'NA' ? typeStr : `${countryStr}, ${typeStr}`;
+        return activeNodes
+            .filter((n) => selectedCountry === 'ALL' || n.country === selectedCountry)
+            .filter((n) => selectedNodeType === 'ALL' || n.type === selectedNodeType)
+            .map((n) => {
+                const countryStr = getCountryDisplayName(n.country);
+                const typeStr = getNodeTypeLabel(n.type);
+                const labelSuffix = n.country === 'NA' ? typeStr : `${countryStr}, ${typeStr}`;
+                return {
+                    id: n.id,
+                    label: `${n.name} (${labelSuffix})`,
+                };
+            });
+    }, [activeNodes, selectedCountry, selectedNodeType]);
+
+    // 결과 노드가 1개일 때 자동 선택 처리하는 이펙트
+    useEffect(() => {
+        if (currentDisruption.targetType === 'node' && targetOptions.length === 1) {
+            const uniqueNode = targetOptions[0];
+            if (currentDisruption.targetId !== uniqueNode.id) {
+                setTargetId(uniqueNode.id);
+            }
+        }
+    }, [targetOptions, currentDisruption.targetType, currentDisruption.targetId, setTargetId]);
+
+    // 선택 가능한 엣지 항목 목록
+    const edgeOptions = useMemo(() => {
+        return edges.map((e) => {
+            const sourceNode = nodes.find((n) => n.id === e.sourceNodeId);
+            const targetNode = nodes.find((n) => n.id === e.targetNodeId);
+            const sourceLabel = sourceNode ? `${sourceNode.name} (${getCountryDisplayName(sourceNode.country)})` : e.sourceNodeId;
+            const targetLabel = targetNode ? `${targetNode.name} (${getCountryDisplayName(targetNode.country)})` : e.targetNodeId;
             return {
-                id: n.id,
-                label: `${n.name} (${labelSuffix})`,
+                id: e.id,
+                label: `${sourceLabel} ➔ ${targetLabel} (물량: ${e.attributes.volume ?? 0}t)`,
             };
         });
-    }, [nodes]);
+    }, [nodes, edges]);
 
     // 충격 추가 핸들러
     const handleAddDisruption = useCallback(() => {
@@ -195,29 +250,119 @@ export function SimulationPanel() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-3.5 pt-3">
-                    {/* 대상 노드(시설) 선택 */}
+                    {/* 대상 유형 선택 */}
+                    <div className="mb-3">
+                        <label
+                            htmlFor="sim-target-type"
+                            className="block text-xs font-medium text-slate-600 mb-1.5"
+                        >
+                            대상 유형
+                        </label>
+                        <Select
+                            value={currentDisruption.targetType}
+                            onValueChange={(val) => {
+                                setTargetType(val as 'node' | 'edge');
+                                setTargetId('');
+                                setSelectedCountry('ALL');
+                                setSelectedNodeType('ALL');
+                            }}
+                        >
+                            <SelectTrigger id="sim-target-type" className="w-full bg-white border border-slate-200">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent position="popper">
+                                <SelectItem value="node">시설 (노드)</SelectItem>
+                                <SelectItem value="edge">경로 (엣지)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {/* 대상 지정 선택 */}
                     <div className="mb-3">
                         <label
                             htmlFor="sim-target-id"
                             className="block text-xs font-medium text-slate-600 mb-1.5"
                         >
-                            대상 시설 (노드)
+                            {currentDisruption.targetType === 'node' ? '대상 시설 (노드)' : '대상 경로 (엣지)'}
                         </label>
-                        <Select
-                            value={currentDisruption.targetId}
-                            onValueChange={(val) => setTargetId(val)}
-                        >
-                            <SelectTrigger id="sim-target-id" className="w-full bg-white border border-slate-200">
-                                <SelectValue placeholder="-- 선택 --" />
-                            </SelectTrigger>
-                            <SelectContent position="popper">
-                                {targetOptions.map((opt) => (
-                                    <SelectItem key={opt.id} value={opt.id}>
-                                        {opt.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+
+                        {/* 노드 타겟팅 활성화 및 국가/시설유형 가로 필터 렌더링 */}
+                        {currentDisruption.targetType === 'node' && (
+                            <div className="flex gap-2 mb-2">
+                                <div className="flex-1">
+                                    <Select
+                                        value={selectedCountry}
+                                        onValueChange={(val) => {
+                                            setSelectedCountry(val);
+                                            setTargetId('');
+                                        }}
+                                    >
+                                        <SelectTrigger className="w-full bg-white border border-slate-200 text-xs h-8">
+                                            <SelectValue placeholder="국가 필터" />
+                                        </SelectTrigger>
+                                        <SelectContent position="popper">
+                                            {countryOptions.map((opt) => (
+                                                <SelectItem key={opt.value} value={opt.value}>
+                                                    {opt.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="flex-1">
+                                    <Select
+                                        value={selectedNodeType}
+                                        onValueChange={(val) => {
+                                            setSelectedNodeType(val);
+                                            setTargetId('');
+                                        }}
+                                    >
+                                        <SelectTrigger className="w-full bg-white border border-slate-200 text-xs h-8">
+                                            <SelectValue placeholder="시설 종류 필터" />
+                                        </SelectTrigger>
+                                        <SelectContent position="popper">
+                                            {nodeTypeOptions.map((opt) => (
+                                                <SelectItem key={opt.value} value={opt.value}>
+                                                    {opt.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        )}
+
+                        {currentDisruption.targetType === 'node' && targetOptions.length === 1 ? (
+                            <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-800 shadow-xs">
+                                <span className="truncate">{targetOptions[0].label}</span>
+                            </div>
+                        ) : currentDisruption.targetType === 'node' && targetOptions.length === 0 ? (
+                            <div className="p-2.5 bg-red-50/50 border border-red-150 rounded-md text-xs font-semibold text-red-600 flex items-center gap-1.5">
+                                <span>⚠ 조건에 일치하는 시설이 없습니다.</span>
+                            </div>
+                        ) : (
+                            <Select
+                                value={currentDisruption.targetId}
+                                onValueChange={(val) => setTargetId(val)}
+                            >
+                                <SelectTrigger id="sim-target-id" className="w-full bg-white border border-slate-200">
+                                    <SelectValue placeholder="-- 선택 --" />
+                                </SelectTrigger>
+                                <SelectContent position="popper">
+                                    {currentDisruption.targetType === 'node'
+                                        ? targetOptions.map((opt) => (
+                                              <SelectItem key={opt.id} value={opt.id}>
+                                                  {opt.label}
+                                              </SelectItem>
+                                          ))
+                                        : edgeOptions.map((opt) => (
+                                              <SelectItem key={opt.id} value={opt.id}>
+                                                  {opt.label}
+                                              </SelectItem>
+                                          ))}
+                                </SelectContent>
+                            </Select>
+                        )}
                     </div>
 
                     {/* 충격 유형 선택 */}
