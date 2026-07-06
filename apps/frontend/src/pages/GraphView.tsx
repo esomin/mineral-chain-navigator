@@ -10,6 +10,7 @@ import { ViewSwitcher } from '../components/ViewSwitcher';
 import { AIInsightPanel } from '../components/AIInsightPanel';
 import { GiDiamonds } from 'react-icons/gi';
 import { Button } from '../components/ui/button';
+import { toast } from 'sonner';
 // 공급망 그래프 시각화 페이지 (Phase 1 메인 뷰)
 export function GraphView() {
     const { nodes, edges, selectedNodeId, filters, riskScores, setNodes, setEdges, setRiskScores, selectNode, setLoading, isLoading } =
@@ -25,6 +26,15 @@ export function GraphView() {
     const [showAIPanel, setShowAIPanel] = useState(false);
     // 시뮬레이션 패널 표시 상태
     const [showSimulation, setShowSimulation] = useState(false);
+
+    // 시뮬레이션 패널이 열릴 때 토스트 메시지 표시
+    useEffect(() => {
+        if (showSimulation) {
+            toast('시뮬레이션 모드 활성화됨', {
+                description: '영향 경로의 누락 없는 시각화를 위해 모든 국가 및 품목 필터가 자동으로 전체 활성화되었습니다.',
+            });
+        }
+    }, [showSimulation]);
 
     // 백엔드 API에서 그래프 데이터 로딩 (이미 로드된 경우 건너뛰기 - 뷰 전환 시 재요청 방지)
     useEffect(() => {

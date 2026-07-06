@@ -394,13 +394,7 @@ export function SimulationPanel() {
                     시뮬레이션 제어
                 </h2>
 
-                {/* 글로벌 필터 자동 설정 안내 배너 */}
-                <div className="p-3 bg-blue-50/80 border border-blue-100 rounded-md text-[11px] leading-relaxed text-blue-800 mb-2 shadow-xs">
-                    <span className="font-bold mr-1">시뮬레이션 모드 활성화됨:</span>
-                    <span className="text-blue-700 font-normal">
-                        영향 경로의 누락 없는 시각화를 위해 모든 국가 및 품목 필터가 자동으로 전체 활성화되었습니다.
-                    </span>
-                </div>
+
 
                 {/* 시나리오 구성 UI */}
                 <Card className="border border-slate-150 bg-slate-50/50 shadow-sm mb-3">
@@ -665,48 +659,6 @@ export function SimulationPanel() {
                     </CardContent>
                 </Card>
 
-                {/* 추가된 충격 목록 */}
-                {disruptions.length > 0 && (
-                    <div className="mb-4">
-                        <div className="flex items-center justify-between mb-2">
-                            <h3 className="text-xs font-bold text-slate-700">
-                                충격 이벤트 목록 ({disruptions.length})
-                            </h3>
-                            <Button
-                                variant="destructive"
-                                size="xs"
-                                onClick={clearDisruptions}
-                                aria-label="충격 목록 전체 삭제"
-                            >
-                                전체 삭제
-                            </Button>
-                        </div>
-                        <ul className="m-0 p-0 list-none space-y-1.5" aria-label="충격 이벤트 목록">
-                            {disruptions.map((d, i) => (
-                                <li
-                                    key={i}
-                                    className="flex items-center justify-between p-2 bg-slate-50 border border-slate-200/60 rounded-md text-xs text-slate-700 shadow-xs"
-                                >
-                                    <span className="truncate pr-2 font-medium">
-                                        [시설] {(() => {
-                                            const node = nodes.find((n) => n.id === d.targetId);
-                                            return node ? `${node.name} (${getCountryDisplayName(node.country)})` : d.targetId;
-                                        })()} • {DISRUPTION_TYPE_CONFIGS[d.disruptionType]?.label || d.disruptionType} • {DISRUPTION_TYPE_CONFIGS[d.disruptionType]?.formatValue(d.severity) || d.severity}
-                                    </span>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon-xs"
-                                        onClick={() => removeDisruption(i)}
-                                        className="text-slate-400 hover:text-red-500 hover:bg-transparent"
-                                        aria-label={`충격 ${i + 1} 삭제`}
-                                    >
-                                        ✕
-                                    </Button>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
 
                 {/* 시나리오 프리셋 */}
                 <Card className="border border-slate-150 bg-slate-50/50 shadow-sm mb-4">
@@ -763,6 +715,49 @@ export function SimulationPanel() {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* 추가된 충격 목록 */}
+                {disruptions.length > 0 && (
+                    <div className="mb-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-xs font-bold text-slate-700">
+                                충격 이벤트 목록 ({disruptions.length})
+                            </h3>
+                            <Button
+                                variant="destructive"
+                                size="xs"
+                                onClick={clearDisruptions}
+                                aria-label="충격 목록 전체 삭제"
+                            >
+                                전체 삭제
+                            </Button>
+                        </div>
+                        <ul className="m-0 p-0 list-none space-y-1.5" aria-label="충격 이벤트 목록">
+                            {disruptions.map((d, i) => (
+                                <li
+                                    key={i}
+                                    className="flex items-center justify-between p-2 bg-slate-50 border border-slate-200/60 rounded-md text-xs text-slate-700 shadow-xs"
+                                >
+                                    <span className="truncate pr-2 font-medium">
+                                        [시설] {(() => {
+                                            const node = nodes.find((n) => n.id === d.targetId);
+                                            return node ? `${node.name} (${getCountryDisplayName(node.country)})` : d.targetId;
+                                        })()} • {DISRUPTION_TYPE_CONFIGS[d.disruptionType]?.label || d.disruptionType} • {DISRUPTION_TYPE_CONFIGS[d.disruptionType]?.formatValue(d.severity) || d.severity}
+                                    </span>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon-xs"
+                                        onClick={() => removeDisruption(i)}
+                                        className="text-slate-400 hover:text-red-500 hover:bg-transparent"
+                                        aria-label={`충격 ${i + 1} 삭제`}
+                                    >
+                                        ✕
+                                    </Button>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
 
                 {/* 시뮬레이션 실행 버튼 */}
                 <Button
