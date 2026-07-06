@@ -130,6 +130,7 @@ export function SimulationPanel() {
     // 필터링 상태 추가
     const [selectedCountry, setSelectedCountry] = useState<string>('ALL');
     const [selectedNodeType, setSelectedNodeType] = useState<string>('ALL');
+    const [selectedSourceNodeId, setSelectedSourceNodeId] = useState<string>('ALL');
 
     // 사용 가능한 국가 필터 옵션
     const countryOptions = useMemo(() => {
@@ -181,19 +182,50 @@ export function SimulationPanel() {
         }
     }, [targetOptions, currentDisruption.targetType, currentDisruption.targetId, setTargetId]);
 
-    // 선택 가능한 엣지 항목 목록
-    const edgeOptions = useMemo(() => {
-        return edges.map((e) => {
-            const sourceNode = nodes.find((n) => n.id === e.sourceNodeId);
-            const targetNode = nodes.find((n) => n.id === e.targetNodeId);
-            const sourceLabel = sourceNode ? `${sourceNode.name} (${getCountryDisplayName(sourceNode.country)})` : e.sourceNodeId;
-            const targetLabel = targetNode ? `${targetNode.name} (${getCountryDisplayName(targetNode.country)})` : e.targetNodeId;
-            return {
-                id: e.id,
-                label: `${sourceLabel} ➔ ${targetLabel} (물량: ${e.attributes.volume ?? 0}t)`,
-            };
-        });
-    }, [nodes, edges]);
+    // 엣지의 출발 노드로 존재하는 노드들의 유니크 목록
+    const sourceNodeOptions = useMemo(() => {
+        const sourceIds = Array.from(new Set(edges.map((e) => e.sourceNodeId)));
+        return sourceIds
+            .map((id) => activeNodes.find((n) => n.id === id)) // 매장자원은 배제된 activeNodes 기준
+            .filter((n): n is Exclude<typeof n, undefined> => !!n)
+            .map((n) => ({
+                id: n.id,
+                label: `${n.name} (${getCountryDisplayName(n.country)})`,
+            }))
+            .sort((a, b) => a.label.localeCompare(b.label, 'ko'));
+    }, [activeNodes, edges]);
+
+    // 선택된 출발지 노드에서 출발하는 엣지 목록 (구조화 데이터로 관리)
+    const targetEdgeOptions = useMemo(() => {
+        if (selectedSourceNodeId === 'ALL') return [];
+        return edges
+            .filter((e) => e.sourceNodeId === selectedSourceNodeId)
+            .map((e) => {
+                const targetNode = nodes.find((n) => n.id === e.targetNodeId);
+                const targetLabel = targetNode ? `${targetNode.name} (${getCountryDisplayName(targetNode.country)})` : e.targetNodeId;
+                return {
+                    edgeId: e.id,
+                    targetLabel,
+                    volume: e.attributes.volume ?? 0,
+                };
+            });
+    }, [nodes, edges, selectedSourceNodeId]);
+
+    // 도착지 경로가 1개일 때 자동 선택 처리하는 이펙트
+    useEffect(() => {
+        if (currentDisruption.targetType === 'edge' && targetEdgeOptions.length === 1) {
+            const uniqueEdge = targetEdgeOptions[0];
+            if (currentDisruption.targetId !== uniqueEdge.edgeId) {
+                setTargetId(uniqueEdge.edgeId);
+            }
+        }
+    }, [targetEdgeOptions, currentDisruption.targetType, currentDisruption.targetId, setTargetId]);
+
+    // 현재 선택된 엣지 정보 조회
+    const selectedEdge = useMemo(() => {
+        if (currentDisruption.targetType !== 'edge' || !currentDisruption.targetId) return null;
+        return edges.find((e) => e.id === currentDisruption.targetId);
+    }, [edges, currentDisruption.targetType, currentDisruption.targetId]);
 
     // 충격 추가 핸들러
     const handleAddDisruption = useCallback(() => {
@@ -265,6 +297,7 @@ export function SimulationPanel() {
                                 setTargetId('');
                                 setSelectedCountry('ALL');
                                 setSelectedNodeType('ALL');
+                                setSelectedSourceNodeId('ALL');
                             }}
                         >
                             <SelectTrigger id="sim-target-type" className="w-full bg-white border border-slate-200">
@@ -332,36 +365,103 @@ export function SimulationPanel() {
                             </div>
                         )}
 
-                        {currentDisruption.targetType === 'node' && targetOptions.length === 1 ? (
-                            <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-800 shadow-xs">
-                                <span className="truncate">{targetOptions[0].label}</span>
+                        {/* [분기 1] 노드 타겟팅일 때의 노드 선택 UI */}
+                        {currentDisruption.targetType === 'node' && (
+                            <>
+                                {targetOptions.length === 1 ? (
+                                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-800 shadow-xs">
+                                        <span className="truncate">{targetOptions[0].label}</span>
+                                    </div>
+                                ) : targetOptions.length === 0 ? (
+                                    <div className="p-2.5 bg-red-50/50 border border-red-150 rounded-md text-xs font-semibold text-red-600 flex items-center gap-1.5">
+                                        <span>⚠ 조건에 일치하는 시설이 없습니다.</span>
+                                    </div>
+                                ) : (
+                                    <Select
+                                        value={currentDisruption.targetId}
+                                        onValueChange={(val) => setTargetId(val)}
+                                    >
+                                        <SelectTrigger id="sim-target-id" className="w-full bg-white border border-slate-200">
+                                            <SelectValue placeholder="-- 선택 --" />
+                                        </SelectTrigger>
+                                        <SelectContent position="popper">
+                                            {targetOptions.map((opt) => (
+                                                <SelectItem key={opt.id} value={opt.id}>
+                                                    {opt.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            </>
+                        )}
+
+                        {/* [분기 2] 엣지 타겟팅일 때의 출발지 -> 도착지 다단계 필터 UI */}
+                        {currentDisruption.targetType === 'edge' && (
+                            <div className="space-y-2">
+                                {/* 1. 출발 시설 선택 */}
+                                <div>
+                                    <Select
+                                        value={selectedSourceNodeId}
+                                        onValueChange={(val) => {
+                                            setSelectedSourceNodeId(val);
+                                            setTargetId('');
+                                        }}
+                                    >
+                                        <SelectTrigger className="w-full bg-white border border-slate-200 text-xs h-8">
+                                            <SelectValue placeholder="-- 출발 시설 선택 --" />
+                                        </SelectTrigger>
+                                        <SelectContent position="popper">
+                                            <SelectItem value="ALL">-- 출발 시설 선택 --</SelectItem>
+                                            {sourceNodeOptions.map((opt) => (
+                                                <SelectItem key={opt.id} value={opt.id}>
+                                                    {opt.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {/* 2. 도착 시설(최종 엣지) 선택 */}
+                                <div>
+                                    {selectedSourceNodeId === 'ALL' ? (
+                                        <div className="p-2 bg-slate-50 border border-slate-200 border-dashed rounded-md text-[11px] text-slate-400 text-center">
+                                            출발 시설을 먼저 선택해주세요.
+                                        </div>
+                                    ) : targetEdgeOptions.length === 0 ? (
+                                        <div className="p-2 bg-red-50/30 border border-red-100 rounded-md text-[11px] text-red-500 text-center">
+                                            출발하는 경로가 존재하지 않습니다.
+                                        </div>
+                                    ) : targetEdgeOptions.length === 1 ? (
+                                        <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-800 shadow-xs flex items-center justify-between w-full overflow-hidden min-w-0">
+                                            <span className="truncate flex-1 min-w-0 text-left">➔ {targetEdgeOptions[0].targetLabel}</span>
+                                        </div>
+                                    ) : (
+                                        <Select
+                                            value={currentDisruption.targetId}
+                                            onValueChange={(val) => setTargetId(val)}
+                                        >
+                                            <SelectTrigger className="w-full bg-white border border-slate-200 text-xs h-8 overflow-hidden max-w-[328px] min-w-0">
+                                                <SelectValue placeholder="-- 도착 시설(경로) 선택 --" />
+                                            </SelectTrigger>
+                                            <SelectContent position="popper" className="max-w-[328px] w-full">
+                                                {targetEdgeOptions.map((opt) => (
+                                                    <SelectItem key={opt.edgeId} value={opt.edgeId} className="w-full overflow-hidden">
+                                                        <span className="truncate flex-1 min-w-0 text-left">➔ {opt.targetLabel}</span>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                </div>
+
+                                {/* 선택된 엣지의 수송 물량을 하단에 기울임꼴로 표시 */}
+                                {selectedEdge && (
+                                    <div className="text-[11px] text-slate-400 mt-1 font-normal italic">
+                                        * 해당 경로 수송 물량: {selectedEdge.attributes.volume ?? 0}t
+                                    </div>
+                                )}
                             </div>
-                        ) : currentDisruption.targetType === 'node' && targetOptions.length === 0 ? (
-                            <div className="p-2.5 bg-red-50/50 border border-red-150 rounded-md text-xs font-semibold text-red-600 flex items-center gap-1.5">
-                                <span>⚠ 조건에 일치하는 시설이 없습니다.</span>
-                            </div>
-                        ) : (
-                            <Select
-                                value={currentDisruption.targetId}
-                                onValueChange={(val) => setTargetId(val)}
-                            >
-                                <SelectTrigger id="sim-target-id" className="w-full bg-white border border-slate-200">
-                                    <SelectValue placeholder="-- 선택 --" />
-                                </SelectTrigger>
-                                <SelectContent position="popper">
-                                    {currentDisruption.targetType === 'node'
-                                        ? targetOptions.map((opt) => (
-                                              <SelectItem key={opt.id} value={opt.id}>
-                                                  {opt.label}
-                                              </SelectItem>
-                                          ))
-                                        : edgeOptions.map((opt) => (
-                                              <SelectItem key={opt.id} value={opt.id}>
-                                                  {opt.label}
-                                              </SelectItem>
-                                          ))}
-                                </SelectContent>
-                            </Select>
                         )}
                     </div>
 
