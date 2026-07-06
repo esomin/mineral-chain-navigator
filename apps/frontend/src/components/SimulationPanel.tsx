@@ -15,6 +15,11 @@ import {
     SelectValue,
 } from './ui/select';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from './ui/popover';
 
 interface DisruptionTypeConfig {
     label: string;
@@ -397,10 +402,55 @@ export function SimulationPanel() {
                 <div className="flex-1 min-h-0 overflow-y-auto space-y-3 p-1">
                     {/* 시나리오 구성 UI */}
                     <Card className="border border-slate-150 bg-slate-50/50 shadow-sm mb-3">
-                        <CardHeader className="p-2.5 pb-0">
+                        <CardHeader className="p-2.5 pb-0 flex flex-row items-center justify-between space-y-0">
                             <CardTitle className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                                 충격 시나리오 구성
                             </CardTitle>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <button className="h-6 text-[10px] px-2 bg-white border border-slate-200 hover:bg-slate-50 transition-colors rounded shadow-xs text-slate-700 font-medium whitespace-nowrap inline-flex items-center justify-center shrink-0 cursor-pointer">
+                                        시나리오 프리셋 ▾
+                                    </button>
+                                </PopoverTrigger>
+                                <PopoverContent align="start" className="w-[340px] p-1 space-y-0.5 bg-white border border-slate-200 rounded-md shadow-lg z-50 gap-0.5">
+                                    {SCENARIO_PRESETS.map((preset) => {
+                                        const isSelected = currentDisruption.disruptionType === preset.config.disruptionType &&
+                                            currentDisruption.targetType === preset.config.targetType &&
+                                            currentDisruption.targetId === preset.config.targetId &&
+                                            Math.abs(currentDisruption.severity - preset.config.severity) < 0.01;
+
+                                        return (
+                                            <button
+                                                key={preset.id}
+                                                onClick={() => handleApplyPreset(preset)}
+                                                className={`w-full text-left py-2.5 px-2.5 rounded-sm transition-colors duration-150 cursor-pointer flex flex-col ${isSelected
+                                                    ? 'bg-slate-100 text-slate-900 font-medium'
+                                                    : 'hover:bg-slate-50 text-slate-700'
+                                                    }`}
+                                                aria-label={`프리셋 적용: ${preset.name}`}
+                                            >
+                                                <div className="text-[11px] font-bold leading-tight mb-0.5">
+                                                    {preset.name}
+                                                </div>
+                                                <div className="text-[9px] text-slate-400 font-normal leading-none">
+                                                    {preset.config.targetType === 'node'
+                                                        ? (preset.config.country === 'ALL'
+                                                            ? '모든 국가'
+                                                            : `${getCountryDisplayName(preset.config.country || '')} ${getNodeTypeLabel(preset.config.nodeType || '')}`)
+                                                        : (preset.config.sourceNodeId === 'M-04'
+                                                            ? '호주 광산 ➔ 중국 제련소'
+                                                            : '경로 선택됨')
+                                                    }
+                                                    {' • '}
+                                                    {DISRUPTION_TYPE_CONFIGS[preset.config.disruptionType]?.label}
+                                                    {' • '}
+                                                    {DISRUPTION_TYPE_CONFIGS[preset.config.disruptionType]?.formatValue(preset.config.severity)}
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                </PopoverContent>
+                            </Popover>
                         </CardHeader>
                         <CardContent className="p-2.5 pt-2">
                             {/* 대상 유형 선택 */}
@@ -660,55 +710,6 @@ export function SimulationPanel() {
                         </CardContent>
                     </Card>
 
-
-                    {/* 시나리오 프리셋 */}
-                    <Card className="border border-slate-150 bg-slate-50/50 shadow-sm mb-4">
-                        <CardHeader className="p-3.5 pb-0">
-                            <CardTitle className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                시나리오 프리셋
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-3.5 pt-3">
-                            <div className="space-y-2">
-                                {SCENARIO_PRESETS.map((preset) => {
-                                    const isSelected = currentDisruption.disruptionType === preset.config.disruptionType &&
-                                        currentDisruption.targetType === preset.config.targetType &&
-                                        currentDisruption.targetId === preset.config.targetId &&
-                                        Math.abs(currentDisruption.severity - preset.config.severity) < 0.01;
-
-                                    return (
-                                        <button
-                                            key={preset.id}
-                                            onClick={() => handleApplyPreset(preset)}
-                                            className={`w-full text-left p-2 rounded-md border transition-all duration-200 cursor-pointer ${isSelected
-                                                ? 'bg-slate-100 border-slate-400 shadow-xs'
-                                                : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50 hover:shadow-xs'
-                                                }`}
-                                            aria-label={`프리셋 적용: ${preset.name}`}
-                                        >
-                                            <div className="text-xs font-bold text-slate-800 mb-1 leading-tight">
-                                                {preset.name}
-                                            </div>
-                                            <div className="text-[10px] text-slate-500 font-normal leading-none">
-                                                {preset.config.targetType === 'node'
-                                                    ? (preset.config.country === 'ALL'
-                                                        ? '모든 국가'
-                                                        : `${getCountryDisplayName(preset.config.country || '')} ${getNodeTypeLabel(preset.config.nodeType || '')}`)
-                                                    : (preset.config.sourceNodeId === 'M-04'
-                                                        ? '호주 광산 ➔ 중국 제련소'
-                                                        : '경로 선택됨')
-                                                }
-                                                {' • '}
-                                                {DISRUPTION_TYPE_CONFIGS[preset.config.disruptionType]?.label}
-                                                {' • '}
-                                                {DISRUPTION_TYPE_CONFIGS[preset.config.disruptionType]?.formatValue(preset.config.severity)}
-                                            </div>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </CardContent>
-                    </Card>
 
                     {/* 추가된 충격 목록 */}
                     {disruptions.length > 0 && (
