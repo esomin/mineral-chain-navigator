@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import type { ChatMessage, Citation, InsightResponse } from '@navigator/shared';
+import type { ChatMessage, Citation, InsightResponse, RecommendationResponse } from '@navigator/shared';
 import { GiDiamonds } from 'react-icons/gi';
 import ReactMarkdown from 'react-markdown';
 
@@ -106,6 +106,73 @@ export function AIInsightPanel({ onClose }: AIInsightPanelProps) {
             setIsLoading(false);
         }
     }, [sessionId]);
+
+    // 대체 경로 대안 추천 생성 요청
+    const fetchAlternativeRecommendations = useCallback(async (simulationId: string) => {
+        setError(null);
+        setIsLoading(true);
+
+        const userMessage: ChatMessage = {
+            role: 'user',
+            content: `[시뮬레이션 결과 연동] 시나리오(ID: ${simulationId})에 기반한 대체 공급망 경로 및 조치 추천 분석을 해주세요.`,
+            timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, userMessage]);
+
+        try {
+            const response = await fetch('/api/insights/recommend', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sessionId: sessionId ?? undefined,
+                    simulationId,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => null);
+                throw new Error(
+                    errorData?.error ?? `서버 오류가 발생했습니다 (${response.status})`,
+                );
+            }
+
+            const data: RecommendationResponse = await response.json();
+
+            if (data.error) {
+                setError(data.error);
+                return;
+            }
+
+            if (data.sessionId) {
+                setSessionId(data.sessionId);
+            }
+
+            const assistantMessage: ChatMessage = {
+                role: 'assistant',
+                content: data.answer,
+                citations: data.citations,
+                timestamp: new Date(),
+            };
+            setMessages((prev) => [...prev, assistantMessage]);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : '대안 추천 분석에 실패했습니다.');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [sessionId]);
+
+    // 시뮬레이션 결과 연동 이벤트 리스너 등록
+    useEffect(() => {
+        const handleRecommendEvent = (e: Event) => {
+            const customEvent = e as CustomEvent<{ simulationId: string }>;
+            const simId = customEvent.detail?.simulationId;
+            if (simId) {
+                fetchAlternativeRecommendations(simId);
+            }
+        };
+        window.addEventListener('trigger-ai-recommendation', handleRecommendEvent);
+        return () => window.removeEventListener('trigger-ai-recommendation', handleRecommendEvent);
+    }, [fetchAlternativeRecommendations]);
 
     // 입력 폼 제출 핸들러
     const handleSubmit = (e: React.FormEvent) => {

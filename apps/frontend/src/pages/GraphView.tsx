@@ -36,6 +36,15 @@ export function GraphView() {
         }
     }, [showSimulation]);
 
+    // 시뮬레이션 패널에서 AI 대안 추천 요청 시 AI 인사이트 패널을 활성화
+    useEffect(() => {
+        const handleTriggerAI = () => {
+            setShowAIPanel(true);
+        };
+        window.addEventListener('trigger-ai-recommendation', handleTriggerAI);
+        return () => window.removeEventListener('trigger-ai-recommendation', handleTriggerAI);
+    }, []);
+
     // 백엔드 API에서 그래프 데이터 로딩 (이미 로드된 경우 건너뛰기 - 뷰 전환 시 재요청 방지)
     useEffect(() => {
         if (nodes.length > 0) return;

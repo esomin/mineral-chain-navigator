@@ -915,7 +915,7 @@ function SimulationResultSection({
                 </div>
 
                 {sortedDeficits.length > 0 && (
-                    <div className="border border-slate-100 rounded-md bg-white shadow-xs flex-1 min-h-0 overflow-y-auto">
+                    <div className="border border-slate-100 rounded-md bg-white shadow-xs flex-1 min-h-0 overflow-y-auto mb-2">
                         <table className="w-full text-xs border-collapse" aria-label="부족률 테이블">
                             <thead>
                                 <tr className="bg-slate-50 border-b border-slate-100 text-slate-500">
@@ -944,6 +944,22 @@ function SimulationResultSection({
                         </table>
                     </div>
                 )}
+
+                {/* AI 대안 추천 연동 버튼 */}
+                <Button
+                    onClick={() => {
+                        const event = new CustomEvent('trigger-ai-recommendation', {
+                            detail: { simulationId: result.scenarioId }
+                        });
+                        window.dispatchEvent(event);
+                    }}
+                    variant="default"
+                    size="sm"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-8 text-xs flex items-center justify-center gap-1.5 shadow-sm shrink-0"
+                    aria-label="AI 대안 추천 받기"
+                >
+                    AI에게 대안 공급망 및 조치 추천받기
+                </Button>
             </CardContent>
         </Card>
     );
