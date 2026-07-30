@@ -8,8 +8,8 @@ import { getCountryColor, getNodeRadius, getRiskColor } from '../utils/graph-hel
 import { MapLayerToggle, type MapLayerState } from './MapLayerToggle';
 import { MapTooltip, type TooltipInfo } from './MapTooltip';
 
-// 무료 지도 스타일 (Mapbox 토큰 불필요)
-const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
+// 무료 다크 지도 스타일 (Mapbox 토큰 불필요)
+const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
 
 // 초기 뷰 상태 (세계 지도 중앙)
 const INITIAL_VIEW_STATE = {

@@ -189,11 +189,11 @@ export function GraphView() {
     );
 
     return (
-        <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column' }}>
-            <header style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #e0e0e0', background: '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div className="w-screen h-screen flex flex-col bg-background text-foreground">
+            <header className="px-4 py-3 border-b border-border bg-card flex items-center justify-between">
                 <div>
-                    <h1 style={{ margin: 0, fontSize: '1.25rem' }}>Mineral Chain Navigator</h1>
-                    <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: '#666' }}>
+                    <h1 className="m-0 text-xl font-bold text-foreground">Mineral Chain Navigator</h1>
+                    <p className="mt-1 mb-0 text-sm text-muted-foreground">
                         리튬 공급망 그래프 시각화 • 노드: {filteredNodes.length}/{nodes.length} | 엣지: {filteredEdges.length}/{edges.length}
                     </p>
                 </div>
@@ -224,36 +224,18 @@ export function GraphView() {
             {/* 필터 컨트롤 바 */}
             <FilterBar />
 
-            <main style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+            <main className="flex-1 relative overflow-hidden bg-background">
                 {/* 로딩 상태 */}
                 {isLoading && (
-                    <div style={{
-                        position: 'absolute',
-                        inset: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: 'rgba(255,255,255,0.8)',
-                        zIndex: 10,
-                    }}>
+                    <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10 text-muted-foreground">
                         <p>그래프 데이터 로딩 중...</p>
                     </div>
                 )}
 
                 {/* 에러 상태 */}
                 {error && (
-                    <div style={{
-                        position: 'absolute',
-                        top: '1rem',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        padding: '0.75rem 1.5rem',
-                        background: '#fff2f0',
-                        border: '1px solid #ffccc7',
-                        borderRadius: '4px',
-                        zIndex: 10,
-                    }}>
-                        <span style={{ color: '#cf1322' }}>⚠ {error}</span>
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 px-6 py-3 bg-destructive/10 border border-destructive rounded-lg z-10">
+                        <span className="text-destructive font-medium">⚠ {error}</span>
                     </div>
                 )}
 
@@ -271,14 +253,8 @@ export function GraphView() {
 
                 {/* 필터 결과 없음 표시 */}
                 {!isLoading && nodes.length > 0 && filteredNodes.length === 0 && (
-                    <div style={{
-                        position: 'absolute',
-                        inset: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}>
-                        <p style={{ color: '#999', fontSize: '0.9rem' }}>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <p className="text-muted-foreground text-sm">
                             필터 조건에 맞는 노드가 없습니다.
                         </p>
                     </div>
@@ -314,82 +290,73 @@ export function GraphView() {
 
                 {/* 범례 */}
                 <div
-                    style={{
-                        position: 'absolute',
-                        bottom: '1rem',
-                        left: '1rem',
-                        background: 'rgba(255,255,255,0.95)',
-                        border: '1px solid #e0e0e0',
-                        borderRadius: '6px',
-                        padding: '0.75rem',
-                        fontSize: '0.75rem',
-                    }}
+                    className="absolute bottom-4 left-4 bg-card/95 border border-border text-foreground rounded-lg p-3 text-xs shadow-md"
                     aria-label="그래프 범례"
                 >
-                    <div style={{ fontWeight: 'bold', marginBottom: '6px' }}>국가</div>
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
-                        <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, background: 'rgba(0, 188, 212, 0.8)', borderRadius: '50%' }} />{' '}
+                    <div className="font-bold mb-1 text-foreground">국가</div>
+                    <div className="flex gap-2 flex-wrap mb-2 text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                            <span className="inline-block w-3 h-3 rounded-full bg-[rgba(0,188,212,0.8)]" />{' '}
                             한국
                         </span>
-                        <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, background: 'rgba(93, 52, 14, 0.8)', borderRadius: '50%' }} />{' '}
+                        <span className="flex items-center gap-1">
+                            <span className="inline-block w-3 h-3 rounded-full bg-[rgba(93,52,14,0.8)]" />{' '}
                             중국
                         </span>
-                        <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, background: 'rgba(0, 57, 166, 0.8)', borderRadius: '50%' }} />{' '}
+                        <span className="flex items-center gap-1">
+                            <span className="inline-block w-3 h-3 rounded-full bg-[rgba(0,57,166,0.8)]" />{' '}
                             칠레
                         </span>
-                        <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, background: 'rgba(123, 104, 238, 0.8)', borderRadius: '50%' }} />{' '}
+                        <span className="flex items-center gap-1">
+                            <span className="inline-block w-3 h-3 rounded-full bg-[rgba(123,104,238,0.8)]" />{' '}
                             미국
                         </span>
-                        <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, background: 'rgba(255, 105, 180, 0.8)', borderRadius: '50%' }} />{' '}
+                        <span className="flex items-center gap-1">
+                            <span className="inline-block w-3 h-3 rounded-full bg-[rgba(255,105,180,0.8)]" />{' '}
                             일본
                         </span>
-                        <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, background: 'rgba(117, 190, 233, 0.8)', borderRadius: '50%' }} />{' '}
+                        <span className="flex items-center gap-1">
+                            <span className="inline-block w-3 h-3 rounded-full bg-[rgba(117,190,233,0.8)]" />{' '}
                             아르헨티나
                         </span>
-                        <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, background: 'rgba(255, 193, 7, 0.8)', borderRadius: '50%' }} />{' '}
+                        <span className="flex items-center gap-1">
+                            <span className="inline-block w-3 h-3 rounded-full bg-[rgba(255,193,7,0.8)]" />{' '}
                             호주
                         </span>
                     </div>
-                    <div style={{ fontWeight: 'bold', marginBottom: '6px' }}>노드 타입</div>
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
-                        <span>
-                            <svg width="12" height="12" viewBox="0 0 12 12" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }}>
-                                <polygon points="6,1 11,11 1,11" fill="#888" stroke="#555" strokeWidth="1" />
+                    <div className="font-bold mb-1 text-foreground">노드 타입</div>
+                    <div className="flex gap-2 flex-wrap mb-2 text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                            <svg width="12" height="12" viewBox="0 0 12 12" className="inline-block">
+                                <polygon points="6,1 11,11 1,11" fill="#aaa" stroke="#888" strokeWidth="1" />
                             </svg>{' '}
                             광산
                         </span>
-                        <span>
-                            <svg width="12" height="12" viewBox="0 0 12 12" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }}>
-                                <polygon points="6,1 11,6 6,11 1,6" fill="#888" stroke="#555" strokeWidth="1" />
+                        <span className="flex items-center gap-1">
+                            <svg width="12" height="12" viewBox="0 0 12 12" className="inline-block">
+                                <polygon points="6,1 11,6 6,11 1,6" fill="#aaa" stroke="#888" strokeWidth="1" />
                             </svg>{' '}
                             정제소
                         </span>
-                        <span>
-                            <svg width="12" height="12" viewBox="0 0 12 12" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }}>
-                                <circle cx="6" cy="6" r="5" fill="#888" stroke="#555" strokeWidth="1" />
+                        <span className="flex items-center gap-1">
+                            <svg width="12" height="12" viewBox="0 0 12 12" className="inline-block">
+                                <circle cx="6" cy="6" r="5" fill="#aaa" stroke="#888" strokeWidth="1" />
                             </svg>{' '}
                             공장
                         </span>
                     </div>
-                    <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>리스크</div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                        <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', border: '2px solid #52c41a', background: '#b7eb8f' }} />{' '}
+                    <div className="font-bold mb-1 text-foreground">리스크</div>
+                    <div className="flex gap-2 text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                            <span className="inline-block w-3 h-3 rounded-full border-2 border-[#52c41a] bg-[#b7eb8f]" />{' '}
                             저위험
                         </span>
-                        <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', border: '2px solid #faad14', background: '#ffe58f' }} />{' '}
+                        <span className="flex items-center gap-1">
+                            <span className="inline-block w-3 h-3 rounded-full border-2 border-[#faad14] bg-[#ffe58f]" />{' '}
                             중위험
                         </span>
-                        <span>
-                            <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', border: '3px solid #f5222d', background: '#ffa39e' }} />{' '}
+                        <span className="flex items-center gap-1">
+                            <span className="inline-block w-3 h-3 rounded-full border-2 border-[#f5222d] bg-[#ffa39e]" />{' '}
                             고위험
                         </span>
                     </div>

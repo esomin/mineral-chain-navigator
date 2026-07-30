@@ -137,11 +137,11 @@ export function MapViewPage() {
     );
 
     return (
-        <div className="w-screen h-screen flex flex-col">
-            <header className="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+        <div className="w-screen h-screen flex flex-col bg-background text-foreground">
+            <header className="px-4 py-3 border-b border-border bg-card flex items-center justify-between">
                 <div>
-                    <h1 className="m-0 text-xl">Mineral Chain Navigator</h1>
-                    <p className="mt-1 mb-0 text-sm text-gray-500">
+                    <h1 className="m-0 text-xl font-bold text-foreground">Mineral Chain Navigator</h1>
+                    <p className="mt-1 mb-0 text-sm text-muted-foreground">
                         리튬(HS 2825.20) 공급망 GIS 지도 시각화 • 노드: {filteredNodes.length}/{nodes.length} | 엣지: {filteredEdges.length}/{edges.length}
                     </p>
                 </div>
@@ -152,18 +152,18 @@ export function MapViewPage() {
             {/* 필터 컨트롤 바 */}
             <FilterBar />
 
-            <main className="flex-1 relative overflow-hidden">
+            <main className="flex-1 relative overflow-hidden bg-background">
                 {/* 로딩 상태 */}
                 {isLoading && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-10">
+                    <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10 text-muted-foreground">
                         <p>지도 데이터 로딩 중...</p>
                     </div>
                 )}
 
                 {/* 에러 상태 */}
                 {error && (
-                    <div className="absolute top-4 left-1/2 -translate-x-1/2 px-6 py-3 bg-red-50 border border-red-200 rounded z-10">
-                        <span className="text-red-700">⚠ {error}</span>
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 px-6 py-3 bg-destructive/10 border border-destructive rounded-lg z-10">
+                        <span className="text-destructive font-medium">⚠ {error}</span>
                     </div>
                 )}
 
@@ -180,7 +180,7 @@ export function MapViewPage() {
                 {/* 필터 결과 없음 */}
                 {!isLoading && nodes.length > 0 && filteredNodes.length === 0 && (
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <p className="text-gray-400 text-sm">
+                        <p className="text-muted-foreground text-sm">
                             필터 조건에 맞는 노드가 없습니다.
                         </p>
                     </div>

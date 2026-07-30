@@ -68,13 +68,13 @@ export function FilterBar() {
 
     return (
         <div
-            className="flex flex-col gap-3 px-4 py-3 border-b border-slate-200 bg-slate-50/50"
+            className="flex flex-col gap-3 px-4 py-3 border-b border-border bg-card"
             role="toolbar"
             aria-label="공급망 필터 바"
         >
             {/* 품목 필터 */}
             <div className="flex items-center gap-3 flex-wrap">
-                <span className="text-xs font-bold text-slate-500 mr-2 w-12 shrink-0">품목명</span>
+                <span className="text-xs font-bold text-muted-foreground mr-2 w-12 shrink-0">품목명</span>
                 <div className="flex items-center gap-4 flex-wrap">
                     {HS_CODE_OPTIONS.map(({ value, label, hoverText }) => {
                         const isActive = filters.hsCode.includes(value);
@@ -88,7 +88,7 @@ export function FilterBar() {
                                 />
                                 <label
                                     htmlFor={id}
-                                    className="text-xs font-semibold text-slate-700 cursor-pointer select-none"
+                                    className="text-xs font-semibold text-foreground cursor-pointer select-none"
                                 >
                                     {label}
                                 </label>
@@ -97,7 +97,7 @@ export function FilterBar() {
                     })}
                 </div>
                 {filters.hsCode.length > 0 && (
-                    <span className="text-xs text-slate-400 ml-1">
+                    <span className="text-xs text-muted-foreground ml-1">
                         — {filters.hsCode.map((val) => HS_CODE_OPTIONS.find((o) => o.value === val)?.description).join(', ')}
                     </span>
                 )}
@@ -105,7 +105,7 @@ export function FilterBar() {
 
             {/* 국가 필터 */}
             <div className="flex items-center gap-3 flex-wrap">
-                <span className="text-xs font-bold text-slate-500 mr-2 w-12 shrink-0">국가</span>
+                <span className="text-xs font-bold text-muted-foreground mr-2 w-12 shrink-0">국가</span>
                 <div className="flex items-center gap-4 flex-wrap">
                     {COUNTRY_OPTIONS.map(({ value, label }) => {
                         const isActive = filters.countries.includes(value);
@@ -119,7 +119,7 @@ export function FilterBar() {
                                 />
                                 <label
                                     htmlFor={id}
-                                    className="text-xs font-semibold text-slate-700 cursor-pointer select-none"
+                                    className="text-xs font-semibold text-foreground cursor-pointer select-none"
                                 >
                                     {label}
                                 </label>

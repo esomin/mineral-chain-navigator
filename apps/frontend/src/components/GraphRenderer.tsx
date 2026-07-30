@@ -196,7 +196,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
                         const nodeData = d?.data as Record<string, unknown> | undefined;
                         return (nodeData?.isCluster as boolean) ? 'bold' : 'normal';
                     },
-                    labelFill: '#333',
+                    labelFill: '#F9FAFB',
                     labelPlacement: 'bottom',
                     labelOffsetY: 4,
                 },
@@ -478,17 +478,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
                 }}
             >
                 {/* 줌 레벨 표시 */}
-                <div
-                    style={{
-                        background: 'rgba(255, 255, 255, 0.9)',
-                        border: '1px solid #d9d9d9',
-                        borderRadius: '4px',
-                        padding: '4px 8px',
-                        fontSize: '0.7rem',
-                        color: '#333',
-                        textAlign: 'center',
-                    }}
-                >
+                <div className="bg-card/90 border border-border rounded px-2 py-1 text-[0.7rem] text-foreground text-center">
                     Zoom: {zoomLevel.toFixed(2)}
                 </div>
 
@@ -506,25 +496,13 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
                                     ? 'Country Level Clustering 해제'
                                     : 'Country Level Clustering 활성화'
                     }
-                    style={{
-                        aspectRatio: '2 / 1',
-                        width: '100%',
-                        background: isSimulationOpen ? '#f5f5f5' : clusteringEnabled ? '#e6f7ff' : 'rgba(255, 255, 255, 0.9)',
-                        border: isSimulationOpen ? '1px solid #d9d9d9' : clusteringEnabled ? '1px solid #1890ff' : '1px solid #d9d9d9',
-                        borderRadius: '4px',
-                        padding: '4px 8px',
-                        fontSize: '0.7rem',
-                        color: (!isGraphReady || isSimulationOpen)
-                            ? '#bfbfbf'
+                    className={`aspect-[2/1] w-full rounded border px-2 py-1 text-[0.7rem] text-center transition-all ${
+                        isSimulationOpen
+                            ? 'bg-muted border-border text-muted-foreground cursor-not-allowed opacity-50'
                             : clusteringEnabled
-                                ? '#1890ff'
-                                : '#333',
-                        cursor: (isGraphReady && !isSimulationOpen) ? 'pointer' : 'not-allowed',
-                        opacity: (isGraphReady && !isSimulationOpen) ? 1 : 0.5,
-                        textAlign: 'center',
-                        transition: 'all 0.2s',
-                        fontWeight: clusteringEnabled && !isSimulationOpen ? 'bold' : 'normal',
-                    }}
+                                ? 'bg-primary/20 border-primary text-primary font-bold cursor-pointer opacity-100'
+                                : 'bg-card/90 border-border text-foreground cursor-pointer opacity-100 hover:bg-accent'
+                    }`}
                 >
                     Country Clustering
                 </button>
