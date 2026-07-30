@@ -201,7 +201,7 @@ export function GraphView() {
                 <div className="flex items-center gap-3">
                     <Button
                         onClick={() => setShowSimulation(!showSimulation)}
-                        variant={showSimulation ? 'secondary' : 'outline'}
+                        variant={showSimulation ? 'default' : 'outline'}
                         className="font-semibold shadow-xs"
                         aria-label="시뮬레이션 패널 토글"
                         aria-pressed={showSimulation}

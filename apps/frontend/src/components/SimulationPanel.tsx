@@ -736,7 +736,7 @@ export function SimulationPanel() {
                         onClick={handleRunSimulation}
                         disabled={isRunning || disruptions.length === 0}
                         variant="default"
-                        className="w-full h-9 mb-3 shadow-sm font-bold bg-primary hover:bg-primary-hover text-primary-foreground"
+                        className="w-full h-9 mb-3 shadow-sm font-bold"
                         aria-label="시뮬레이션 실행"
                     >
                         {isRunning ? '실행 중...' : '▶ 시뮬레이션 실행'}
