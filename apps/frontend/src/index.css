@@ -14,8 +14,9 @@
   :root,
   .dark {
     /* 1. Base Background (Level 0: #0B0F17) */
-    --background: #0B0F17;
-    --foreground: #F9FAFB; /* Primary Text */
+    --background: #2b354a;
+    --foreground: #e4e8ef;
+    /* Primary Text */
 
     /* 2. Panel/Card Background (Level 1: #111827) */
     --card: #111827;
@@ -34,23 +35,24 @@
     --sidebar-ring: #0EA5E9;
 
     /* 3. Surface/Hover (Level 2: #1F2937) & Secondary Text (#9CA3AF) */
-    --muted: #1F2937;
+    --muted: #2f3b50;
     --muted-foreground: #9CA3AF;
 
     --accent: #1F2937;
     --accent-foreground: #F9FAFB;
 
-    --secondary: #1F2937;
-    --secondary-foreground: #F9FAFB;
+    --secondary: #6b9ac4;
+    --secondary-foreground: #FFFFFF;
+    --secondary-hover: #5583ae;
 
     /* 4. Primary Color (Vivid Cyan: #0EA5E9 / Hover: #0284C7) */
     --primary: #0EA5E9;
     --primary-foreground: #F9FAFB;
     --primary-hover: #0284C7;
 
-    /* 5. Border Color (#374151) */
-    --border: #374151;
-    --input: #374151;
+    /* 5. Border Color */
+    --border: #3f516e;
+    --input: #9ba2ae;
     --ring: #0EA5E9;
 
     --destructive: #EF4444;
