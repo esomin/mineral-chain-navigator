@@ -244,7 +244,7 @@ export function SimulationPanel() {
 
     return (
         <div
-            className="absolute top-0 left-0 h-full flex flex-col font-sans z-[5] pointer-events-none"
+            className="absolute top-0 left-0 h-full flex flex-col font-sans z-[20] pointer-events-none"
             role="region"
             aria-label="시뮬레이션 제어 패널 그룹"
         >
