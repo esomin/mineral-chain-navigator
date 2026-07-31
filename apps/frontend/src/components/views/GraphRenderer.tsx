@@ -118,35 +118,19 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
         const graph = new Graph({
             container,
             autoResize: true,
-            // Force-directed 레이아웃
+            // Force-directed 레이아웃 파라미터 최적화 (반발력 및 간격 확장)
             layout: {
                 type: 'd3-force',
                 preventOverlap: true,
-                linkDistance: 150,
-                // linkDistance: (edge: any) => {
-                //     const edgeType = edge.data?.edgeType; // 'Supply' | 'Delivery'
-                //     const volume = edge.data?.volume ?? 0;
-
-                //     // 1. 타입별 기본 거리 설정
-                //     let baseDistance = edgeType === 'Supply' ? 150 : 300;
-
-                //     // 2. 속성(거래량)별 가중치 조절: 거래량이 클수록 긴밀한 관계이므로 노드 거리를 단축 (최대 40px)
-                //     if (volume > 0) {
-                //         const maxReduction = 40;
-                //         const minVol = 1000;
-                //         const maxVol = 50000000;
-                //         const logVol = Math.log(Math.max(minVol, Math.min(maxVol, volume)));
-                //         const logMin = Math.log(minVol);
-                //         const logMax = Math.log(maxVol);
-                //         const reduction = ((logVol - logMin) / (logMax - logMin)) * maxReduction;
-                //         baseDistance -= reduction;
-                //     }
-
-                //     return baseDistance;
-                // },
-                nodeStrength: -400,
+                linkDistance: 280,
+                nodeStrength: -800,
                 collide: {
-                    strength: 0.8,
+                    strength: 1.0,
+                    radius: (d: Record<string, unknown>) => {
+                        const nodeData = d?.data as Record<string, unknown> | undefined;
+                        const size = (nodeData?.size as number) || 30;
+                        return size / 2 + 35; // 노드 반지름 + 텍스트 여백 35px 충돌 방지
+                    },
                 },
             },
             // 노드 스타일 매핑 — data 속성 기반 동적 스타일
@@ -182,7 +166,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
                     },
                     labelFontSize: (d: Record<string, unknown>) => {
                         const nodeData = d?.data as Record<string, unknown> | undefined;
-                        return (nodeData?.isCluster as boolean) ? 13 : 10;
+                        return (nodeData?.isCluster as boolean) ? 12 : 10;
                     },
                     labelFontWeight: (d: Record<string, unknown>) => {
                         const nodeData = d?.data as Record<string, unknown> | undefined;
@@ -190,7 +174,11 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
                     },
                     labelFill: '#F9FAFB',
                     labelPlacement: 'bottom',
-                    labelOffsetY: 4,
+                    labelOffsetY: 6,
+                    labelBackground: true,
+                    labelBackgroundFill: 'rgba(17, 24, 39, 0.75)',
+                    labelBackgroundRadius: 3,
+                    labelBackgroundPadding: [2, 4],
                     iconText: (d: Record<string, unknown>) => {
                         const nodeData = d?.data as Record<string, unknown> | undefined;
                         if (nodeData?.isCluster) return `${nodeData?.memberCount ?? ''}`;
