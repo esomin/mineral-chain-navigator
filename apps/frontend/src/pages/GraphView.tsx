@@ -336,36 +336,34 @@ export function GraphView() {
                     <div className="font-bold mb-1 text-foreground">노드 타입</div>
                     <div className="flex gap-2 flex-wrap mb-2 text-muted-foreground">
                         <span className="flex items-center gap-1">
-                            <svg width="12" height="12" viewBox="0 0 12 12" className="inline-block">
-                                <polygon points="6,1 11,11 1,11" fill="#aaa" stroke="#888" strokeWidth="1" />
-                            </svg>{' '}
+                            <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-muted-foreground/30 text-[9px] font-bold text-foreground">M</span>{' '}
                             광산
                         </span>
                         <span className="flex items-center gap-1">
-                            <svg width="12" height="12" viewBox="0 0 12 12" className="inline-block">
-                                <polygon points="6,1 11,6 6,11 1,6" fill="#aaa" stroke="#888" strokeWidth="1" />
-                            </svg>{' '}
-                            정제소
+                            <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-muted-foreground/30 text-[9px] font-bold text-foreground">R</span>{' '}
+                            제련소
                         </span>
                         <span className="flex items-center gap-1">
-                            <svg width="12" height="12" viewBox="0 0 12 12" className="inline-block">
-                                <circle cx="6" cy="6" r="5" fill="#aaa" stroke="#888" strokeWidth="1" />
-                            </svg>{' '}
+                            <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-muted-foreground/30 text-[9px] font-bold text-foreground">F</span>{' '}
                             공장
                         </span>
+                        <span className="flex items-center gap-1">
+                            <span className="inline-flex items-center justify-center px-1 h-4 rounded-full bg-muted-foreground/30 text-[8px] font-bold text-foreground">RES</span>{' '}
+                            자원
+                        </span>
                     </div>
-                    <div className="font-bold mb-1 text-foreground">리스크</div>
+                    <div className="font-bold mb-1 text-foreground">리스크 (테두리)</div>
                     <div className="flex gap-2 text-muted-foreground">
                         <span className="flex items-center gap-1">
-                            <span className="inline-block w-3 h-3 rounded-full border-2 border-[#52c41a] bg-[#b7eb8f]" />{' '}
+                            <span className="inline-block w-3 h-3 rounded-full border border-[#389e0d] bg-[#b7eb8f]" />{' '}
                             저위험
                         </span>
                         <span className="flex items-center gap-1">
-                            <span className="inline-block w-3 h-3 rounded-full border-2 border-[#faad14] bg-[#ffe58f]" />{' '}
+                            <span className="inline-block w-3 h-3 rounded-full border border-[#d48806] bg-[#ffe58f]" />{' '}
                             중위험
                         </span>
                         <span className="flex items-center gap-1">
-                            <span className="inline-block w-3 h-3 rounded-full border-2 border-[#f5222d] bg-[#ffa39e]" />{' '}
+                            <span className="inline-block w-3 h-3 rounded-full border border-[#cf1322] bg-[#ffa39e]" />{' '}
                             고위험
                         </span>
                     </div>

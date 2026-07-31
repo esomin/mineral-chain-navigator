@@ -98,16 +98,12 @@ const COUNTRY_COLORS: Record<string, string> = {
  * 국가 코드를 노드 fill 색상으로 변환.
  */
 export function getCountryColor(country: string): string {
-    return COUNTRY_COLORS[country] || '#888888';
+    return COUNTRY_COLORS[country] || '#4a505a';
 }
 
 /**
  * 리스크 점수를 테두리(stroke) 스타일로 변환.
- * RISK_COLORS 매핑을 활용하여 fill + stroke 조합 반환.
- *
- * - 0~33 (저위험): 녹색 계열
- * - 34~66 (중위험): 노란색 계열
- * - 67~100 (고위험): 빨간색 계열
+ * 얇고 정갈한 1.5px stroke로 단순화.
  */
 export function getRiskStroke(score: number): {
     fill: string;
@@ -115,9 +111,9 @@ export function getRiskStroke(score: number): {
     width: number;
 } {
     const clamped = Math.max(0, Math.min(100, score));
-    if (clamped <= 33) return { fill: RISK_COLORS.green.fill, stroke: RISK_COLORS.green.stroke, width: 6 };
-    if (clamped <= 66) return { fill: RISK_COLORS.yellow.fill, stroke: RISK_COLORS.yellow.stroke, width: 6 };
-    return { fill: RISK_COLORS.red.fill, stroke: RISK_COLORS.red.stroke, width: 6 };
+    if (clamped <= 33) return { fill: RISK_COLORS.green.fill, stroke: '#389e0d', width: 1.5 };
+    if (clamped <= 66) return { fill: RISK_COLORS.yellow.fill, stroke: '#d48806', width: 1.5 };
+    return { fill: RISK_COLORS.red.fill, stroke: '#cf1322', width: 2 };
 }
 
 /**

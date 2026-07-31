@@ -152,15 +152,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
             // 노드 스타일 매핑 — data 속성 기반 동적 스타일
             // 클러스터 노드: 원(circle), 일반 노드: 원(circle)
             node: {
-                type: (d: Record<string, unknown>) => {
-                    const nodeData = d?.data as Record<string, unknown> | undefined;
-                    if (nodeData?.isCluster) return 'circle';
-                    const nodeType = nodeData?.nodeType as string;
-                    if (nodeType === 'Mine') return 'triangle';
-                    if (nodeType === 'Refinery') return 'diamond';
-                    if (nodeType === 'Factory') return 'circle';
-                    return 'circle';
-                },
+                type: 'circle',
                 style: {
                     size: (d: Record<string, unknown>) => {
                         const nodeData = d?.data as Record<string, unknown> | undefined;
@@ -199,6 +191,19 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
                     labelFill: '#F9FAFB',
                     labelPlacement: 'bottom',
                     labelOffsetY: 4,
+                    iconText: (d: Record<string, unknown>) => {
+                        const nodeData = d?.data as Record<string, unknown> | undefined;
+                        if (nodeData?.isCluster) return `${nodeData?.memberCount ?? ''}`;
+                        const type = nodeData?.nodeType as string;
+                        if (type === 'Mine') return 'M';
+                        if (type === 'Refinery') return 'R';
+                        if (type === 'Factory') return 'F';
+                        if (type === 'Resource') return 'RES';
+                        return '';
+                    },
+                    iconFontSize: 11,
+                    iconFontWeight: 'bold',
+                    iconFill: '#FFFFFF',
                 },
                 // 상태별 스타일 (호버, 선택, 전파경로, 비선택)
                 state: {
