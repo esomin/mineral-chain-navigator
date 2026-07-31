@@ -1,9 +1,9 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSupplyChainStore } from '../store/supply-chain-store';
-import { GlobeView, type ArcWeightMode } from '../components/GlobeView';
-import { FilterBar } from '../components/FilterBar';
-import { NodeDetailPanel } from '../components/NodeDetailPanel';
-import { ViewSwitcher } from '../components/ViewSwitcher';
+import { GlobeView, type ArcWeightMode } from '../components/views/GlobeView';
+import { FilterBar } from '../components/common/FilterBar';
+import { NodeDetailPanel } from '../components/panels/NodeDetailPanel';
+import { ViewSwitcher } from '../components/common/ViewSwitcher';
 import type { RiskScore } from '@navigator/shared/src/types/risk';
 
 /**

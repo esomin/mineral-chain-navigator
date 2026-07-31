@@ -1,20 +1,20 @@
 import { useCallback, useMemo, useEffect, useState } from 'react';
 import type { DisruptionType } from '@navigator/shared';
-import { useSupplyChainStore } from '../store/supply-chain-store';
-import { useSimulationStore } from '../store/simulation-store';
-import { getCountryDisplayName, getNodeTypeLabel } from '../utils/graph-helpers';
-import { Button } from './ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
-import { Slider } from './ui/slider';
+import { useSupplyChainStore } from '../../store/supply-chain-store';
+import { useSimulationStore } from '../../store/simulation-store';
+import { getCountryDisplayName, getNodeTypeLabel } from '../../utils/graph-helpers';
+import { Button } from '../ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
+import { Slider } from '../ui/slider';
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from './ui/select';
+} from '../ui/select';
 import { ChevronLeft, ChevronRight, RotateCcw, X } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import {
     DISRUPTION_TYPE_CONFIGS,
     SCENARIO_PRESETS,

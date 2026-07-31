@@ -1,9 +1,9 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSupplyChainStore } from '../store/supply-chain-store';
-import { MapView } from '../components/MapView';
-import { FilterBar } from '../components/FilterBar';
-import { NodeDetailPanel } from '../components/NodeDetailPanel';
-import { ViewSwitcher } from '../components/ViewSwitcher';
+import { MapView } from '../components/views/MapView';
+import { FilterBar } from '../components/common/FilterBar';
+import { NodeDetailPanel } from '../components/panels/NodeDetailPanel';
+import { ViewSwitcher } from '../components/common/ViewSwitcher';
 import { RiskScore } from '@navigator/shared/src/types/risk';
 
 /**

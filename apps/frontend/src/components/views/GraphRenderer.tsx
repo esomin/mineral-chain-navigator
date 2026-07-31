@@ -1,10 +1,10 @@
 import { useEffect, useRef, useCallback, useState, useMemo } from 'react';
 import { Graph } from '@antv/g6';
 import type { SupplyChainNode, SupplyChainEdge } from '@navigator/shared';
-import { getNodeRadius, getCountryColor, getRiskStroke } from '../utils/graph-helpers';
-import { useLODClustering } from '../hooks/useLODClustering';
-import type { ClusterResult } from '../utils/clustering';
-import { useSupplyChainStore } from '../store/supply-chain-store';
+import { getNodeRadius, getCountryColor, getRiskStroke } from '../../utils/graph-helpers';
+import { useLODClustering } from '../../hooks/useLODClustering';
+import type { ClusterResult } from '../../utils/clustering';
+import { useSupplyChainStore } from '../../store/supply-chain-store';
 
 export interface GraphRendererProps {
     nodes: SupplyChainNode[];

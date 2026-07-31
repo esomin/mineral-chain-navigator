@@ -1,9 +1,9 @@
 import type { SimulationResult } from '@navigator/shared';
-import { useSupplyChainStore } from '../store/supply-chain-store';
-import type { HistoryEntry } from '../store/simulation-store';
-import { getCountryDisplayName, getNodeTypeLabel } from '../utils/graph-helpers';
-import { Button } from './ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
+import { useSupplyChainStore } from '../../store/supply-chain-store';
+import type { HistoryEntry } from '../../store/simulation-store';
+import { getCountryDisplayName, getNodeTypeLabel } from '../../utils/graph-helpers';
+import { Button } from '../ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { X } from 'lucide-react';
 
 export function formatExecutionTime(ms: number): string {

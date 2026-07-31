@@ -1,4 +1,4 @@
-import { getCountryDisplayName } from '../utils/graph-helpers';
+import { getCountryDisplayName } from '../../../utils/graph-helpers';
 
 // 노드 툴팁 데이터
 interface NodeTooltipData {

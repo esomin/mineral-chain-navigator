@@ -1,5 +1,5 @@
 import type { SupplyChainNode, SupplyChainEdge, HsCodeCategory } from '@navigator/shared';
-import { getCountryDisplayName, getNodeTypeLabel } from '../utils/graph-helpers';
+import { getCountryDisplayName, getNodeTypeLabel } from '../../utils/graph-helpers';
 import { ConnectedEdgesList } from './ConnectEdgeList';
 
 // HS 코드 카테고리 한글 라벨 매핑

@@ -4,9 +4,9 @@ import { ScatterplotLayer, ArcLayer } from '@deck.gl/layers';
 import { Map as MapGL } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { SupplyChainNode, SupplyChainEdge } from '@navigator/shared';
-import { getCountryColor, getNodeRadius, getRiskColor } from '../utils/graph-helpers';
-import { MapLayerToggle, type MapLayerState } from './MapLayerToggle';
-import { MapTooltip, type TooltipInfo } from './MapTooltip';
+import { getCountryColor, getNodeRadius, getRiskColor } from '../../utils/graph-helpers';
+import { MapLayerToggle, type MapLayerState } from './map/MapLayerToggle';
+import { MapTooltip, type TooltipInfo } from './map/MapTooltip';
 
 // 무료 다크 지도 스타일 (Mapbox 토큰 불필요)
 const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';

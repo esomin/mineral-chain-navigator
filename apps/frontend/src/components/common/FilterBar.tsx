@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
-import { useSupplyChainStore } from '../store/supply-chain-store';
-import { Checkbox } from './ui/checkbox';
+import { useSupplyChainStore } from '../../store/supply-chain-store';
+import { Checkbox } from '../ui/checkbox';
 
 // HS 코드 필터 옵션
 const HS_CODE_OPTIONS = [

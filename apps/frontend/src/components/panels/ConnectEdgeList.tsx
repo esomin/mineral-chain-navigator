@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { SupplyChainEdge, SupplyChainNode } from '@navigator/shared';
-import { useSupplyChainStore } from '../store/supply-chain-store';
-import { getCountryDisplayName, getCountryColor } from '../utils/graph-helpers';
+import { useSupplyChainStore } from '../../store/supply-chain-store';
+import { getCountryDisplayName, getCountryColor } from '../../utils/graph-helpers';
 
 const NODE_TYPE_LABEL_KO: Record<string, string> = {
     Resource: '자원',
