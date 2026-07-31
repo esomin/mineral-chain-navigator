@@ -58,7 +58,7 @@ export function MapView({ nodes, edges, riskScores, onNodeClick }: MapViewProps)
                 // 리스크 레벨 기준 색상
                 const score = riskScores.get(node.id) ?? 0;
                 const riskColor = getRiskColor(score);
-                return parseRgba(riskColor.stroke);
+                return parseRgba(riskColor);
             }
             // 국가 기준 색상
             const countryColor = getCountryColor(node.country);

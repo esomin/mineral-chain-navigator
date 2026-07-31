@@ -352,18 +352,18 @@ export function GraphView() {
                             자원
                         </span>
                     </div>
-                    <div className="font-bold mb-1 text-foreground">리스크 (테두리)</div>
+                    <div className="font-bold mb-1 text-foreground">리스크</div>
                     <div className="flex gap-2 text-muted-foreground">
                         <span className="flex items-center gap-1">
-                            <span className="inline-block w-3 h-3 rounded-full border border-[#389e0d] bg-[#b7eb8f]" />{' '}
+                            <span className="inline-block w-3 h-3 rounded-full bg-[#b7eb8f]" />{' '}
                             저위험
                         </span>
                         <span className="flex items-center gap-1">
-                            <span className="inline-block w-3 h-3 rounded-full border border-[#d48806] bg-[#ffe58f]" />{' '}
+                            <span className="inline-block w-3 h-3 rounded-full bg-[#ffc95e]" />{' '}
                             중위험
                         </span>
                         <span className="flex items-center gap-1">
-                            <span className="inline-block w-3 h-3 rounded-full border border-[#cf1322] bg-[#ffa39e]" />{' '}
+                            <span className="inline-block w-3 h-3 rounded-full bg-[#ffa39e]" />{' '}
                             고위험
                         </span>
                     </div>

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback, useState, useMemo } from 'react';
 import { Graph } from '@antv/g6';
 import type { SupplyChainNode, SupplyChainEdge } from '@navigator/shared';
-import { getNodeRadius, getCountryColor, getNodeTypeColor, getRiskStroke } from '../../utils/graph-helpers';
+import { getNodeRadius, getCountryColor, getNodeTypeColor, getRiskColor } from '../../utils/graph-helpers';
 import { useLODClustering } from '../../hooks/useLODClustering';
 import type { ClusterResult } from '../../utils/clustering';
 import { useSupplyChainStore } from '../../store/supply-chain-store';
@@ -118,12 +118,18 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
         const graph = new Graph({
             container,
             autoResize: true,
-            // Force-directed 레이아웃 파라미터 최적화 (반발력 및 간격 확장)
+            // Force-directed 레이아웃 (고립 노드 튕김 방지 구심력 적용)
             layout: {
                 type: 'd3-force',
                 preventOverlap: true,
                 linkDistance: 280,
                 nodeStrength: -800,
+                x: {
+                    strength: 0.1,
+                },
+                y: {
+                    strength: 0.1,
+                },
                 collide: {
                     strength: 1.0,
                     radius: (d: Record<string, unknown>) => {
@@ -156,10 +162,10 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
                     },
                     // 클러스터 정사각형: 실선 테두리, 일반 노드: 점선 없음
                     lineDash: () => [0, 0],
-                    // 기본 불투명도 명시 (state 해제 시 정상 복원되도록 보장)
+                    // 기본 불투명도 명시 (채우기색 은은한 투명도 0.85)
                     opacity: 1.0,
-                    fillOpacity: 1.0,
-                    strokeOpacity: 1.0,
+                    fillOpacity: 0.85,
+                    strokeOpacity: 0.9,
                     labelText: (d: Record<string, unknown>) => {
                         const nodeData = d?.data as Record<string, unknown> | undefined;
                         return (nodeData?.label as string) || '';
@@ -599,7 +605,7 @@ function buildRegularNode(
     if (colorMode === 'nodeType') {
         fillColor = getNodeTypeColor(node.type);
     } else if (colorMode === 'risk') {
-        fillColor = getRiskStroke(riskScore).fill;
+        fillColor = getRiskColor(riskScore);
     }
 
     return {
@@ -613,7 +619,7 @@ function buildRegularNode(
                 : `${node.name}\n(${COUNTRY_LABEL_KO[node.country] ?? node.country}, ${NODE_TYPE_LABEL_KO[node.type] ?? node.type})`,
             size: radius * 2,
             color: fillColor,
-            stroke: 'rgba(255, 255, 255, 0.4)', // 리스크별 보더 제거, 은은한 단색 테두리 고정
+            stroke: 'rgba(255, 255, 255, 0.4)', // 단색 은은한 테두리 고정
             strokeWidth: 1.5,
             isCluster: false,
         },
@@ -626,7 +632,7 @@ function buildRegularNode(
 function buildClusterNode(cluster: ClusterResult, colorMode: ColorMode) {
     let fillColor = getCountryColor(cluster.country);
     if (colorMode === 'risk') {
-        fillColor = getRiskStroke(cluster.averageRiskScore).fill;
+        fillColor = getRiskColor(cluster.averageRiskScore);
     }
 
     // 클러스터 크기: 멤버 수에 비례 (최소 60px, 최대 120px)

@@ -3,27 +3,21 @@
  * 노드 크기 계산, 리스크 색상 매핑 등을 담당한다.
  */
 
-// 리스크 색상 정의 (fill + stroke 조합)
-export interface RiskColorSet {
-    fill: string;
-    stroke: string;
-}
-
-// 리스크 수준별 색상 매핑
-const RISK_COLORS: Record<'green' | 'yellow' | 'red', RiskColorSet> = {
-    green: { fill: '#b7eb8f', stroke: '#52c41a' },   // 저위험: 녹색
-    yellow: { fill: '#ffe58f', stroke: '#faad14' },   // 중위험: 노란색
-    red: { fill: '#ffa39e', stroke: '#f5222d' },      // 고위험: 빨간색
+// 리스크 수준별 Fill 색상 매핑
+const RISK_COLORS: Record<'green' | 'yellow' | 'red', string> = {
+    green: '#b7eb8f',   // 저위험: 녹색
+    yellow: '#ffc95e',  // 중위험: 노란색
+    red: '#ffa39e',     // 고위험: 빨간색
 };
 
 /**
- * 리스크 점수(0-100)를 색상 세트로 변환.
+ * 리스크 점수(0-100)를 Fill 색상 hex 코드로 변환.
  *
  * - 0~33: green (저위험)
  * - 34~66: yellow (중위험)
  * - 67~100: red (고위험)
  */
-export function getRiskColor(score: number): RiskColorSet {
+export function getRiskColor(score: number): string {
     const clamped = Math.max(0, Math.min(100, score));
     if (clamped <= 33) return RISK_COLORS.green;
     if (clamped <= 66) return RISK_COLORS.yellow;
@@ -116,21 +110,6 @@ export function getNodeTypeColor(type: string): string {
  */
 export function getCountryColor(country: string): string {
     return COUNTRY_COLORS[country] || '#4a505a';
-}
-
-/**
- * 리스크 점수를 테두리(stroke) 스타일로 변환.
- * 얇고 정갈한 1.5px stroke로 단순화.
- */
-export function getRiskStroke(score: number): {
-    fill: string;
-    stroke: string;
-    width: number;
-} {
-    const clamped = Math.max(0, Math.min(100, score));
-    if (clamped <= 33) return { fill: RISK_COLORS.green.fill, stroke: '#389e0d', width: 1.5 };
-    if (clamped <= 66) return { fill: RISK_COLORS.yellow.fill, stroke: '#d48806', width: 1.5 };
-    return { fill: RISK_COLORS.red.fill, stroke: '#cf1322', width: 2 };
 }
 
 /**
