@@ -299,7 +299,7 @@ export function GraphView() {
 
                 {/* 범례 */}
                 <div
-                    className="absolute bottom-4 left-4 bg-card/95 border border-border text-foreground rounded-lg p-3 text-xs shadow-md"
+                    className="absolute bottom-4 left-4 bg-muted/80 border border-border text-foreground rounded-lg p-3 text-xs shadow-lg z-[5] pointer-events-auto backdrop-blur-md"
                     aria-label="그래프 범례"
                 >
                     <div className="font-bold mb-1 text-foreground">국가</div>

@@ -95,6 +95,23 @@ const COUNTRY_COLORS: Record<string, string> = {
 };
 
 /**
+ * 노드 타입별 fill 색상 매핑.
+ */
+const NODE_TYPE_COLORS: Record<string, string> = {
+    Resource: '#0EA5E9',   // 하늘색 (자원)
+    Mine: '#10B981',       // 에메랄드 그린 (광산)
+    Refinery: '#F59E0B',   // 앰버/주황 (정제소)
+    Factory: '#8B5CF6',    // 보라 (공장)
+};
+
+/**
+ * 노드 타입을 fill 색상으로 변환.
+ */
+export function getNodeTypeColor(type: string): string {
+    return NODE_TYPE_COLORS[type] || '#6B7280';
+}
+
+/**
  * 국가 코드를 노드 fill 색상으로 변환.
  */
 export function getCountryColor(country: string): string {

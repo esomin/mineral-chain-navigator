@@ -1,10 +1,12 @@
 import { useEffect, useRef, useCallback, useState, useMemo } from 'react';
 import { Graph } from '@antv/g6';
 import type { SupplyChainNode, SupplyChainEdge } from '@navigator/shared';
-import { getNodeRadius, getCountryColor, getRiskStroke } from '../../utils/graph-helpers';
+import { getNodeRadius, getCountryColor, getNodeTypeColor, getRiskStroke } from '../../utils/graph-helpers';
 import { useLODClustering } from '../../hooks/useLODClustering';
 import type { ClusterResult } from '../../utils/clustering';
 import { useSupplyChainStore } from '../../store/supply-chain-store';
+
+export type ColorMode = 'country' | 'nodeType' | 'risk';
 
 export interface GraphRendererProps {
     nodes: SupplyChainNode[];
@@ -20,13 +22,11 @@ export interface GraphRendererProps {
 
 /**
  * @antv/G6 v5 기반 Force-directed 그래프 렌더러.
- * - production_capacity에 비례하는 노드 크기
- * - 리스크 점수 기반 색상 코딩 (green/yellow/red)
- * - Canvas 렌더링으로 60fps 최적화
- * - LOD 국가별 클러스터링: 우상단 버튼으로 토글 (정사각형 표시)
- * - Web Worker 기반 레이아웃 계산 오프로드
  */
 export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlightedPath, isSimulationOpen }: GraphRendererProps) {
+    // 보기 기준 (색상 표현 기준) 선택 상태 ('country' | 'nodeType' | 'risk') - 디폴트: 'nodeType'
+    const [colorMode, setColorMode] = useState<ColorMode>('nodeType');
+
     // 복잡도 감소를 위해 'Resource' 노드 및 관련 엣지 필터링
     const filteredNodes = useMemo(() => nodes.filter((n) => n.type !== 'Resource'), [nodes]);
     const filteredEdges = useMemo(() => {
@@ -56,7 +56,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
         enabled: isSimulationOpen ? false : clusteringEnabled,
     });
 
-    // G6 데이터 형식으로 변환 (LOD 클러스터링 적용)
+    // G6 데이터 형식으로 변환 (LOD 클러스터링 및 보기 기준 적용)
     const buildGraphData = useCallback(() => {
         // 클러스터링이 활성화된 경우: 클러스터 + 개별 노드 혼합
         if (isClustered && lodResult) {
@@ -64,14 +64,14 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
 
             // 클러스터 노드 생성
             for (const cluster of lodResult.clusters) {
-                g6Nodes.push(buildClusterNode(cluster));
+                g6Nodes.push(buildClusterNode(cluster, colorMode));
             }
 
             // 개별 표시 노드
             for (const nodeId of lodResult.visibleNodes) {
                 const node = filteredNodes.find((n) => n.id === nodeId);
                 if (node) {
-                    g6Nodes.push(buildRegularNode(node, riskScores));
+                    g6Nodes.push(buildRegularNode(node, riskScores, colorMode));
                 }
             }
 
@@ -82,7 +82,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
         }
 
         // 클러스터링 비활성: 모든 노드 개별 렌더링
-        const g6Nodes = filteredNodes.map((node) => buildRegularNode(node, riskScores));
+        const g6Nodes = filteredNodes.map((node) => buildRegularNode(node, riskScores, colorMode));
 
         const g6Edges = filteredEdges.map((edge) => ({
             id: edge.id,
@@ -95,7 +95,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
         }));
 
         return { nodes: g6Nodes, edges: g6Edges };
-    }, [filteredNodes, filteredEdges, riskScores, isClustered, lodResult]);
+    }, [filteredNodes, filteredEdges, riskScores, isClustered, lodResult, colorMode]);
 
     // 초기 렌더 완료 여부 — afterrender에서 불필요한 재렌더 방지
     const isInitialRenderRef = useRef(true);
@@ -457,7 +457,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
             aria-label="리튬 공급망 그래프 시각화"
             role="img"
         >
-            {/* 우상단 컨트롤: 줌 레벨 표시 + 클러스터링 토글 버튼 (세로 배치) */}
+            {/* 우상단 컨트롤: 줌 표시 + 클러스터링 버튼 + 색상 표현 기준 버튼 그룹 (세로 순서 배치) */}
             <div
                 style={{
                     position: 'absolute',
@@ -466,16 +466,16 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'stretch',
-                    gap: '0.25rem',
+                    gap: '0.35rem',
                     zIndex: 5,
                 }}
             >
-                {/* 줌 레벨 표시 */}
-                <div className="bg-card/90 border border-border rounded px-2 py-1 text-[0.7rem] text-foreground text-center">
+                {/* 1. 줌 레벨 표시 */}
+                <div className="bg-muted border border-border rounded px-2 py-1 text-[0.7rem] text-foreground text-center">
                     Zoom: {zoomLevel.toFixed(2)}
                 </div>
 
-                {/* 국가별 클러스터링 토글 버튼 */}
+                {/* 2. 국가별 클러스터링 토글 버튼 */}
                 <button
                     disabled={isSimulationOpen || !isGraphReady}
                     onClick={() => setClusteringEnabled((prev) => !prev)}
@@ -489,16 +489,75 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
                                     ? 'Country Level Clustering 해제'
                                     : 'Country Level Clustering 활성화'
                     }
-                    className={`aspect-[2/1] w-full rounded border px-2 py-1 text-[0.7rem] text-center transition-all ${
-                        isSimulationOpen
-                            ? 'bg-muted border-border text-muted-foreground cursor-not-allowed opacity-50'
-                            : clusteringEnabled
-                                ? 'bg-primary/20 border-primary text-primary font-bold cursor-pointer opacity-100'
-                                : 'bg-card/90 border-border text-foreground cursor-pointer opacity-100 hover:bg-accent'
-                    }`}
+                    className={`w-full rounded border px-2 py-1.5 text-[0.7rem] font-semibold text-center transition-all ${isSimulationOpen
+                        ? 'bg-muted/50 border-border text-muted-foreground cursor-not-allowed opacity-50'
+                        : clusteringEnabled
+                            ? 'bg-primary/20 border-primary text-primary font-bold cursor-pointer opacity-100 shadow-xs'
+                            : 'bg-muted border-border text-foreground cursor-pointer opacity-100 hover:bg-accent hover:text-foreground'
+                        }`}
                 >
                     Country Clustering
                 </button>
+
+                {/* 3. 클러스터링 버튼 밑: 시각화 모드 라디오 버튼 그룹 */}
+                <div className="bg-muted border border-border rounded p-2 shadow-md flex flex-col gap-1.5">
+                    <span className="text-[0.7rem] font-bold text-foreground text-center block">시각화 모드</span>
+                    <div className="flex flex-col gap-0.5">
+                        <label
+                            onClick={() => setColorMode('nodeType')}
+                            className={`flex items-center gap-2 px-2 py-1.5 rounded text-[0.7rem] font-medium cursor-pointer transition-all ${colorMode === 'nodeType'
+                                ? 'bg-primary/20 text-primary font-bold'
+                                : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                                }`}
+                        >
+                            <input
+                                type="radio"
+                                name="visualizationMode"
+                                value="nodeType"
+                                checked={colorMode === 'nodeType'}
+                                onChange={() => setColorMode('nodeType')}
+                                className="w-3.5 h-3.5 accent-primary cursor-pointer"
+                            />
+                            <span>노드 타입별</span>
+                        </label>
+
+                        <label
+                            onClick={() => setColorMode('country')}
+                            className={`flex items-center gap-2 px-2 py-1.5 rounded text-[0.7rem] font-medium cursor-pointer transition-all ${colorMode === 'country'
+                                ? 'bg-primary/20 text-primary font-bold'
+                                : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                                }`}
+                        >
+                            <input
+                                type="radio"
+                                name="visualizationMode"
+                                value="country"
+                                checked={colorMode === 'country'}
+                                onChange={() => setColorMode('country')}
+                                className="w-3.5 h-3.5 accent-primary cursor-pointer"
+                            />
+                            <span>국가별</span>
+                        </label>
+
+                        <label
+                            onClick={() => setColorMode('risk')}
+                            className={`flex items-center gap-2 px-2 py-1.5 rounded text-[0.7rem] font-medium cursor-pointer transition-all ${colorMode === 'risk'
+                                ? 'bg-primary/20 text-primary font-bold'
+                                : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                                }`}
+                        >
+                            <input
+                                type="radio"
+                                name="visualizationMode"
+                                value="risk"
+                                checked={colorMode === 'risk'}
+                                onChange={() => setColorMode('risk')}
+                                className="w-3.5 h-3.5 accent-primary cursor-pointer"
+                            />
+                            <span>리스크별</span>
+                        </label>
+                    </div>
+                </div>
             </div>
         </div>
     );
@@ -530,11 +589,18 @@ const COUNTRY_LABEL_KO: Record<string, string> = {
 function buildRegularNode(
     node: SupplyChainNode,
     riskScores: Map<string, number>,
+    colorMode: ColorMode,
 ) {
     const riskScore = riskScores.get(node.id) ?? 0;
-    const countryColor = getCountryColor(node.country);
-    const riskStroke = getRiskStroke(riskScore);
     const radius = getNodeRadius(node.metadata.productionCapacity, node.metadata.capacityUnit);
+
+    // 보기 기준(colorMode)에 따른 노드 색상 지정
+    let fillColor = getCountryColor(node.country);
+    if (colorMode === 'nodeType') {
+        fillColor = getNodeTypeColor(node.type);
+    } else if (colorMode === 'risk') {
+        fillColor = getRiskStroke(riskScore).fill;
+    }
 
     return {
         id: node.id,
@@ -546,10 +612,9 @@ function buildRegularNode(
                 ? `${node.name}\n(${NODE_TYPE_LABEL_KO[node.type] ?? node.type})`
                 : `${node.name}\n(${COUNTRY_LABEL_KO[node.country] ?? node.country}, ${NODE_TYPE_LABEL_KO[node.type] ?? node.type})`,
             size: radius * 2,
-            color: countryColor,
-            riskFill: riskStroke.fill,
-            stroke: riskStroke.stroke,
-            strokeWidth: riskStroke.width,
+            color: fillColor,
+            stroke: 'rgba(255, 255, 255, 0.4)', // 리스크별 보더 제거, 은은한 단색 테두리 고정
+            strokeWidth: 1.5,
             isCluster: false,
         },
     };
@@ -557,11 +622,12 @@ function buildRegularNode(
 
 /**
  * 클러스터 노드를 G6 데이터 형식으로 변환.
- * 클러스터는 멤버 수에 비례하는 큰 원으로 표시하며, 점선 테두리로 구분한다.
  */
-function buildClusterNode(cluster: ClusterResult) {
-    const countryColor = getCountryColor(cluster.country);
-    const riskStroke = getRiskStroke(cluster.averageRiskScore);
+function buildClusterNode(cluster: ClusterResult, colorMode: ColorMode) {
+    let fillColor = getCountryColor(cluster.country);
+    if (colorMode === 'risk') {
+        fillColor = getRiskStroke(cluster.averageRiskScore).fill;
+    }
 
     // 클러스터 크기: 멤버 수에 비례 (최소 60px, 최대 120px)
     const clusterSize = Math.min(120, Math.max(60, 40 + cluster.memberCount * 15));
@@ -574,10 +640,9 @@ function buildClusterNode(cluster: ClusterResult) {
             riskScore: cluster.averageRiskScore,
             label: cluster.label,
             size: clusterSize,
-            color: countryColor,
-            riskFill: riskStroke.fill,
-            stroke: riskStroke.stroke,
-            strokeWidth: riskStroke.width,
+            color: fillColor,
+            stroke: '#FFFFFF',
+            strokeWidth: 2.5,
             isCluster: true,
             memberCount: cluster.memberCount,
             memberNodeIds: cluster.memberNodeIds,
