@@ -9,6 +9,7 @@ import { SimulationPanel } from '../components/SimulationPanel';
 import { ViewSwitcher } from '../components/ViewSwitcher';
 import { AIInsightPanel } from '../components/AIInsightPanel';
 import { GiDiamonds } from 'react-icons/gi';
+import { Play, Pause } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { toast } from 'sonner';
 // 공급망 그래프 시각화 페이지 (Phase 1 메인 뷰)
@@ -16,8 +17,11 @@ export function GraphView() {
     const { nodes, edges, selectedNodeId, filters, riskScores, setNodes, setEdges, setRiskScores, selectNode, setLoading, isLoading } =
         useSupplyChainStore();
 
-    // 시뮬레이션 결과에서 전파 경로 하이라이트 가져오기
-    const highlightedPath = useSimulationStore((state) => state.highlightedPath);
+    // 시뮬레이션 결과 및 실행 상태 가져오기
+    const { highlightedPath, isRunning } = useSimulationStore((state) => ({
+        highlightedPath: state.highlightedPath,
+        isRunning: state.isRunning,
+    }));
 
     const [error, setError] = useState<string | null>(null);
     // ESG 역추적 패널 표시 상태
@@ -201,12 +205,17 @@ export function GraphView() {
                 <div className="flex items-center gap-3">
                     <Button
                         onClick={() => setShowSimulation(!showSimulation)}
-                        variant={showSimulation ? 'default' : 'outline'}
-                        className="font-semibold shadow-xs"
-                        aria-label="시뮬레이션 패널 토글"
+                        variant="default"
+                        className="font-semibold shadow-xs flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-primary text-primary-foreground hover:bg-primary-hover"
+                        aria-label={showSimulation ? "시뮬레이션 제어 패널 닫기" : "시뮬레이션 제어 패널 열기"}
                         aria-pressed={showSimulation}
                     >
-                        ▶ 시뮬레이션
+                        {showSimulation ? (
+                            <Pause className="w-3.5 h-3.5 fill-current" />
+                        ) : (
+                            <Play className="w-3.5 h-3.5 fill-current" />
+                        )}
+                        시뮬레이션 제어
                     </Button>
                     <Button
                         onClick={() => setShowAIPanel(!showAIPanel)}

@@ -31,110 +31,104 @@ export interface NodeDetailPanelProps {
 export function NodeDetailPanel({ node, connectedEdges, riskScore, onClose, onOpenTraceability }: NodeDetailPanelProps) {
     return (
         <aside
-            style={{
-                position: 'absolute',
-                top: 0,
-                right: 0,
-                width: '360px',
-                height: '100%',
-                background: '#fff',
-                borderLeft: '1px solid #e0e0e0',
-                padding: '1rem',
-                overflowY: 'auto',
-                boxShadow: '-2px 0 8px rgba(0,0,0,0.06)',
-                zIndex: 5,
-            }}
+            className="absolute top-0 right-0 w-[360px] h-full bg-card border-l border-border p-4 overflow-y-auto shadow-2xl z-20 flex flex-col font-sans text-foreground"
             aria-label="노드 상세 정보 패널"
         >
             {/* 헤더 영역: 제목 + 닫기 버튼 */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ margin: 0, fontSize: '1rem' }}>노드 상세</h2>
+            <div className="flex items-center justify-between pb-3 mb-3 border-b border-border">
+                <h2 className="text-base font-bold text-foreground tracking-tight">노드 상세 정보</h2>
                 <button
                     onClick={onClose}
-                    style={{
-                        background: 'none',
-                        border: 'none',
-                        fontSize: '1.25rem',
-                        cursor: 'pointer',
-                        color: '#999',
-                    }}
+                    className="w-7 h-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer text-base"
                     aria-label="패널 닫기"
                 >
                     ✕
                 </button>
             </div>
 
-            <div style={{ marginTop: '1rem' }}>
-                {/* 노드 이름 */}
-                <h3 style={{ margin: '0 0 0.5rem', fontSize: '0.95rem' }}>{node.name}</h3>
-
-                {/* 노드 설명 */}
-                <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: '#666' }}>
-                    {node.description}
-                </p>
+            <div className="space-y-4 flex-1">
+                {/* 노드 이름 및 설명 카드 */}
+                <div className="p-3 bg-muted/40 border border-border rounded-lg shadow-xs space-y-1">
+                    <h3 className="text-sm font-bold text-foreground tracking-tight">{node.name}</h3>
+                    {node.description && (
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                            {node.description}
+                        </p>
+                    )}
+                </div>
 
                 {/* 노드 속성 테이블 */}
-                <table style={{ width: '100%', fontSize: '0.8rem', borderCollapse: 'collapse' }}>
-                    <tbody>
-                        <tr>
-                            <td style={{ padding: '4px 8px', color: '#999' }}>ID</td>
-                            <td style={{ padding: '4px 8px' }}>{node.id}</td>
-                        </tr>
-                        <tr>
-                            <td style={{ padding: '4px 8px', color: '#999' }}>타입</td>
-                            <td style={{ padding: '4px 8px' }}>
-                                {node.type} ({getNodeTypeLabel(node.type)})
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style={{ padding: '4px 8px', color: '#999' }}>국가</td>
-                            <td style={{ padding: '4px 8px' }}>
-                                {getCountryDisplayName(node.country)}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style={{ padding: '4px 8px', color: '#999' }}>생산능력</td>
-                            <td style={{ padding: '4px 8px' }}>
-                                {node.metadata.productionCapacity.toLocaleString()}{' '}
-                                {node.metadata.capacityUnit}
-                            </td>
-                        </tr>
-                        {node.metadata.hsCodeCategory && (
-                            <tr>
-                                <td style={{ padding: '4px 8px', color: '#999' }}>HS 코드 분류</td>
-                                <td style={{ padding: '4px 8px' }}>
-                                    {getHsCodeCategoryLabel(node.metadata.hsCodeCategory)}
+                <div className="border border-border rounded-lg overflow-hidden bg-card shadow-xs">
+                    <table className="w-full text-xs border-collapse">
+                        <tbody className="divide-y divide-border/60">
+                            <tr className="hover:bg-muted/30">
+                                <td className="py-2 px-3 text-muted-foreground font-medium w-28 bg-muted/20">ID</td>
+                                <td className="py-2 px-3 font-mono font-semibold text-foreground">{node.id}</td>
+                            </tr>
+                            <tr className="hover:bg-muted/30">
+                                <td className="py-2 px-3 text-muted-foreground font-medium bg-muted/20">타입</td>
+                                <td className="py-2 px-3 font-medium text-foreground">
+                                    {node.type} ({getNodeTypeLabel(node.type)})
                                 </td>
                             </tr>
-                        )}
-                        <tr>
-                            <td style={{ padding: '4px 8px', color: '#999' }}>리스크 점수</td>
-                            <td style={{ padding: '4px 8px' }}>
-                                {riskScore !== undefined ? riskScore.toFixed(1) : 'N/A'}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style={{ padding: '4px 8px', color: '#999' }}>좌표</td>
-                            <td style={{ padding: '4px 8px' }}>
-                                {node.coordinates.latitude.toFixed(2)},{' '}
-                                {node.coordinates.longitude.toFixed(2)}
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                            <tr className="hover:bg-muted/30">
+                                <td className="py-2 px-3 text-muted-foreground font-medium bg-muted/20">국가</td>
+                                <td className="py-2 px-3 font-medium text-foreground">
+                                    {getCountryDisplayName(node.country)}
+                                </td>
+                            </tr>
+                            <tr className="hover:bg-muted/30">
+                                <td className="py-2 px-3 text-muted-foreground font-medium bg-muted/20">생산능력</td>
+                                <td className="py-2 px-3 font-semibold text-primary">
+                                    {node.metadata.productionCapacity.toLocaleString()}{' '}
+                                    {node.metadata.capacityUnit}
+                                </td>
+                            </tr>
+                            {node.metadata.hsCodeCategory && (
+                                <tr className="hover:bg-muted/30">
+                                    <td className="py-2 px-3 text-muted-foreground font-medium bg-muted/20">HS 코드 분류</td>
+                                    <td className="py-2 px-3 text-foreground">
+                                        {getHsCodeCategoryLabel(node.metadata.hsCodeCategory)}
+                                    </td>
+                                </tr>
+                            )}
+                            <tr className="hover:bg-muted/30">
+                                <td className="py-2 px-3 text-muted-foreground font-medium bg-muted/20">리스크 점수</td>
+                                <td className="py-2 px-3 font-bold text-foreground">
+                                    {riskScore !== undefined ? (
+                                        <span className={`px-2 py-0.5 rounded text-[11px] ${
+                                            riskScore > 0.6 ? 'bg-destructive/20 text-destructive border border-destructive/30' :
+                                            riskScore > 0.3 ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
+                                            'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                        }`}>
+                                            {riskScore.toFixed(1)}
+                                        </span>
+                                    ) : 'N/A'}
+                                </td>
+                            </tr>
+                            <tr className="hover:bg-muted/30">
+                                <td className="py-2 px-3 text-muted-foreground font-medium bg-muted/20">좌표</td>
+                                <td className="py-2 px-3 font-mono text-muted-foreground">
+                                    {node.coordinates.latitude.toFixed(2)},{' '}
+                                    {node.coordinates.longitude.toFixed(2)}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
                 {/* 연결된 엣지 목록 컴포넌트 */}
                 <ConnectedEdgesList connectedEdges={connectedEdges} />
 
                 {/* Factory 노드일 때 ESG 역추적 버튼 */}
                 {node.type === 'Factory' && onOpenTraceability && (
-                    <div className="mt-4">
+                    <div className="pt-2">
                         <button
                             onClick={onOpenTraceability}
-                            className="w-full py-2 px-3 bg-blue-500 text-white border-none rounded cursor-pointer text-sm font-medium hover:bg-blue-600 transition-colors"
+                            className="w-full py-2.5 px-3 bg-primary text-primary-foreground hover:bg-primary-hover border-none rounded-md cursor-pointer text-xs font-bold shadow-sm transition-all duration-150 flex items-center justify-center gap-1.5"
                             aria-label="ESG 역추적 보기"
                         >
-                            ESG 역추적 보기
+                            ESG 역추적 분석 보기 →
                         </button>
                     </div>
                 )}

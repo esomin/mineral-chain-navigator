@@ -32,11 +32,12 @@ export function ConnectedEdgesList({ connectedEdges }: ConnectedEdgesListProps) 
     if (connectedEdges.length === 0) return null;
 
     return (
-        <div style={{ marginTop: '1.25rem' }}>
-            <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', fontWeight: 'bold', color: '#262626' }}>
-                연결 엣지 ({connectedEdges.length})
+        <div className="mt-4 space-y-2">
+            <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center justify-between">
+                <span>연결 엣지</span>
+                <span className="text-[11px] font-normal text-muted-foreground">({connectedEdges.length}개)</span>
             </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div className="flex flex-col gap-2">
                 {connectedEdges.map((edge) => {
                     const sourceNode = nodeMap.get(edge.sourceNodeId);
                     const targetNode = nodeMap.get(edge.targetNodeId);
@@ -58,55 +59,37 @@ export function ConnectedEdgesList({ connectedEdges }: ConnectedEdgesListProps) 
                     return (
                         <div
                             key={edge.id}
-                            style={{
-                                background: '#f8f9fa',
-                                border: '1px solid #e9ecef',
-                                borderRadius: '6px',
-                                padding: '10px 12px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '6px',
-                                boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
-                            }}
+                            className="bg-muted/40 border border-border rounded-lg p-2.5 flex flex-col gap-2 shadow-xs transition-colors hover:bg-muted/60"
                         >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div className="flex justify-between items-center">
                                 <span
-                                    style={{
-                                        fontSize: '0.65rem',
-                                        fontWeight: 'bold',
-                                        padding: '1px 5px',
-                                        borderRadius: '4px',
-                                        background: isSupply ? '#e6f7ff' : '#f6ffed',
-                                        color: isSupply ? '#1890ff' : '#52c41a',
-                                        border: isSupply ? '1px solid #91d5ff' : '1px solid #b7eb8f',
-                                    }}
+                                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
+                                        isSupply
+                                            ? 'bg-sky-500/15 text-sky-400 border-sky-500/30'
+                                            : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                                    }`}
                                 >
                                     {isSupply ? '공급 (Supply)' : '배송 (Delivery)'}
                                 </span>
                                 {edge.attributes.volume && (
-                                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#434343' }}>
+                                    <span className="text-xs font-bold text-primary font-mono">
                                         {edge.attributes.volume.toLocaleString()} kg
                                     </span>
                                 )}
                             </div>
 
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.75rem' }}>
+                            <div className="flex flex-col gap-1.5 text-xs pt-1 border-t border-border/50">
                                 {/* From 노드 */}
-                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
-                                    <span style={{ color: '#8c8c8c', width: '32px', flexShrink: 0 }}>From</span>
-                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                        <span style={{ fontWeight: 600, color: '#262626' }}>{sourceName}</span>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                                <div className="flex items-start gap-2">
+                                    <span className="text-[10px] font-bold text-muted-foreground uppercase w-8 shrink-0 pt-0.5">From</span>
+                                    <div className="flex flex-col min-w-0">
+                                        <span className="font-semibold text-foreground truncate text-xs">{sourceName}</span>
+                                        <div className="flex items-center gap-1.5 mt-0.5">
                                             <span
-                                                style={{
-                                                    display: 'inline-block',
-                                                    width: 6,
-                                                    height: 6,
-                                                    borderRadius: '50%',
-                                                    background: sourceCountryColor,
-                                                }}
+                                                className="w-1.5 h-1.5 rounded-full shrink-0"
+                                                style={{ background: sourceCountryColor }}
                                             />
-                                            <span style={{ fontSize: '0.65rem', color: '#8c8c8c' }}>
+                                            <span className="text-[10px] text-muted-foreground truncate">
                                                 {sourceCountry} · {sourceTypeName}
                                             </span>
                                         </div>
@@ -114,21 +97,16 @@ export function ConnectedEdgesList({ connectedEdges }: ConnectedEdgesListProps) 
                                 </div>
 
                                 {/* To 노드 */}
-                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', marginTop: '2px' }}>
-                                    <span style={{ color: '#8c8c8c', width: '32px', flexShrink: 0 }}>To</span>
-                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                        <span style={{ fontWeight: 600, color: '#262626' }}>{targetName}</span>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                                <div className="flex items-start gap-2">
+                                    <span className="text-[10px] font-bold text-muted-foreground uppercase w-8 shrink-0 pt-0.5">To</span>
+                                    <div className="flex flex-col min-w-0">
+                                        <span className="font-semibold text-foreground truncate text-xs">{targetName}</span>
+                                        <div className="flex items-center gap-1.5 mt-0.5">
                                             <span
-                                                style={{
-                                                    display: 'inline-block',
-                                                    width: 6,
-                                                    height: 6,
-                                                    borderRadius: '50%',
-                                                    background: targetCountryColor,
-                                                }}
+                                                className="w-1.5 h-1.5 rounded-full shrink-0"
+                                                style={{ background: targetCountryColor }}
                                             />
-                                            <span style={{ fontSize: '0.65rem', color: '#8c8c8c' }}>
+                                            <span className="text-[10px] text-muted-foreground truncate">
                                                 {targetCountry} · {targetTypeName}
                                             </span>
                                         </div>

@@ -14,7 +14,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from './ui/select';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import {
     Popover,
     PopoverContent,
@@ -35,6 +35,18 @@ interface DisruptionTypeConfig {
 }
 
 const DISRUPTION_TYPE_CONFIGS: Partial<Record<DisruptionType, DisruptionTypeConfig>> = {
+    demand_shock: {
+        label: '수요 충격',
+        description: '[수요] ESS/대체 수요 급증',
+        sliderLabel: '초과 수요 발생률',
+        min: 0,
+        max: 1,
+        step: 0.05,
+        formatValue: (val: number) => `+${(val * 100).toFixed(0)}%`,
+        minLabel: '+0%',
+        maxLabel: '+100%',
+        defaultVal: 0.5,
+    },
     export_restriction: {
         label: '수출 통제',
         description: '[지정학] 국가별 수출 통제 및 관세',
@@ -46,18 +58,6 @@ const DISRUPTION_TYPE_CONFIGS: Partial<Record<DisruptionType, DisruptionTypeConf
         minLabel: '0%',
         maxLabel: '100%',
         defaultVal: 0.5,
-    },
-    logistics_disruption: {
-        label: '물류 마비',
-        description: '[물류] 해운 경로 마비 및 운임 폭등',
-        sliderLabel: '운송 리드타임 지연',
-        min: 1,
-        max: 5,
-        step: 0.5,
-        formatValue: (val: number) => `${val.toFixed(1)}배`,
-        minLabel: '1배',
-        maxLabel: '5배',
-        defaultVal: 1.0,
     },
     facility_closure: {
         label: '조업 중단',
@@ -83,17 +83,17 @@ const DISRUPTION_TYPE_CONFIGS: Partial<Record<DisruptionType, DisruptionTypeConf
         maxLabel: '50%',
         defaultVal: 0.25,
     },
-    demand_shock: {
-        label: '수요 충격',
-        description: '[수요] ESS/대체 수요 급증',
-        sliderLabel: '초과 수요 발생률',
-        min: 0,
-        max: 1,
-        step: 0.05,
-        formatValue: (val: number) => `+${(val * 100).toFixed(0)}%`,
-        minLabel: '+0%',
-        maxLabel: '+100%',
-        defaultVal: 0.5,
+    logistics_disruption: {
+        label: '물류 마비',
+        description: '[물류] 해운 경로 마비 및 운임 폭등',
+        sliderLabel: '운송 리드타임 지연',
+        min: 1,
+        max: 5,
+        step: 0.5,
+        formatValue: (val: number) => `${val.toFixed(1)}배`,
+        minLabel: '1배',
+        maxLabel: '5배',
+        defaultVal: 1.0,
     },
 };
 
@@ -117,7 +117,7 @@ const SCENARIO_PRESETS: ScenarioPreset[] = [
     {
         id: 'ai-ess-demand',
         name: 'AI 데이터센터발 ESS용 리튬 수요 폭발',
-        description: '글로벌 배터리 공장의 리튬 수요 50% 급증',
+        description: 'AI 데이터센터 전력망 증설 및 글로벌 ESS 설치 수요 폭증으로 인해 전 세계 배터리 제조 공장의 리튬 소모 수요가 50% 급격히 증가하는 시나리오입니다.',
         badge: '수요',
         config: {
             targetType: 'node',
@@ -131,7 +131,7 @@ const SCENARIO_PRESETS: ScenarioPreset[] = [
     {
         id: 'china-export-restriction',
         name: '중국 리튬 수출 통제',
-        description: '중국 리튬 제품의 수출 통제로 물량 80% 제한',
+        description: '지정학적 갈등 심화 및 자원 무기화로 인해 중국 내 리튬 제련 시설의 대외 수출 가능 물량이 80% 강력히 제한되는 고위험 규제 시나리오입니다.',
         badge: '지정학',
         config: {
             targetType: 'node',
@@ -145,7 +145,7 @@ const SCENARIO_PRESETS: ScenarioPreset[] = [
     {
         id: 'latin-nationalization',
         name: '남미 리튬 삼각지대 국유화',
-        description: '칠레 광산 국유화로 유통 물량 30% 격리',
+        description: '남미 자원 민족주의 고조에 따라 칠레 주요 광산의 국가 비축 및 정밀 통제가 강화되어 유통 공급망에서 자원 30%가 국유화 조치되는 시나리오입니다.',
         badge: '정책',
         config: {
             targetType: 'node',
@@ -159,7 +159,7 @@ const SCENARIO_PRESETS: ScenarioPreset[] = [
     {
         id: 'sea-route-blockade',
         name: '주요 해상 경로 봉쇄',
-        description: '호주-중국 간 해상 경로 마비로 3배 지연',
+        description: '핵심 대양 해상 항로 마비 및 항만 지정학 지정 이슈로 호주 광산-중국 제련소 간 핵심 수송 리드타임이 3배로 대폭 지연되는 물류 마비 시나리오입니다.',
         badge: '물류',
         config: {
             targetType: 'edge',
@@ -240,7 +240,16 @@ export function SimulationPanel() {
         setTargetId(preset.config.targetId);
     }, [setTargetType, setDisruptionType, setSeverity, setTargetId]);
 
-    // 사용 가능한 국가 필터 옵션
+    // 충격 시나리오 구성 초기화 핸들러 (프리셋 선택 해제 및 설정값 리셋)
+    const handleResetScenario = useCallback(() => {
+        setTargetType('node');
+        setSelectedCountry('ALL');
+        setSelectedNodeType('ALL');
+        setSelectedSourceNodeId('ALL');
+        setDisruptionType('demand_shock');
+        setSeverity(0.5);
+        setTargetId('');
+    }, [setTargetType, setDisruptionType, setSeverity, setTargetId]);
     const countryOptions = useMemo(() => {
         const countries = Array.from(new Set(activeNodes.map((n) => n.country)));
         return [
@@ -400,57 +409,90 @@ export function SimulationPanel() {
                 </h2>
 
                 <div className="flex-1 min-h-0 overflow-y-auto space-y-3 p-1">
+                    {/* 시나리오 프리셋 선택 카드 (독립된 카드 형태) */}
+                    <Card className="border border-border bg-muted/40 shadow-sm mb-3 overflow-visible relative z-10">
+                        <CardHeader className="p-2.5 pb-1">
+                            <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                                시나리오 프리셋 선택
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-2.5 pt-1 overflow-visible">
+                            <div className="grid grid-cols-2 gap-1.5 overflow-visible">
+                                {SCENARIO_PRESETS.map((preset, index) => {
+                                    const isSelected =
+                                        currentDisruption.disruptionType === preset.config.disruptionType &&
+                                        currentDisruption.targetType === preset.config.targetType &&
+                                        currentDisruption.targetId === preset.config.targetId &&
+                                        Math.abs(currentDisruption.severity - preset.config.severity) < 0.01;
+
+                                    const isEven = index % 2 === 0;
+                                    const isTopRow = index < 2;
+
+                                    return (
+                                        <div key={preset.id} className="relative group hover:z-50">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleApplyPreset(preset)}
+                                                className={`w-full text-left p-2 rounded border transition-colors cursor-pointer flex flex-col justify-between h-full ${
+                                                    isSelected
+                                                        ? 'bg-primary/15 border-primary text-foreground font-semibold'
+                                                        : 'bg-muted border-border text-muted-foreground hover:bg-accent hover:text-foreground'
+                                                }`}
+                                                aria-label={`프리셋 적용: ${preset.name}`}
+                                            >
+                                                <div className={`text-[11px] font-bold leading-tight min-h-[30px] flex items-center mb-1 ${
+                                                    isSelected ? 'text-primary' : ''
+                                                }`}>
+                                                    {preset.name}
+                                                </div>
+                                                <div className="text-[9px] opacity-75 leading-tight pt-1 border-t border-border/50">
+                                                    <span>
+                                                        {preset.config.targetType === 'node'
+                                                            ? (preset.config.country === 'ALL'
+                                                                ? '모든 국가'
+                                                                : `${getCountryDisplayName(preset.config.country || '')} ${getNodeTypeLabel(preset.config.nodeType || '')}`)
+                                                            : '경로 선택됨'
+                                                        }
+                                                        {' • '}
+                                                        {DISRUPTION_TYPE_CONFIGS[preset.config.disruptionType]?.label}
+                                                        {' • '}
+                                                        {DISRUPTION_TYPE_CONFIGS[preset.config.disruptionType]?.formatValue(preset.config.severity)}
+                                                    </span>
+                                                </div>
+                                            </button>
+                                            {/* 마우스 호버 시 나오는 상세 설명 툴팁 (첫 번째 행은 아래쪽에 표출하여 상단 잘림 방지) */}
+                                            <div
+                                                className={`absolute hidden group-hover:block z-50 w-60 p-2.5 bg-popover text-popover-foreground text-[10px] leading-relaxed rounded-md border border-border shadow-xl pointer-events-none ${
+                                                    isTopRow ? 'top-full mt-1.5' : 'bottom-full mb-1.5'
+                                                } ${isEven ? 'left-0' : 'right-0'}`}
+                                            >
+                                                <div className="text-muted-foreground">{preset.description}</div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </CardContent>
+                    </Card>
+
                     {/* 시나리오 구성 UI */}
                     <Card className="border border-border bg-muted/40 shadow-sm mb-3">
                         <CardHeader className="p-2.5 pb-0 flex flex-row items-center justify-between space-y-0">
                             <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                                 충격 시나리오 구성
                             </CardTitle>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button variant="secondary" size="xs" className="font-bold shadow-xs whitespace-nowrap inline-flex items-center justify-center shrink-0 cursor-pointer">
-                                        시나리오 프리셋 ▾
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent align="start" className="w-[340px] p-1 space-y-0.5 bg-card border border-border rounded-md shadow-lg z-50 gap-0.5">
-                                    {SCENARIO_PRESETS.map((preset) => {
-                                        const isSelected = currentDisruption.disruptionType === preset.config.disruptionType &&
-                                            currentDisruption.targetType === preset.config.targetType &&
-                                            currentDisruption.targetId === preset.config.targetId &&
-                                            Math.abs(currentDisruption.severity - preset.config.severity) < 0.01;
-
-                                        return (
-                                            <button
-                                                key={preset.id}
-                                                onClick={() => handleApplyPreset(preset)}
-                                                className={`w-full text-left py-2.5 px-2.5 rounded-sm transition-colors duration-150 cursor-pointer flex flex-col ${isSelected
-                                                    ? 'bg-muted text-foreground font-medium'
-                                                    : 'hover:bg-muted/60 text-muted-foreground'
-                                                    }`}
-                                                aria-label={`프리셋 적용: ${preset.name}`}
-                                            >
-                                                <div className="text-[11px] font-bold leading-tight mb-0.5">
-                                                    {preset.name}
-                                                </div>
-                                                <div className="text-[9px] text-slate-400 font-normal leading-none">
-                                                    {preset.config.targetType === 'node'
-                                                        ? (preset.config.country === 'ALL'
-                                                            ? '모든 국가'
-                                                            : `${getCountryDisplayName(preset.config.country || '')} ${getNodeTypeLabel(preset.config.nodeType || '')}`)
-                                                        : (preset.config.sourceNodeId === 'M-04'
-                                                            ? '호주 광산 ➔ 중국 제련소'
-                                                            : '경로 선택됨')
-                                                    }
-                                                    {' • '}
-                                                    {DISRUPTION_TYPE_CONFIGS[preset.config.disruptionType]?.label}
-                                                    {' • '}
-                                                    {DISRUPTION_TYPE_CONFIGS[preset.config.disruptionType]?.formatValue(preset.config.severity)}
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
-                                </PopoverContent>
-                            </Popover>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="xs"
+                                onClick={handleResetScenario}
+                                className="h-6 text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted font-medium cursor-pointer gap-1 px-1.5"
+                                title="시나리오 구성 초기화"
+                                aria-label="시나리오 구성 초기화"
+                            >
+                                <RotateCcw className="w-3 h-3" />
+                                Reset
+                            </Button>
                         </CardHeader>
                         <CardContent className="p-2.5 pt-2">
                             {/* 대상 유형 선택 */}
@@ -643,8 +685,8 @@ export function SimulationPanel() {
                                                 onClick={() => setDisruptionType(typeKey)}
                                                 className={`text-left p-1.5 rounded border transition-colors cursor-pointer ${
                                                     isSelected
-                                                        ? 'bg-primary/20 border-primary text-primary font-semibold'
-                                                        : 'bg-muted border-border text-muted-foreground hover:bg-accent'
+                                                        ? 'bg-primary/15 border-primary text-foreground font-semibold'
+                                                        : 'bg-muted border-border text-muted-foreground hover:bg-accent hover:text-foreground'
                                                 }`}
                                             >
                                                 <div className="text-[11px] leading-tight font-medium">{config.label}</div>
@@ -691,7 +733,7 @@ export function SimulationPanel() {
                                 onClick={handleAddDisruption}
                                 disabled={!currentDisruption.targetId}
                                 variant="secondary"
-                                className="w-full h-8 text-xs font-bold shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full h-8 text-xs font-bold shadow-xs cursor-pointer bg-gradient-to-r from-secondary via-secondary-hover to-secondary bg-[length:200%_200%] animate-pulse-gradient border border-border text-secondary-foreground hover:border-primary/50 disabled:bg-none disabled:bg-secondary/40 disabled:border-border disabled:text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
                             >
                                 + 충격 조건 추가
                             </Button>
@@ -736,7 +778,7 @@ export function SimulationPanel() {
                         onClick={handleRunSimulation}
                         disabled={isRunning || disruptions.length === 0}
                         variant="default"
-                        className="w-full h-9 mb-3 shadow-sm font-bold"
+                        className="w-full h-9 mb-3 shadow-sm font-bold bg-primary text-primary-foreground hover:bg-primary-hover cursor-pointer transition-colors"
                         aria-label="시뮬레이션 실행"
                     >
                         {isRunning ? '실행 중...' : '▶ 시뮬레이션 실행'}
@@ -808,12 +850,12 @@ export function SimulationPanel() {
                 </div>
             </aside>
 
-            {/* 2열 슬라이드 아웃 토글 버튼 - 항상 현재 활성화된 패널의 가장 우측 경계에 붙도록 절대 위치 동적 연동 */}
+            {/* 2열 슬라이드 아웃 토글 버튼 - 패널 우측 경계에 완벽히 밀착 */}
             {(historyEntries.length > 0 || result) && (
                 <button
                     onClick={() => setIsSecondColumnOpen(!isSecondColumnOpen)}
                     className="absolute top-1/2 -translate-y-1/2 w-6 h-12 bg-card hover:bg-accent border border-border border-l-0 rounded-r-md shadow-md z-10 flex items-center justify-center cursor-pointer pointer-events-auto text-muted-foreground hover:text-foreground transition-all duration-300 ease-in-out"
-                    style={{ left: isSecondColumnOpen ? '779px' : '399px' }}
+                    style={{ left: isSecondColumnOpen ? '760px' : '380px' }}
                     title={isSecondColumnOpen ? "결과/이력 패널 접기" : "결과/이력 패널 펼치기"}
                     aria-label={isSecondColumnOpen ? "결과/이력 패널 접기" : "결과/이력 패널 펼치기"}
                 >

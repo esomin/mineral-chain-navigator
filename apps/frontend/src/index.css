@@ -14,7 +14,7 @@
   :root,
   .dark {
     /* 1. Base Background (Level 0: #0B0F17) */
-    --background: #2b354a;
+    --background: #1c2433;
     --foreground: #e4e8ef;
     /* Primary Text */
 
@@ -41,9 +41,9 @@
     --accent: #1F2937;
     --accent-foreground: #F9FAFB;
 
-    --secondary: #6b9ac4;
-    --secondary-foreground: #FFFFFF;
-    --secondary-hover: #5583ae;
+    --secondary: #1e293b;
+    --secondary-foreground: #F9FAFB;
+    --secondary-hover: #334155;
 
     /* 4. Primary Color (Vivid Cyan: #0EA5E9 / Hover: #0284C7) */
     --primary: #0EA5E9;
@@ -74,4 +74,23 @@
   html {
     @apply font-sans;
   }
+}
+
+@keyframes pulse-gradient {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+    box-shadow: 0 0 8px rgba(14, 165, 233, 0.25);
+  }
+
+  50% {
+    background-position: 100% 50%;
+    box-shadow: 0 0 16px rgba(14, 165, 233, 0.5);
+  }
+}
+
+.animate-pulse-gradient {
+  background-size: 200% 200%;
+  animation: pulse-gradient 3s ease infinite;
 }
