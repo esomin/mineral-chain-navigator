@@ -14,12 +14,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from './ui/select';
-import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RotateCcw, X } from 'lucide-react';
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
 } from './ui/popover';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs';
 
 interface DisruptionTypeConfig {
     label: string;
@@ -125,7 +126,7 @@ const SCENARIO_PRESETS: ScenarioPreset[] = [
             nodeType: 'Factory',
             disruptionType: 'demand_shock',
             severity: 0.5,
-            targetId: 'F-01',
+            targetId: 'ALL_NODES',
         },
     },
     {
@@ -211,13 +212,17 @@ export function SimulationPanel() {
     const [selectedNodeType, setSelectedNodeType] = useState<string>('ALL');
     const [selectedSourceNodeId, setSelectedSourceNodeId] = useState<string>('ALL');
 
+    // 2열 패널 탭 상태 ('result' | 'history')
+    const [activeTab, setActiveTab] = useState<'result' | 'history'>('result');
+
     // 2열 레이아웃 슬라이드 아웃 상태
     const [isSecondColumnOpen, setIsSecondColumnOpen] = useState(historyEntries.length > 0 || !!result);
 
-    // 결과 생성 시 2열 패널 자동 확장
+    // 결과 생성 시 2열 패널 자동 확장 및 결과 탭으로 전환
     useEffect(() => {
         if (result) {
             setIsSecondColumnOpen(true);
+            setActiveTab('result');
         }
     }, [result]);
 
@@ -275,18 +280,31 @@ export function SimulationPanel() {
 
     // 선택 가능한 노드 항목 목록 (필터 조건 적용)
     const targetOptions = useMemo(() => {
-        return activeNodes
+        const filtered = activeNodes
             .filter((n) => selectedCountry === 'ALL' || n.country === selectedCountry)
-            .filter((n) => selectedNodeType === 'ALL' || n.type === selectedNodeType)
-            .map((n) => {
-                const countryStr = getCountryDisplayName(n.country);
-                const typeStr = getNodeTypeLabel(n.type);
-                const labelSuffix = n.country === 'NA' ? typeStr : `${countryStr}, ${typeStr}`;
-                return {
-                    id: n.id,
-                    label: `${n.name} (${labelSuffix})`,
-                };
+            .filter((n) => selectedNodeType === 'ALL' || n.type === selectedNodeType);
+
+        const list = filtered.map((n) => {
+            const countryStr = getCountryDisplayName(n.country);
+            const typeStr = getNodeTypeLabel(n.type);
+            const labelSuffix = n.country === 'NA' ? typeStr : `${countryStr}, ${typeStr}`;
+            return {
+                id: n.id,
+                label: `${n.name} (${labelSuffix})`,
+            };
+        });
+
+        // 조건에 해당하는 노드가 2개 이상일 때 '모든 해당 시설 (전체 선택)' 옵션을 최상단에 배치
+        if (filtered.length > 1) {
+            const countryLabel = selectedCountry === 'ALL' ? '모든 국가' : getCountryDisplayName(selectedCountry);
+            const typeLabel = selectedNodeType === 'ALL' ? '모든 시설' : getNodeTypeLabel(selectedNodeType);
+            list.unshift({
+                id: 'ALL_NODES',
+                label: `-- 전체 선택: ${countryLabel} ${typeLabel} (${filtered.length}개 전체) --`,
             });
+        }
+
+        return list;
     }, [activeNodes, selectedCountry, selectedNodeType]);
 
     // 결과 노드가 1개일 때 자동 선택 처리하는 이펙트
@@ -354,8 +372,8 @@ export function SimulationPanel() {
 
     // 충격 추가 핸들러
     const handleAddDisruption = useCallback(() => {
-        addDisruption();
-    }, [addDisruption]);
+        addDisruption({ country: selectedCountry, nodeType: selectedNodeType });
+    }, [addDisruption, selectedCountry, selectedNodeType]);
 
     // 시뮬레이션 실행 핸들러 (실행 시 모든 품목 및 국가 필터를 전체 활성화하여 데이터 정합성 보장)
     const handleRunSimulation = useCallback(() => {
@@ -433,16 +451,14 @@ export function SimulationPanel() {
                                             <button
                                                 type="button"
                                                 onClick={() => handleApplyPreset(preset)}
-                                                className={`w-full text-left p-2 rounded border transition-colors cursor-pointer flex flex-col justify-between h-full ${
-                                                    isSelected
-                                                        ? 'bg-primary/15 border-primary text-foreground font-semibold'
-                                                        : 'bg-muted border-border text-muted-foreground hover:bg-accent hover:text-foreground'
-                                                }`}
+                                                className={`w-full text-left p-2 rounded border transition-colors cursor-pointer flex flex-col justify-between h-full ${isSelected
+                                                    ? 'bg-primary/15 border-primary text-foreground font-semibold'
+                                                    : 'bg-muted border-border text-muted-foreground hover:bg-accent hover:text-foreground'
+                                                    }`}
                                                 aria-label={`프리셋 적용: ${preset.name}`}
                                             >
-                                                <div className={`text-[11px] font-bold leading-tight min-h-[30px] flex items-center mb-1 ${
-                                                    isSelected ? 'text-primary' : ''
-                                                }`}>
+                                                <div className={`text-[11px] font-bold leading-tight min-h-[30px] flex items-center mb-1 ${isSelected ? 'text-primary' : ''
+                                                    }`}>
                                                     {preset.name}
                                                 </div>
                                                 <div className="text-[9px] opacity-75 leading-tight pt-1 border-t border-border/50">
@@ -462,9 +478,8 @@ export function SimulationPanel() {
                                             </button>
                                             {/* 마우스 호버 시 나오는 상세 설명 툴팁 (첫 번째 행은 아래쪽에 표출하여 상단 잘림 방지) */}
                                             <div
-                                                className={`absolute hidden group-hover:block z-50 w-60 p-2.5 bg-popover text-popover-foreground text-[10px] leading-relaxed rounded-md border border-border shadow-xl pointer-events-none ${
-                                                    isTopRow ? 'top-full mt-1.5' : 'bottom-full mb-1.5'
-                                                } ${isEven ? 'left-0' : 'right-0'}`}
+                                                className={`absolute hidden group-hover:block z-50 w-60 p-2.5 bg-popover text-popover-foreground text-[10px] leading-relaxed rounded-md border border-border shadow-xl pointer-events-none ${isTopRow ? 'top-full mt-1.5' : 'bottom-full mb-1.5'
+                                                    } ${isEven ? 'left-0' : 'right-0'}`}
                                             >
                                                 <div className="text-muted-foreground">{preset.description}</div>
                                             </div>
@@ -683,11 +698,10 @@ export function SimulationPanel() {
                                                 key={typeKey}
                                                 type="button"
                                                 onClick={() => setDisruptionType(typeKey)}
-                                                className={`text-left p-1.5 rounded border transition-colors cursor-pointer ${
-                                                    isSelected
-                                                        ? 'bg-primary/15 border-primary text-foreground font-semibold'
-                                                        : 'bg-muted border-border text-muted-foreground hover:bg-accent hover:text-foreground'
-                                                }`}
+                                                className={`text-left p-1.5 rounded border transition-colors cursor-pointer ${isSelected
+                                                    ? 'bg-primary/15 border-primary text-foreground font-semibold'
+                                                    : 'bg-muted border-border text-muted-foreground hover:bg-accent hover:text-foreground'
+                                                    }`}
                                             >
                                                 <div className="text-[11px] leading-tight font-medium">{config.label}</div>
                                                 <div className="text-[9px] opacity-70 truncate">{config.description}</div>
@@ -745,19 +759,30 @@ export function SimulationPanel() {
                         <div className="mb-3 p-2 bg-muted border border-border rounded-md">
                             <div className="text-[11px] font-bold text-foreground mb-1.5 flex justify-between items-center">
                                 <span>적용될 충격 목록 ({disruptions.length})</span>
-                                <button
+                                <Button
+                                    variant="ghost"
+                                    size="xs"
                                     onClick={clearDisruptions}
-                                    className="text-[10px] text-muted-foreground hover:text-foreground underline cursor-pointer"
+                                    className="h-5 text-[10px] text-muted-foreground hover:text-foreground hover:bg-card font-medium cursor-pointer gap-1 px-1.5"
+                                    title="적용될 충격 목록 전체 삭제"
+                                    aria-label="적용될 충격 목록 전체 삭제"
                                 >
-                                    전체 삭제
-                                </button>
+                                    <X className="w-3.5 h-3.5" />
+                                    Clear
+                                </Button>
                             </div>
                             <ul className="space-y-1 max-h-32 overflow-y-auto pr-1">
                                 {disruptions.map((d, idx) => (
                                     <li key={idx} className="flex justify-between items-center p-1.5 bg-card border border-border rounded text-[11px]">
                                         <span className="truncate pr-2 text-foreground">
                                             {d.targetType === 'node' ? '시설: ' : '경로: '}
-                                            {d.targetId} ({DISRUPTION_TYPE_CONFIGS[d.disruptionType]?.label} {DISRUPTION_TYPE_CONFIGS[d.disruptionType]?.formatValue(d.severity)})
+                                            {d.targetId === 'ALL_NODES'
+                                                ? (() => {
+                                                    const countryName = !d.country || d.country === 'ALL' ? '모든 국가' : getCountryDisplayName(d.country);
+                                                    const typeName = !d.nodeType || d.nodeType === 'ALL' ? '모든 시설' : getNodeTypeLabel(d.nodeType);
+                                                    return `${countryName} ${typeName} (전체)`;
+                                                })()
+                                                : d.targetId} ({DISRUPTION_TYPE_CONFIGS[d.disruptionType]?.label} {DISRUPTION_TYPE_CONFIGS[d.disruptionType]?.formatValue(d.severity)})
                                         </span>
                                         <Button
                                             variant="ghost"
@@ -821,32 +846,63 @@ export function SimulationPanel() {
 
             </aside>
 
-            {/* 2열: 시뮬레이션 결과 요약 및 이력 */}
+            {/* 2열: 시뮬레이션 결과 요약 및 이력 (shadcn UI Tabs) */}
             <aside
                 className={`h-full bg-card border-r border-border shadow-lg flex flex-col pointer-events-auto transition-all duration-300 ease-in-out ${isSecondColumnOpen ? 'w-[380px] opacity-100 border-l border-border' : 'w-0 opacity-0 overflow-hidden border-l-0'
                     }`}
                 aria-label="시뮬레이션 결과 및 이력"
             >
-                <div className="w-[380px] h-full p-4 flex flex-col space-y-3">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-sm font-bold text-foreground tracking-tight">
-                            시뮬레이션 결과 및 이력
-                        </h3>
-                    </div>
+                <div className="w-[380px] h-full p-4 flex flex-col min-h-0">
+                    <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as 'result' | 'history')} className="w-full h-full flex flex-col">
+                        <TabsList className="w-full grid grid-cols-2 p-1 bg-muted/60 border border-border">
+                            <TabsTrigger value="result" className="gap-1.5 font-bold">
+                                <span>시뮬레이션 결과</span>
+                                {result && (
+                                    <span className="w-2 h-2 rounded-full bg-primary inline-block" />
+                                )}
+                            </TabsTrigger>
+                            <TabsTrigger value="history" className="gap-1.5 font-bold">
+                                <span>시뮬레이션 이력</span>
+                                {historyEntries.length > 0 && (
+                                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-muted-foreground/15 text-muted-foreground font-mono">
+                                        {historyEntries.length}
+                                    </span>
+                                )}
+                            </TabsTrigger>
+                        </TabsList>
 
-                    {/* 시뮬레이션 결과 요약 및 부족률 테이블 */}
-                    {result && (
-                        <SimulationResultSection result={result} onClear={clearResult} />
-                    )}
+                        <TabsContent value="result" className="flex-1 min-h-0 overflow-hidden flex flex-col">
+                            {result ? (
+                                <SimulationResultSection
+                                    result={result}
+                                    onClear={() => {
+                                        clearResult();
+                                        clearDisruptions();
+                                        setIsSecondColumnOpen(false);
+                                    }}
+                                />
+                            ) : (
+                                <div className="flex-1 flex flex-col items-center justify-center text-center p-6 bg-muted/20 border border-dashed border-border rounded-lg text-muted-foreground">
+                                    <p className="text-xs font-medium">실행된 시뮬레이션 결과가 없습니다.</p>
+                                    <p className="text-[11px] text-muted-foreground/70 mt-1">좌측 패널에서 시나리오를 구성하고 '시뮬레이션 실행'을 누르세요.</p>
+                                </div>
+                            )}
+                        </TabsContent>
 
-                    {/* 시뮬레이션 이력 섹션 */}
-                    {historyEntries.length > 0 && (
-                        <SimulationHistorySection
-                            entries={historyEntries}
-                            isLoading={isLoadingHistory}
-                            onEntryClick={handleHistoryClick}
-                        />
-                    )}
+                        <TabsContent value="history">
+                            {historyEntries.length > 0 ? (
+                                <SimulationHistorySection
+                                    entries={historyEntries}
+                                    isLoading={isLoadingHistory}
+                                    onEntryClick={handleHistoryClick}
+                                />
+                            ) : (
+                                <div className="flex-1 flex flex-col items-center justify-center text-center p-6 bg-muted/20 border border-dashed border-border rounded-lg text-muted-foreground">
+                                    <p className="text-xs font-medium">저장된 시뮬레이션 이력이 없습니다.</p>
+                                </div>
+                            )}
+                        </TabsContent>
+                    </Tabs>
                 </div>
             </aside>
 
@@ -899,7 +955,7 @@ function SimulationResultSection({
 
     return (
         <Card
-            className="border border-border bg-muted/40 flex-1 min-h-0 flex flex-col shadow-xs"
+            className="border border-border bg-muted/40 flex-1 min-h-0 max-h-[calc(100vh-420px)] flex flex-col shadow-xs"
             aria-label="시뮬레이션 결과"
             role="region"
         >
@@ -909,16 +965,18 @@ function SimulationResultSection({
                 </CardTitle>
                 <Button
                     variant="ghost"
-                    size="icon-xs"
+                    size="xs"
                     onClick={onClear}
-                    className="text-muted-foreground hover:text-foreground hover:bg-muted p-0"
-                    aria-label="결과 초기화"
+                    className="h-6 text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted font-medium cursor-pointer gap-1 px-1.5"
+                    title="시뮬레이션 결과 닫기 및 그래프 하이라이트 해제"
+                    aria-label="시뮬레이션 결과 초기화 및 하이라이트 해제"
                 >
-                    ✕
+                    <X className="w-3.5 h-3.5" />
+                    Clear
                 </Button>
             </CardHeader>
             <CardContent className="p-3.5 pt-3 flex-1 min-h-0 flex flex-col">
-                <div className="grid grid-cols-3 gap-2 text-xs mb-3 text-foreground bg-card border border-border rounded-md p-2 shadow-xs">
+                <div className="grid grid-cols-3 gap-2 text-xs mb-3 text-foreground bg-card border border-border rounded-md p-2 shadow-xs shrink-0">
                     <div className="text-center border-r border-border">
                         <div className="text-[10px] text-muted-foreground">영향 노드</div>
                         <div className="font-bold text-foreground mt-0.5">{result.deficits.length}개</div>
@@ -982,7 +1040,7 @@ function SimulationHistorySection({
     onEntryClick: (scenarioId: string) => void;
 }) {
     return (
-        <Card className="border border-border bg-muted/40 flex flex-col h-[40%] min-h-[200px] shadow-sm">
+        <Card className="border border-border bg-muted/40 flex-1 min-h-0 flex flex-col shadow-xs">
             <CardHeader className="p-3.5 pb-0">
                 <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                     시뮬레이션 이력 ({entries.length})

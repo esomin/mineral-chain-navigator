@@ -107,7 +107,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
         })),
 
     // 현재 설정을 충격 목록에 추가
-    addDisruption: () => {
+    addDisruption: (filterContext?: { country?: string; nodeType?: string }) => {
         const { currentDisruption, disruptions } = get();
         if (!currentDisruption.targetId) return;
 
@@ -123,7 +123,11 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
             return;
         }
 
-        const disruption: Disruption = { ...currentDisruption };
+        const disruption: Disruption = {
+            ...currentDisruption,
+            country: filterContext?.country as any,
+            nodeType: filterContext?.nodeType as any,
+        };
         set((state) => ({
             disruptions: [...state.disruptions, disruption],
             error: null,

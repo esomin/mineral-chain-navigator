@@ -26,12 +26,34 @@ export class SimulationController {
         const allNodes = this.store.getNodes();
         const allEdges = this.store.getEdges();
 
+        // targetId가 'ALL_NODES'인 충격 항목을 해당 조건의 전체 노드로 확장
+        const expandedDisruptions = scenario.disruptions.flatMap((d) => {
+            if (d.targetId === 'ALL_NODES' && d.targetType === 'node') {
+                const targetNodes = allNodes.filter((n) => {
+                    if (n.type === 'Resource') return false; // 자원은 제외
+                    const matchCountry = !d.country || d.country === 'ALL' || n.country === d.country;
+                    const matchType = !d.nodeType || d.nodeType === 'ALL' || n.type === d.nodeType;
+                    return matchCountry && matchType;
+                });
+                return targetNodes.map((n) => ({
+                    ...d,
+                    targetId: n.id,
+                }));
+            }
+            return [d];
+        });
+
+        const expandedScenario: DisruptionScenario = {
+            ...scenario,
+            disruptions: expandedDisruptions,
+        };
+
         const options: SimulationOptions = {
             timeoutMs: DEFAULT_TIMEOUT_MS,
         };
 
         // 타임아웃을 적용하여 시뮬레이션 실행
-        const result = await this.runWithTimeout(scenario, allNodes, allEdges, options);
+        const result = await this.runWithTimeout(expandedScenario, allNodes, allEdges, options);
 
         // 결과를 인메모리 저장소에 보관
         this.results.set(scenario.id, result);
