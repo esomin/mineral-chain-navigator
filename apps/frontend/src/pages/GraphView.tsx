@@ -230,8 +230,8 @@ export function GraphView() {
                 </div>
             </header>
 
-            {/* 필터 컨트롤 바 */}
-            <FilterBar />
+            {/* 필터 컨트롤 바 (시뮬레이션 제어 패널이 열려있지 않을 때만 표시) */}
+            {!showSimulation && <FilterBar />}
 
             <main className="flex-1 relative overflow-hidden bg-background">
                 {/* 로딩 상태 */}

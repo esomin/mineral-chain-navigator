@@ -7,18 +7,18 @@ export interface TraceabilityPanelProps {
     onClose: () => void;
 }
 
-/** ESG 상태에 따른 배지 Tailwind 클래스를 반환한다. */
+/** ESG 상태에 따른 배지 Tailwind 클래스를 반환한다. (다크 모드 패일톤/네온) */
 function getEsgBadgeClass(status: EsgStatus): string {
     switch (status) {
         case 'compliant':
-            return 'bg-green-50 text-green-700 border border-green-300';
+            return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
         case 'non_compliant':
-            return 'bg-red-50 text-red-700 border border-red-300';
+            return 'bg-destructive/20 text-destructive border border-destructive/30';
         case 'unverified':
-            return 'bg-yellow-50 text-yellow-700 border border-yellow-300';
+            return 'bg-amber-500/20 text-amber-400 border border-amber-500/30';
         case 'unknown':
         default:
-            return 'bg-gray-100 text-gray-500 border border-gray-300';
+            return 'bg-muted text-muted-foreground border border-border';
     }
 }
 
@@ -71,60 +71,65 @@ export function TraceabilityPanel({ factoryNodeId, factoryName, onClose }: Trace
 
     return (
         <aside
-            className="absolute top-0 right-0 w-[380px] h-full bg-white border-l border-gray-200 p-4 overflow-y-auto shadow-md z-10"
+            className="absolute top-0 right-0 w-[380px] h-full bg-card border-l border-border p-4 overflow-y-auto shadow-2xl z-20 flex flex-col font-sans text-foreground"
             aria-label="ESG 역추적 패널"
         >
             {/* 헤더 영역 */}
-            <div className="flex justify-between items-center">
-                <h2 className="m-0 text-base font-semibold">ESG 역추적</h2>
+            <div className="flex items-center justify-between pb-3 mb-3 border-b border-border">
+                <h2 className="text-base font-bold text-foreground tracking-tight">ESG 역추적 분석</h2>
                 <button
                     onClick={onClose}
-                    className="bg-transparent border-none text-xl cursor-pointer text-gray-400 hover:text-gray-600"
+                    className="w-7 h-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer text-base"
                     aria-label="패널 닫기"
                 >
                     ✕
                 </button>
             </div>
 
-            {/* Factory 이름 */}
-            <h3 className="mt-3 mb-2 text-[0.95rem]">{factoryName}</h3>
+            {/* Factory 이름 카드 */}
+            <div className="p-3 bg-muted/40 border border-border rounded-lg shadow-xs mb-4">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">대상 시설 (Factory)</span>
+                <h3 className="text-sm font-bold text-foreground tracking-tight">{factoryName}</h3>
+            </div>
 
             {/* 로딩 상태 */}
             {isLoading && (
-                <div className="py-8 text-center text-gray-400">
-                    역추적 데이터 로딩 중...
+                <div className="py-12 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse inline-block" />
+                    ESG 역추적 데이터 로딩 중...
                 </div>
             )}
 
             {/* 에러 상태 */}
             {error && (
-                <div className="p-3 mt-2 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
-                    [경고] {error}
+                <div className="p-3 bg-destructive/10 border border-destructive rounded-md text-destructive text-xs font-medium flex items-center gap-1.5 mb-4">
+                    ⚠ {error}
                 </div>
             )}
 
             {/* 보고서 내용 */}
             {report && !isLoading && (
-                <div className="mt-3">
+                <div className="space-y-5 flex-1">
                     {/* 원산지(광산) 섹션 */}
-                    <section className="mb-5">
-                        <h4 className="m-0 mb-2 text-sm text-gray-700">
-                            원산지 ({report.sourceOrigins.length})
+                    <section>
+                        <h4 className="text-xs font-bold text-foreground uppercase tracking-wider mb-2.5 flex items-center justify-between">
+                            <span>원산지 (광산)</span>
+                            <span className="text-muted-foreground font-normal">({report.sourceOrigins.length}개)</span>
                         </h4>
                         {report.sourceOrigins.length === 0 ? (
-                            <p className="text-xs text-gray-400">원산지 정보 없음</p>
+                            <p className="text-xs text-muted-foreground p-3 bg-muted/20 rounded-md border border-dashed border-border text-center">원산지 정보 없음</p>
                         ) : (
-                            <ul className="m-0 p-0 list-none">
+                            <ul className="space-y-2 m-0 p-0 list-none">
                                 {report.sourceOrigins.map((origin) => (
                                     <li
                                         key={origin.mineNodeId}
-                                        className="p-2 mb-1.5 bg-gray-50 rounded border border-gray-100 text-sm"
+                                        className="p-3 bg-muted/40 rounded-lg border border-border text-xs shadow-xs space-y-1.5"
                                     >
-                                        <div className="font-medium">{origin.mineName}</div>
-                                        <div className="flex gap-2 mt-1 items-center">
-                                            <span className="text-gray-500">{origin.country}</span>
+                                        <div className="font-semibold text-foreground">{origin.mineName}</div>
+                                        <div className="flex gap-2 items-center text-[11px]">
+                                            <span className="text-muted-foreground font-medium">{origin.country}</span>
                                             <span
-                                                className={`px-1.5 py-px rounded text-[0.7rem] ${getEsgBadgeClass(origin.esgStatus)}`}
+                                                className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${getEsgBadgeClass(origin.esgStatus)}`}
                                             >
                                                 {getEsgLabel(origin.esgStatus)}
                                             </span>
@@ -136,26 +141,28 @@ export function TraceabilityPanel({ factoryNodeId, factoryName, onClose }: Trace
                     </section>
 
                     {/* 처리 단계 섹션 */}
-                    <section className="mb-5">
-                        <h4 className="m-0 mb-2 text-sm text-gray-700">
-                            처리 단계 ({report.processingStages.length})
+                    <section>
+                        <h4 className="text-xs font-bold text-foreground uppercase tracking-wider mb-2.5 flex items-center justify-between">
+                            <span>공급망 처리 단계</span>
+                            <span className="text-muted-foreground font-normal">({report.processingStages.length}단계)</span>
                         </h4>
                         {report.processingStages.length === 0 ? (
-                            <p className="text-xs text-gray-400">처리 단계 정보 없음</p>
+                            <p className="text-xs text-muted-foreground p-3 bg-muted/20 rounded-md border border-dashed border-border text-center">처리 단계 정보 없음</p>
                         ) : (
-                            <ol className="m-0 pl-5 text-sm">
-                                {report.processingStages.map((stage) => (
-                                    <li key={stage.nodeId} className="mb-1.5">
-                                        <div className="font-medium">
-                                            {stage.nodeName}
-                                            <span className="font-normal text-gray-400 ml-1">
+                            <ol className="space-y-2 m-0 p-0 list-none">
+                                {report.processingStages.map((stage, idx) => (
+                                    <li key={stage.nodeId} className="p-3 bg-muted/40 rounded-lg border border-border text-xs shadow-xs space-y-1">
+                                        <div className="flex items-center gap-1.5 font-semibold text-foreground">
+                                            <span className="w-4 h-4 rounded-full bg-primary/20 text-primary text-[10px] font-bold flex items-center justify-center shrink-0">{idx + 1}</span>
+                                            <span>{stage.nodeName}</span>
+                                            <span className="font-normal text-muted-foreground text-[11px]">
                                                 ({stage.nodeType})
                                             </span>
                                         </div>
-                                        <div className="flex gap-2 mt-0.5 items-center">
-                                            <span className="text-gray-500 text-xs">{stage.country}</span>
+                                        <div className="flex gap-2 items-center text-[11px] pl-5">
+                                            <span className="text-muted-foreground">{stage.country}</span>
                                             <span
-                                                className={`px-1.5 py-px rounded text-[0.7rem] ${getEsgBadgeClass(stage.esgStatus)}`}
+                                                className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${getEsgBadgeClass(stage.esgStatus)}`}
                                             >
                                                 {getEsgLabel(stage.esgStatus)}
                                             </span>
@@ -167,20 +174,21 @@ export function TraceabilityPanel({ factoryNodeId, factoryName, onClose }: Trace
                     </section>
 
                     {/* 인증 정보 섹션 */}
-                    <section className="mb-5">
-                        <h4 className="m-0 mb-2 text-sm text-gray-700">
-                            인증 정보 ({report.allCertifications.length})
+                    <section>
+                        <h4 className="text-xs font-bold text-foreground uppercase tracking-wider mb-2 flex items-center justify-between">
+                            <span>보유 인증 정보</span>
+                            <span className="text-muted-foreground font-normal">({report.allCertifications.length}개)</span>
                         </h4>
                         {report.allCertifications.length === 0 ? (
-                            <p className="text-xs text-gray-400">인증 정보 없음</p>
+                            <p className="text-xs text-muted-foreground p-3 bg-muted/20 rounded-md border border-dashed border-border text-center">인증 정보 없음</p>
                         ) : (
-                            <div className="flex flex-wrap gap-1">
+                            <div className="flex flex-wrap gap-1.5 pt-1">
                                 {report.allCertifications.map((cert) => (
                                     <span
                                         key={cert}
-                                        className="px-2 py-0.5 bg-blue-50 border border-blue-200 rounded text-[0.7rem] text-blue-800"
+                                        className="px-2.5 py-1 bg-primary/15 border border-primary/30 rounded-md text-[11px] font-semibold text-primary shadow-xs"
                                     >
-                                        {cert}
+                                        ✓ {cert}
                                     </span>
                                 ))}
                             </div>
@@ -189,20 +197,21 @@ export function TraceabilityPanel({ factoryNodeId, factoryName, onClose }: Trace
 
                     {/* 미검증 경로 경고 섹션 */}
                     {report.flaggedPaths.length > 0 && (
-                        <section className="mb-4">
-                            <h4 className="m-0 mb-2 text-sm text-yellow-700">
-                                미검증 경로 ({report.flaggedPaths.length})
+                        <section>
+                            <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                                <span>⚠ 미검증 경로 경고</span>
+                                <span className="text-amber-400/80 font-normal">({report.flaggedPaths.length})</span>
                             </h4>
-                            <ul className="m-0 p-0 list-none">
+                            <ul className="space-y-2 m-0 p-0 list-none">
                                 {report.flaggedPaths.map((flagged) => (
                                     <li
                                         key={flagged.pathIndex}
-                                        className="p-2 mb-1.5 bg-yellow-50 border border-yellow-200 rounded text-xs"
+                                        className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg text-xs space-y-1 shadow-xs"
                                     >
-                                        <div className="text-yellow-700 font-medium mb-1">
+                                        <div className="text-amber-400 font-semibold">
                                             {flagged.reason}
                                         </div>
-                                        <div className="text-gray-400">
+                                        <div className="text-muted-foreground text-[11px]">
                                             미검증 노드: {flagged.unverifiedNodes.map((n) => n.nodeName).join(', ')}
                                         </div>
                                     </li>
@@ -213,8 +222,8 @@ export function TraceabilityPanel({ factoryNodeId, factoryName, onClose }: Trace
 
                     {/* 미검증 경로 없음 표시 */}
                     {!report.hasUnverifiedPaths && report.sourceOrigins.length > 0 && (
-                        <div className="p-2 bg-green-50 border border-green-200 rounded text-xs text-green-700 text-center">
-                            모든 경로가 ESG 검증 완료되었습니다.
+                        <div className="p-3 bg-emerald-500/15 border border-emerald-500/30 rounded-lg text-xs font-semibold text-emerald-400 text-center shadow-xs">
+                            ✓ 모든 경로가 ESG 검증 완료되었습니다.
                         </div>
                     )}
                 </div>

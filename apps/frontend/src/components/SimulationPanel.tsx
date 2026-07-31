@@ -412,21 +412,28 @@ export function SimulationPanel() {
 
     return (
         <div
-            className="absolute top-0 left-0 h-full flex font-sans z-[5] pointer-events-none"
+            className="absolute top-0 left-0 h-full flex flex-col font-sans z-[5] pointer-events-none"
             role="region"
             aria-label="시뮬레이션 제어 패널 그룹"
         >
-            {/* 1열: 시뮬레이션 설정 및 입력 폼 */}
-            <aside
-                className="w-[380px] h-full bg-card border-r border-border p-4 pr-2 shadow-md flex flex-col pointer-events-auto relative"
-                aria-label="시뮬레이션 입력 및 설정 제어"
-            >
-                {/* 헤더 */}
-                <h2 className="text-base font-bold text-foreground mb-2 tracking-tight flex items-center justify-between pr-4">
+            {/* 공통 상단 헤더: 두 패널 전체 가로 영역을 아우르는 타이틀 바 */}
+            <div className={`bg-card border-b border-r border-border px-4 py-3 shadow-sm flex items-center justify-between pointer-events-auto z-10 transition-all duration-300 ease-in-out ${
+                isSecondColumnOpen ? 'w-[760px]' : 'w-[380px]'
+            }`}>
+                <h2 className="text-sm font-bold text-foreground tracking-tight flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-primary inline-block"></span>
                     시뮬레이션 제어
                 </h2>
+            </div>
 
-                <div className="flex-1 min-h-0 overflow-y-auto space-y-3 p-1">
+            {/* 패널 칼럼 바디 (1열 + 2열) */}
+            <div className="flex-1 min-h-0 flex pointer-events-none">
+                {/* 1열: 시뮬레이션 설정 및 입력 폼 */}
+                <aside
+                    className="w-[380px] h-full bg-card border-r border-border p-4 pr-2 pt-3 shadow-md flex flex-col pointer-events-auto relative"
+                    aria-label="시뮬레이션 입력 및 설정 제어"
+                >
+                    <div className="flex-1 min-h-0 overflow-y-auto space-y-3 p-1">
                     {/* 시나리오 프리셋 선택 카드 (독립된 카드 형태) */}
                     <Card className="border border-border bg-muted/40 shadow-sm mb-3 overflow-visible relative z-10">
                         <CardHeader className="p-2.5 pb-1">
@@ -918,6 +925,7 @@ export function SimulationPanel() {
                     {isSecondColumnOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                 </button>
             )}
+            </div>
         </div>
     );
 }
