@@ -12,6 +12,8 @@ export interface Disruption {
     targetType: 'node' | 'edge';
     disruptionType: DisruptionType;
     severity: number; // 0-1
+    country?: string;
+    nodeType?: string;
 }
 
 export interface DisruptionScenario {

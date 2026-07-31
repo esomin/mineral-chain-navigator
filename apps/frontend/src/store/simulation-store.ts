@@ -48,7 +48,7 @@ export interface SimulationState {
     setTargetType: (targetType: 'node' | 'edge') => void;
     setDisruptionType: (disruptionType: DisruptionType) => void;
     setSeverity: (severity: number) => void;
-    addDisruption: () => void;
+    addDisruption: (filterContext?: { country?: string; nodeType?: string }) => void;
     removeDisruption: (index: number) => void;
     clearDisruptions: () => void;
     setDisruptions: (disruptions: Disruption[]) => void;
@@ -125,8 +125,8 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
 
         const disruption: Disruption = {
             ...currentDisruption,
-            country: filterContext?.country as any,
-            nodeType: filterContext?.nodeType as any,
+            country: filterContext?.country,
+            nodeType: filterContext?.nodeType,
         };
         set((state) => ({
             disruptions: [...state.disruptions, disruption],

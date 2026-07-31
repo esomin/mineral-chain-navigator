@@ -39,8 +39,8 @@ describe('SimulationStore - 시나리오 구성', () => {
     });
 
     it('충격 유형을 변경할 수 있어야 한다', () => {
-        useSimulationStore.getState().setDisruptionType('natural_disaster');
-        expect(useSimulationStore.getState().currentDisruption.disruptionType).toBe('natural_disaster');
+        useSimulationStore.getState().setDisruptionType('logistics_disruption');
+        expect(useSimulationStore.getState().currentDisruption.disruptionType).toBe('logistics_disruption');
     });
 
     it('심각도를 0~1 범위에서 설정할 수 있어야 한다', () => {
@@ -90,7 +90,7 @@ describe('SimulationStore - 충격 목록 관리', () => {
     it('특정 인덱스의 충격을 삭제할 수 있어야 한다', () => {
         useSimulationStore.setState({
             disruptions: [
-                { targetId: 'a', targetType: 'node', disruptionType: 'strike', severity: 0.5 },
+                { targetId: 'a', targetType: 'node', disruptionType: 'logistics_disruption', severity: 0.5 },
                 { targetId: 'b', targetType: 'edge', disruptionType: 'export_restriction', severity: 0.9 },
             ],
         });
@@ -104,7 +104,7 @@ describe('SimulationStore - 충격 목록 관리', () => {
     it('충격 목록을 전체 삭제할 수 있어야 한다', () => {
         useSimulationStore.setState({
             disruptions: [
-                { targetId: 'a', targetType: 'node', disruptionType: 'strike', severity: 0.5 },
+                { targetId: 'a', targetType: 'node', disruptionType: 'logistics_disruption', severity: 0.5 },
             ],
         });
 
@@ -205,7 +205,7 @@ describe('SimulationStore - 시뮬레이션 실행', () => {
 
         useSimulationStore.setState({
             disruptions: [
-                { targetId: 'RF-01', targetType: 'node', disruptionType: 'strike', severity: 0.5 },
+                { targetId: 'RF-01', targetType: 'node', disruptionType: 'logistics_disruption', severity: 0.5 },
             ],
         });
 
