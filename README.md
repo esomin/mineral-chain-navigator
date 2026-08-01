@@ -15,11 +15,11 @@
 | | 리스크 분석 엔진 | HHI + WGI 2팩터 통합, 0-100 정규화, 고위험 플래깅 |
 | | Force-directed 그래프 시각화 | WebGL 캔버스, 노드 크기 비례 렌더링, 리스크 색상 코딩 |
 | | 필터 & 디테일 패널 | 국가/타입/리스크 필터, 노드 클릭 상세 정보 |
-| **Phase 2 (Interactive)** | GIS 지도 시각화 | Deck.gl + Mapbox GL 세계 지도 위 물류 경로 |
-| | 충격 시뮬레이션 | 수출 규제/시설 폐쇄 시나리오 전파 분석 |
-| | AI 인사이트 패널 | LLM 기반 자연어 질의 및 대안 추천 |
-| | 3D 지구본 뷰 | Three.js 기반 글로벌 자원 흐름 개관 |
-| | ESG 역추적 | Factory→Mine 업스트림 경로 투명성 검증 |
+| **Phase 2 (Interactive & Decision)** | 충격 시뮬레이션 | 수출 규제/시설 폐쇄 시나리오 전파 분석 |
+| | 대체 공급망 자동 추천 & 경로 재설정 | 마비 노드 발생 시 최적 우회 경로 탐색 및 리스크/비용 재계산 |
+| | AI 인사이트 패널 | LLM 기반 자연어 질의 및 대체 공급망 추천 리포트 생성 |
+| **Phase 3 (Spatial & Traceability)** | GIS 지도 시각화 | Deck.gl + Mapbox GL 세계 지도 위 물류 경로 시각화 및 지능형 맵 오버레이 |
+| | ESG 역추적 | Factory→Mine 업스트림 경로 투명성 검증 및 탄소/윤리 리스크 추적 |
 
 ## Architecture
 
@@ -28,7 +28,7 @@
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  Presentation Layer                                      │
-│  React 18 + WebGL Graph / Deck.gl Map / Three.js Globe  │
+│  React 18 + WebGL Graph / Deck.gl Map                    │
 ├─────────────────────────────────────────────────────────┤
 │  State Management Layer                                  │
 │  Zustand (필터, 선택, 뷰 상태 보존)                        │
@@ -38,28 +38,27 @@
 │  Graph API / Risk API / Simulation API / Insight API     │
 ├─────────────────────────────────────────────────────────┤
 │  Business Logic Layer                                    │
-│  Risk Engine (HHI+WGI) / Simulation Engine / Vector DB   │
+│  Risk Engine (HHI+WGI) / Rerouting Engine / Vector DB    │
 ├─────────────────────────────────────────────────────────┤
 │  Data Layer                                              │
-│  JSON 인메모리 (Phase 1) → PostgreSQL + pgvector (Phase 2)│
+│  JSON 인메모리 (Phase 1) → PostgreSQL + pgvector (Phase 2+)│
 │  시드 데이터: USGS, UN Comtrade, KOMIS, World Bank WGI    │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ## Tech Stack
 
-| 영역 | Phase 1 (MVP) | Phase 2 |
-|------|--------------|---------|
-| Frontend | React 18 + TypeScript | 동일 |
-| Graph Rendering | @antv/G6 또는 Sigma.js (WebGL) | 동일 |
-| Map Rendering | — | Deck.gl + Mapbox GL |
-| 3D Globe | — | Three.js + Globe.gl |
-| Backend | Node.js + Express + TypeScript | 동일 |
-| Data Store | JSON 파일 기반 인메모리 | PostgreSQL + pgvector |
-| LLM | — | OpenAI GPT-4 API |
-| State Management | Zustand | 동일 |
-| Testing | Vitest + fast-check (PBT) | 동일 |
-| Linting | ESLint + Prettier | 동일 |
+| 영역 | Phase 1 (MVP) | Phase 2 | Phase 3 |
+|------|--------------|---------|---------|
+| Frontend | React 18 + TypeScript | 동일 | 동일 |
+| Graph Rendering | @antv/G6 또는 Sigma.js (WebGL) | 동일 | 동일 |
+| Map Rendering | — | — | Deck.gl + Mapbox GL |
+| Backend | Node.js + Express + TypeScript | 동일 | 동일 |
+| Data Store | JSON 파일 기반 인메모리 | PostgreSQL + pgvector | 동일 |
+| LLM | — | OpenAI GPT-4 API | 동일 |
+| State Management | Zustand | 동일 | 동일 |
+| Testing | Vitest + fast-check (PBT) | 동일 | 동일 |
+| Linting | ESLint + Prettier | 동일 | 동일 |
 
 ## Project Structure (Monorepo)
 
