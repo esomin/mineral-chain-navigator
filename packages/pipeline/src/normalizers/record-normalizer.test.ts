@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { normalizeRecord } from './normalize.js';
+import { normalizeRecord } from './record-normalizer.js';
 import type { RawDataRecord } from '@navigator/shared';
 
 describe('normalizeRecord', () => {

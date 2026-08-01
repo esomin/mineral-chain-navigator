@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { parseTradeData, COMTRADE_COUNTRY_CODES, HS_CODE_CATEGORIES, VALID_HS_CODE_SET } from './parse-trade-data.js';
-import type { ComtradeRecord } from './parse-trade-data.js';
+import { parseTradeData, COMTRADE_COUNTRY_CODES, HS_CODE_CATEGORIES, VALID_HS_CODE_SET } from './trade-parser.js';
+import type { ComtradeRecord } from './trade-parser.js';
 
 /** 테스트용 기본 Comtrade 레코드 생성 헬퍼 */
 function makeRecord(overrides: Partial<ComtradeRecord> = {}): ComtradeRecord {

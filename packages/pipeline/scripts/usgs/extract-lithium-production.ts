@@ -67,7 +67,7 @@ const COUNTRY_DISPLAY_NAMES: Record<string, string> = {
 
 function main() {
     // 1. MCS2025 원시 데이터 로드
-    const rawDataPath = join(__dirname, '..', 'data', 'usgs-mcs2025-rsource.json');
+    const rawDataPath = join(__dirname, '..', '..', 'data', 'usgs-mcs2025-rsource.json');
     const rawData: McsRecord[] = JSON.parse(readFileSync(rawDataPath, 'utf-8'));
 
     // 2. 리튬 레코드만 필터링
@@ -175,9 +175,9 @@ function main() {
     };
 
     // 8. 출력 디렉터리 생성 및 파일 저장
-    const outputDir = join(__dirname, '..', 'data', 'risk-factors');
+    const outputDir = join(__dirname, '..', '..', 'data', 'risk-factors');
     mkdirSync(outputDir, { recursive: true });
-    const outputPath = join(outputDir, 'productionㅛ.json');
+    const outputPath = join(outputDir, 'production-shares.json');
     writeFileSync(outputPath, JSON.stringify(output, null, 2), 'utf-8');
 
     console.log(`저장 완료: ${outputPath}\n`);

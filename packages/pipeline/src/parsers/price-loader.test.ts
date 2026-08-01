@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { tmpdir } from 'node:os';
-import { loadPriceData, selectLatestPrice } from './load-price-data.js';
-import type { PriceDataFile } from './load-price-data.js';
+import { loadPriceData, selectLatestPrice } from './price-loader.js';
+import type { PriceDataFile } from './price-loader.js';
 import type { SupplyChainNode } from '@navigator/shared';
 
 /** 테스트용 임시 디렉토리 경로 */

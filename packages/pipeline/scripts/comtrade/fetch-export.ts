@@ -13,11 +13,11 @@ import { config } from 'dotenv';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-config({ path: join(__dirname, '..', '..', '..', '.env') });
+config({ path: join(__dirname, '..', '..', '..', '..', '.env') });
 
 // 국가명 매핑
 interface ComtradeCountry { id: number; text: string; }
-const countriesPath = join(__dirname, '..', 'data', 'comtrade-countries.json');
+const countriesPath = join(__dirname, '..', '..', 'data', 'comtrade-countries.json');
 const countries: ComtradeCountry[] = JSON.parse(readFileSync(countriesPath, 'utf-8'));
 const countryNameMap = new Map<number, string>(countries.map((c) => [c.id, `${c.text}(${c.id})`]));
 
@@ -28,7 +28,7 @@ const PERIOD = '2025';
 const REPORTER_CODES = '156,152,842'; // 수출국: 중국, 칠레, 미국
 const PARTNER_CODES = '410,392';       // 수입국: 한국, 일본
 
-export const OUTPUT_PATH = join(__dirname, '..', 'data', `raw-export-${PERIOD}.json`);
+export const OUTPUT_PATH = join(__dirname, '..', '..', 'data', `raw-export-${PERIOD}.json`);
 
 async function main() {
     if (!COMTRADE_API_KEY) {

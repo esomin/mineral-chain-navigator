@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { SupplyChainNode, RawDataRecord } from '@navigator/shared';
-import { normalizeRecord } from './normalize.js';
+import { normalizeRecord } from '../normalizers/record-normalizer.js';
 
 /**
  * 가격 데이터 JSON 파일의 개별 가격 항목.

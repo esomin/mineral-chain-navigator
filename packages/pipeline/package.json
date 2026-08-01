@@ -7,7 +7,11 @@
     "types": "./src/index.ts",
     "scripts": {
         "build": "tsc --build",
-        "test": "vitest --run"
+        "test": "vitest --run",
+        "etl:fetch-export": "tsx scripts/comtrade/fetch-export.ts",
+        "etl:fetch-import": "tsx scripts/comtrade/fetch-import.ts",
+        "etl:merge-comtrade": "tsx scripts/comtrade/merge-data.ts",
+        "etl:extract-lithium": "tsx scripts/usgs/extract-lithium-production.ts"
     },
     "dependencies": {
         "@navigator/shared": "*",
