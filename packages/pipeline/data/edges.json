@@ -1,0 +1,86 @@
+[
+    {
+        "id": "E-MINE_AU_PILBARA-REF_KR_POSCO_PILBARA",
+        "type": "Supply",
+        "source_node_id": "MINE_AU_PILBARA",
+        "target_node_id": "REF_KR_POSCO_PILBARA",
+        "description": "호주 필간구라 광산에서 포스코필바라 정제소로 원광(스포듀민) 조달"
+    },
+    {
+        "id": "E-MINE_AU_GREENBUSHES-MAT_KR_LG_CHEM",
+        "type": "Supply",
+        "source_node_id": "MINE_AU_GREENBUSHES",
+        "target_node_id": "MAT_KR_LG_CHEM",
+        "description": "그린부시스 광산 원료 기반 LG화학 양극재 공장 원료 공급 체인"
+    },
+    {
+        "id": "E-MINE_CL_ATACAMA-MAT_KR_LG_CHEM",
+        "type": "Supply",
+        "source_node_id": "MINE_CL_ATACAMA",
+        "target_node_id": "MAT_KR_LG_CHEM",
+        "description": "칠레 아타카마 염호에서 LG화학 청주 공장으로 리튬 화합물 직수입"
+    },
+    {
+        "id": "E-REF_KR_POSCO_PILBARA-MAT_KR_POSCO_FUTUREM",
+        "type": "Ownership",
+        "source_node_id": "REF_KR_POSCO_PILBARA",
+        "target_node_id": "MAT_KR_POSCO_FUTUREM",
+        "description": "포스코 그룹 내 수산화리튬 정제소에서 퓨처엠 양극재 공장으로 원료 이동"
+    },
+    {
+        "id": "E-REF_AR_POSCO-MAT_KR_POSCO_FUTUREM",
+        "type": "Ownership",
+        "source_node_id": "REF_AR_POSCO",
+        "target_node_id": "MAT_KR_POSCO_FUTUREM",
+        "description": "포스코 아르헨티나 염호 정제소에서 한국 퓨처엠 공장으로 탄산리튬 이동"
+    },
+    {
+        "id": "E-MINE_CL_SQM-REF_CN_LITHIUM",
+        "type": "Supply",
+        "source_node_id": "MINE_CL_SQM",
+        "target_node_id": "REF_CN_LITHIUM",
+        "description": "칠레 SQM 염호에서 중국 리튬 정제 클러스터로 리튬 원료 조달"
+    },
+    {
+        "id": "E-MINE_AR_SALTA-REF_CN_LITHIUM",
+        "type": "Supply",
+        "source_node_id": "MINE_AR_SALTA",
+        "target_node_id": "REF_CN_LITHIUM",
+        "description": "아르헨티나 살타 염호에서 중국 정제소로의 LFP 원료 조달"
+    },
+    {
+        "id": "E-REF_CN_LITHIUM-MAT_CN_HUNAN_YUNENG",
+        "type": "Delivery",
+        "source_node_id": "REF_CN_LITHIUM",
+        "target_node_id": "MAT_CN_HUNAN_YUNENG",
+        "description": "중국 내 정제소에서 Hunan Yuneng LFP 양극재 공장으로 탄산리튬 납품"
+    },
+    {
+        "id": "E-MINE_AU_LITHIUM_EU-REF_KR_UMICORE",
+        "type": "Supply",
+        "source_node_id": "MINE_AU_LITHIUM_EU",
+        "target_node_id": "REF_KR_UMICORE",
+        "description": "호주 리튬 광산에서 유미코아 천안 정제소로 리튬 정광 조달"
+    },
+    {
+        "id": "E-MINE_CL_LITHIUM_EU-REF_KR_UMICORE",
+        "type": "Supply",
+        "source_node_id": "MINE_CL_LITHIUM_EU",
+        "target_node_id": "REF_KR_UMICORE",
+        "description": "칠레 염호에서 유미코아 천안 정제소로 탄산리튬 원료 조달"
+    },
+    {
+        "id": "E-REF_KR_UMICORE-MAT_PL_UMICORE",
+        "type": "Ownership",
+        "source_node_id": "REF_KR_UMICORE",
+        "target_node_id": "MAT_PL_UMICORE",
+        "description": "유미코아 천안 정제소에서 폴란드 양극재 공장으로 정제 리튬 내부 공급"
+    },
+    {
+        "id": "E-REF_KR_UMICORE-MAT_KR_UMICORE",
+        "type": "Ownership",
+        "source_node_id": "REF_KR_UMICORE",
+        "target_node_id": "MAT_KR_UMICORE",
+        "description": "유미코아 천안 정제소에서 천안 양극재 공장으로 정제 리튬 자체 공급"
+    }
+]

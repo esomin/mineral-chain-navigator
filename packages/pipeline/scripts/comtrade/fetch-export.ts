@@ -23,7 +23,7 @@ const countryNameMap = new Map<number, string>(countries.map((c) => [c.id, `${c.
 
 const COMTRADE_API_KEY = process.env['COMTRADE_API_KEY'] || '';
 const BASE_URL = 'https://comtradeapi.un.org/data/v1/get/C/A/HS';
-const HS_CODE = '282520';
+const HS_CODES = '253090,283691,282520'; // 리튬광석, 탄산리튬, 수산화리튬
 const PERIOD = '2025';
 const REPORTER_CODES = '156,152,842'; // 수출국: 중국, 칠레, 미국
 const PARTNER_CODES = '410,392';       // 수입국: 한국, 일본
@@ -36,12 +36,12 @@ async function main() {
         process.exit(1);
     }
 
-    console.log(`[Export] HS=${HS_CODE}, period=${PERIOD}, flow=X`);
+    console.log(`[Export] HS=${HS_CODES}, period=${PERIOD}, flow=X`);
     console.log(`  Reporters: ${REPORTER_CODES.split(',').map((c) => countryNameMap.get(Number(c))).join(', ')}`);
     console.log(`  Partners: ${PARTNER_CODES.split(',').map((c) => countryNameMap.get(Number(c))).join(', ')}`);
 
     const params = new URLSearchParams({
-        cmdCode: HS_CODE,
+        cmdCode: HS_CODES,
         reporterCode: REPORTER_CODES,
         partnerCode: PARTNER_CODES,
         period: PERIOD,

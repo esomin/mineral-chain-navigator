@@ -116,7 +116,7 @@ function main() {
     const output = {
         count: mergedRecords.length,
         period: PERIOD,
-        hsCode: '282520',
+        hsCode: '253090,283691,282520',
         strategy: missingExporters.length > 0
             ? `X-primary with M-fallback for ${missingExporters.map((c) => countryNameMap.get(c)).join(', ')}`
             : 'X-only (all exporters reported)',
