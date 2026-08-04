@@ -122,8 +122,8 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
             layout: {
                 type: 'd3-force',
                 preventOverlap: true,
-                linkDistance: 280,
-                nodeStrength: -800,
+                linkDistance: 180,
+                nodeStrength: -1600,
                 x: {
                     strength: 0.1,
                 },
@@ -586,6 +586,7 @@ const COUNTRY_LABEL_KO: Record<string, string> = {
     UnitedStates: '미국',
     Argentina: '아르헨티나',
     Australia: '호주',
+    Poland: '폴란드',
     NA: '기타',
 };
 

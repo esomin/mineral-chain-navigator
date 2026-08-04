@@ -14,10 +14,9 @@ const COUNTRY_OPTIONS = [
     { value: 'SouthKorea', label: '한국' },
     { value: 'China', label: '중국' },
     { value: 'Chile', label: '칠레' },
-    { value: 'UnitedStates', label: '미국' },
-    { value: 'Japan', label: '일본' },
     { value: 'Argentina', label: '아르헨티나' },
     { value: 'Australia', label: '호주' },
+    { value: 'Poland', label: '폴란드' },
 ] as const;
 
 /**

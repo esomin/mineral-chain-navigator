@@ -6,7 +6,6 @@ import { FilterBar } from '../components/common/FilterBar';
 import { NodeDetailPanel } from '../components/panels/NodeDetailPanel';
 import { TraceabilityPanel } from '../components/panels/TraceabilityPanel';
 import { SimulationPanel } from '../components/simulation/SimulationPanel';
-import { ViewSwitcher } from '../components/common/ViewSwitcher';
 import { AIInsightPanel } from '../components/panels/AIInsightPanel';
 import { GiDiamonds } from 'react-icons/gi';
 import { Play, Pause } from 'lucide-react';

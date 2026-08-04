@@ -85,6 +85,7 @@ const COUNTRY_COLORS: Record<string, string> = {
     Japan: 'rgba(255, 105, 180, 0.8)',         // 핑크
     Argentina: 'rgba(117, 190, 233, 0.8)',     // 하늘색
     Australia: 'rgba(255, 193, 7, 0.8)',       // 금색
+    Poland: 'rgba(220, 53, 69, 0.8)',          // 빨강/크림슨
     NA: 'rgba(136, 136, 136, 0.8)',           // 회색
 };
 
@@ -124,6 +125,7 @@ export function getCountryDisplayName(country: string): string {
         UnitedStates: '미국',
         Argentina: '아르헨티나',
         Australia: '호주',
+        Poland: '폴란드',
         NA: 'N/A',
     };
     return names[country] || country;
