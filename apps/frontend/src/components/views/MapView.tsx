@@ -124,7 +124,7 @@ export function MapView({ nodes, edges, riskScores, onNodeClick }: MapViewProps)
             .filter((d): d is ArcData => d !== null);
 
         // 무역량 최대값 (아크 두께 정규화용)
-        const maxVolume = Math.max(...edgeData.map((e) => e.attributes.volume ?? 1), 1);
+        const maxVolume = Math.max(...edgeData.map((e) => e.attributes?.volume ?? 1), 1);
 
         return new ArcLayer<ArcData>({
             id: 'arcs-layer',
@@ -136,7 +136,7 @@ export function MapView({ nodes, edges, riskScores, onNodeClick }: MapViewProps)
             getTargetColor: [255, 100, 50, 160],
             getWidth: (d) => {
                 // 무역량에 비례하는 아크 두께 (1~8px)
-                const volume = d.attributes.volume ?? 1;
+                const volume = d.attributes?.volume ?? 1;
                 return 1 + (volume / maxVolume) * 7;
             },
             greatCircle: true,

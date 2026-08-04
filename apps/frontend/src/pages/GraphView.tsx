@@ -109,7 +109,8 @@ export function GraphView() {
     const hsCodeFilteredNodeIds = useMemo(() => {
         const nodeIds = new Set<string>();
         for (const edge of edges) {
-            if (filters.hsCode.includes(edge.attributes.hsCode)) {
+            const hsCode = edge.attributes?.hsCode;
+            if (!hsCode || filters.hsCode.includes(hsCode) || filters.hsCode.length === 0) {
                 nodeIds.add(edge.sourceNodeId);
                 nodeIds.add(edge.targetNodeId);
             }
@@ -119,13 +120,14 @@ export function GraphView() {
 
     // 필터링된 노드 계산 (200ms 이내 업데이트를 위해 useMemo 활용)
     const filteredNodes = useMemo(() => {
+        const hasHsCodeMatch = hsCodeFilteredNodeIds && hsCodeFilteredNodeIds.size > 0;
         return nodes.filter((node) => {
-            // HS 코드 필터: 해당 HS 코드 엣지에 연결된 노드만 표시
-            if (hsCodeFilteredNodeIds && !hsCodeFilteredNodeIds.has(node.id)) {
+            // HS 코드 필터: 해당 HS 코드 엣지에 연결된 노드만 표시 (엣지에 hsCode 속성이 없을 경우 통과)
+            if (hasHsCodeMatch && !hsCodeFilteredNodeIds.has(node.id)) {
                 return false;
             }
             // 국가 필터 적용
-            if (!filters.countries.includes(node.country)) {
+            if (filters.countries.length > 0 && !filters.countries.includes(node.country)) {
                 return false;
             }
             return true;
@@ -140,8 +142,9 @@ export function GraphView() {
             if (!filteredNodeIds.has(edge.sourceNodeId) || !filteredNodeIds.has(edge.targetNodeId)) {
                 return false;
             }
-            // HS 코드 필터 적용: 선택된 HS 코드의 엣지만 표시
-            if (!filters.hsCode.includes(edge.attributes.hsCode)) {
+            // HS 코드 필터 적용 (hsCode 속성이 있는 경우에만 선택된 HS 코드 비교)
+            const hsCode = edge.attributes?.hsCode;
+            if (hsCode && filters.hsCode.length > 0 && !filters.hsCode.includes(hsCode)) {
                 return false;
             }
             return true;

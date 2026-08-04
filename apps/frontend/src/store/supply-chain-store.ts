@@ -38,8 +38,8 @@ export interface SupplyChainState {
 
 // 초기 필터 상태
 const initialFilters: GraphFilters = {
-    hsCode: ['2825.20'],
-    countries: ['SouthKorea', 'Japan', 'China', 'Chile', 'UnitedStates', 'Argentina', 'Australia'],
+    hsCode: ['2530.90', '2836.91', '2825.20'],
+    countries: ['SouthKorea', 'Japan', 'China', 'Chile', 'UnitedStates', 'Argentina', 'Australia', 'Poland'],
 };
 
 // Zustand 스토어 생성 - 공급망 그래프 상태 관리

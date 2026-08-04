@@ -85,23 +85,30 @@ export function MapViewPage() {
     const filteredNodes = useMemo(() => {
         const nodeIds = new Set<string>();
         for (const edge of edges) {
-            if (filters.hsCode.includes(edge.attributes.hsCode)) {
+            const hsCode = edge.attributes?.hsCode;
+            if (!hsCode || filters.hsCode.includes(hsCode) || filters.hsCode.length === 0) {
                 nodeIds.add(edge.sourceNodeId);
                 nodeIds.add(edge.targetNodeId);
             }
         }
-        return nodes.filter((node) => nodeIds.has(node.id) && filters.countries.includes(node.country));
+        // hsCode 필터링 조건에 부합하는 nodeIds가 비어있는 경우(예: 시드 엣지에 hsCode 속성이 없을 경우) 전체 노드를 fallback으로 검토
+        const matchedNodes = nodeIds.size > 0 ? nodes.filter((node) => nodeIds.has(node.id)) : nodes;
+        return matchedNodes.filter((node) => filters.countries.length === 0 || filters.countries.includes(node.country));
     }, [nodes, edges, filters.hsCode, filters.countries]);
 
     // 필터링된 엣지 (HS 코드 필터 + 양쪽 노드 표시 조건)
     const filteredEdges = useMemo(() => {
         const filteredNodeIds = new Set(filteredNodes.map((n) => n.id));
-        return edges.filter(
-            (edge) =>
-                filteredNodeIds.has(edge.sourceNodeId) &&
-                filteredNodeIds.has(edge.targetNodeId) &&
-                filters.hsCode.includes(edge.attributes.hsCode),
-        );
+        return edges.filter((edge) => {
+            if (!filteredNodeIds.has(edge.sourceNodeId) || !filteredNodeIds.has(edge.targetNodeId)) {
+                return false;
+            }
+            const hsCode = edge.attributes?.hsCode;
+            if (hsCode && filters.hsCode.length > 0 && !filters.hsCode.includes(hsCode)) {
+                return false;
+            }
+            return true;
+        });
     }, [edges, filteredNodes, filters.hsCode]);
 
     // 노드 클릭 핸들러

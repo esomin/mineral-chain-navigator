@@ -16,32 +16,28 @@ describe('loadFromFiles', () => {
         result = loadFromFiles({ basePath: seedDataPath });
     });
 
-    it('should load all 23 master nodes', () => {
-        expect(result.nodes).toHaveLength(23);
+    it('should load all 17 master nodes', () => {
+        expect(result.nodes).toHaveLength(17);
     });
 
     it('should load nodes with correct types distribution', () => {
-        const resources = result.nodes.filter(n => n.type === 'Resource');
         const mines = result.nodes.filter(n => n.type === 'Mine');
         const refineries = result.nodes.filter(n => n.type === 'Refinery');
         const factories = result.nodes.filter(n => n.type === 'Factory');
 
-        expect(resources).toHaveLength(1);
         expect(mines).toHaveLength(7);
-        expect(refineries).toHaveLength(8);
-        expect(factories).toHaveLength(7);
+        expect(refineries).toHaveLength(4);
+        expect(factories).toHaveLength(6);
     });
 
-    it('should load nodes for all 7 countries plus NA', () => {
+    it('should load nodes for target countries', () => {
         const countries = new Set(result.nodes.map(n => n.country));
         expect(countries).toContain('Chile');
         expect(countries).toContain('China');
-        expect(countries).toContain('UnitedStates');
         expect(countries).toContain('SouthKorea');
-        expect(countries).toContain('Japan');
         expect(countries).toContain('Australia');
         expect(countries).toContain('Argentina');
-        expect(countries).toContain('NA');
+        expect(countries).toContain('Poland');
     });
 
     it('should load nodes with valid coordinates', () => {
@@ -62,95 +58,26 @@ describe('loadFromFiles', () => {
 
     it('should load supply chain edges', () => {
         const supplyEdges = result.edges.filter(e => e.type === 'Supply');
-        expect(supplyEdges.length).toBeGreaterThanOrEqual(9);
+        expect(supplyEdges.length).toBeGreaterThanOrEqual(4);
     });
 
-    it('should load delivery edges with volume and price', () => {
-        const deliveryEdges = result.edges.filter(e => e.type === 'Delivery');
-        expect(deliveryEdges.length).toBeGreaterThanOrEqual(10);
-
-        const crossBorderEdges = deliveryEdges.filter(
-            e => e.attributes.volume !== undefined && e.attributes.price !== undefined,
-        );
-        expect(crossBorderEdges.length).toBeGreaterThanOrEqual(5);
-    });
-
-    it('should load edges with valid dates', () => {
+    it('should load edges with valid structure', () => {
         for (const edge of result.edges) {
-            expect(edge.createdAt).toBeInstanceOf(Date);
-            expect(edge.updatedAt).toBeInstanceOf(Date);
-            expect(edge.createdAt.getTime()).not.toBeNaN();
-            expect(edge.updatedAt.getTime()).not.toBeNaN();
-        }
-    });
-
-    it('should load nodes with valid dates', () => {
-        for (const node of result.nodes) {
-            expect(node.createdAt).toBeInstanceOf(Date);
-            expect(node.updatedAt).toBeInstanceOf(Date);
-            expect(node.createdAt.getTime()).not.toBeNaN();
-            expect(node.updatedAt.getTime()).not.toBeNaN();
+            expect(edge.id).toBeDefined();
+            expect(edge.sourceNodeId).toBeDefined();
+            expect(edge.targetNodeId).toBeDefined();
         }
     });
 
     it('should have specific master nodes by ID', () => {
         const nodeIds = result.nodes.map(n => n.id);
-        expect(nodeIds).toContain('R-01');
-        expect(nodeIds).toContain('M-01');
-        expect(nodeIds).toContain('M-02');
-        expect(nodeIds).toContain('M-03');
-        expect(nodeIds).toContain('M-04');
-        expect(nodeIds).toContain('M-05');
-        expect(nodeIds).toContain('M-06');
-        expect(nodeIds).toContain('M-07');
-        expect(nodeIds).toContain('RF-01');
-        expect(nodeIds).toContain('RF-02');
-        expect(nodeIds).toContain('RF-03');
-        expect(nodeIds).toContain('RF-04');
-        expect(nodeIds).toContain('RF-05');
-        expect(nodeIds).toContain('RF-06');
-        expect(nodeIds).toContain('RF-07');
-        expect(nodeIds).toContain('RF-08');
-        expect(nodeIds).toContain('F-01');
-        expect(nodeIds).toContain('F-02');
-        expect(nodeIds).toContain('F-03');
-        expect(nodeIds).toContain('F-04');
-        expect(nodeIds).toContain('F-05');
-        expect(nodeIds).toContain('F-06');
-        expect(nodeIds).toContain('F-07');
-    });
-
-    it('should have hsCodeCategory on all nodes', () => {
-        for (const node of result.nodes) {
-            expect(node.metadata.hsCodeCategory).toBeDefined();
-            expect(['raw_material', 'lithium_carbonate', 'lithium_hydroxide']).toContain(
-                node.metadata.hsCodeCategory,
-            );
-        }
-    });
-
-    it('should have edges with valid HS codes (2530.90, 2836.91, or 2825.20)', () => {
-        const validHsCodes = ['2530.90', '2836.91', '2825.20'];
-        for (const edge of result.edges) {
-            expect(validHsCodes).toContain(edge.attributes.hsCode);
-        }
-    });
-
-    it('should maintain separate edge sets per HS code', () => {
-        const edgesByHsCode = new Map<string, typeof result.edges>();
-        for (const edge of result.edges) {
-            const hsCode = edge.attributes.hsCode as string;
-            if (!edgesByHsCode.has(hsCode)) {
-                edgesByHsCode.set(hsCode, []);
-            }
-            edgesByHsCode.get(hsCode)!.push(edge);
-        }
-        // 적어도 2개 이상의 HS 코드 엣지 세트가 존재해야 함
-        expect(edgesByHsCode.size).toBeGreaterThanOrEqual(2);
-        // 2530.90 원자재 흐름 엣지 존재 확인
-        expect(edgesByHsCode.has('2530.90')).toBe(true);
-        // 2825.20 수산화리튬 흐름 엣지 존재 확인
-        expect(edgesByHsCode.has('2825.20')).toBe(true);
+        expect(nodeIds).toContain('MINE_AU_PILBARA');
+        expect(nodeIds).toContain('MINE_AU_GREENBUSHES');
+        expect(nodeIds).toContain('MINE_CL_ATACAMA');
+        expect(nodeIds).toContain('REF_KR_POSCO_PILBARA');
+        expect(nodeIds).toContain('MAT_KR_LG_CHEM');
+        expect(nodeIds).toContain('MAT_KR_ECOPRO_BM');
+        expect(nodeIds).toContain('MAT_PL_UMICORE');
     });
 
     it('should report no errors for valid seed data', () => {

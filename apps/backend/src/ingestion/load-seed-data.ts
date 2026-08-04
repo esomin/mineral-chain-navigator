@@ -114,16 +114,12 @@ export function loadSeedData(seedDataBasePath?: string): SeedDataResult {
 
     // 노드 소스 파일 목록
     const nodeFiles = [
-        'nodes/resource.json',
-        'nodes/mines.json',
-        'nodes/refineries.json',
-        'nodes/factories.json',
+        'nodes.json',
     ];
 
     // 엣지 소스 파일 목록
     const edgeFiles = [
-        'edges/supply-chains.json',
-        'edges/trade-flows.json',
+        'edges.json',
     ];
 
     // 노드 로딩 및 처리

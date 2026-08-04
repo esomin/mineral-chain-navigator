@@ -90,7 +90,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
             target: edge.targetNodeId,
             data: {
                 edgeType: edge.type,
-                volume: edge.attributes.volume,
+                volume: edge.attributes?.volume,
             },
         }));
 
