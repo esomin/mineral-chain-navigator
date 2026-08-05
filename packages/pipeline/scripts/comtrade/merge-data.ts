@@ -21,14 +21,14 @@ const EXPORTER_CODES = [156, 152, 842]; // 중국, 칠레, 미국
 
 // 국가명 매핑
 interface ComtradeCountry { id: number; text: string; }
-const countriesPath = join(__dirname, '..', '..', 'data', 'comtrade-countries.json');
+const countriesPath = join(__dirname, '..', '..', 'data', 'raw', 'comtrade', 'comtrade-countries.json');
 const countries: ComtradeCountry[] = JSON.parse(readFileSync(countriesPath, 'utf-8'));
 const countryNameMap = new Map<number, string>(countries.map((c) => [c.id, `${c.text}(${c.id})`]));
 
 // 파일 경로
-const exportPath = join(__dirname, '..', '..', 'data', `raw-export-${PERIOD}.json`);
-const importPath = join(__dirname, '..', '..', 'data', `raw-import-${PERIOD}.json`);
-const outputPath = join(__dirname, '..', '..', 'data', 'comtrade-api-response.json');
+const exportPath = join(__dirname, '..', '..', 'data', 'raw', 'comtrade', `raw-export-${PERIOD}.json`);
+const importPath = join(__dirname, '..', '..', 'data', 'raw', 'comtrade', `raw-import-${PERIOD}.json`);
+const outputPath = join(__dirname, '..', '..', 'data', 'raw', 'comtrade', 'comtrade-api-response.json');
 
 interface ComtradeRecord {
     reporterCode: number;

@@ -1,0 +1,413 @@
+{
+    "metadata": {
+        "source": "SRIL LLM Pipeline Analysis",
+        "calculatedAt": "2026-08-05T16:15:00.000Z",
+        "version": "1.0",
+        "formula": "SRIL = HHI * WGI * Vulnerability",
+        "description": "Supply Risk Indicator for LIB (Lithium-ion Battery) nodes",
+        "nodeCount": 17
+    },
+    "nodes": [
+        {
+            "nodeId": "MINE_AU_PILBARA",
+            "name": "Pilgangoora",
+            "type": "Mine",
+            "country": "Australia",
+            "hhi": 1.0,
+            "wgi": 0.92,
+            "vulnerability": 0.15,
+            "sril": 0.14,
+            "srilNormalized": 14.0,
+            "vulnerabilityDetails": {
+                "inDegree": 0,
+                "outDegree": 1,
+                "dependencyCount": 0,
+                "upstreamConcentration": 0,
+                "edgeTypes": [
+                    "Supply"
+                ]
+            },
+            "keyRiskFactors": [
+                "High supply concentration"
+            ]
+        },
+        {
+            "nodeId": "MINE_AU_GREENBUSHES",
+            "name": "Greenbushes",
+            "type": "Mine",
+            "country": "Australia",
+            "hhi": 1.0,
+            "wgi": 0.92,
+            "vulnerability": 0.15,
+            "sril": 0.14,
+            "srilNormalized": 14.0,
+            "vulnerabilityDetails": {
+                "inDegree": 0,
+                "outDegree": 1,
+                "dependencyCount": 0,
+                "upstreamConcentration": 0,
+                "edgeTypes": [
+                    "Supply"
+                ]
+            },
+            "keyRiskFactors": [
+                "High supply concentration"
+            ]
+        },
+        {
+            "nodeId": "MINE_CL_ATACAMA",
+            "name": "Atacama Salt Flat",
+            "type": "Mine",
+            "country": "Chile",
+            "hhi": 1.0,
+            "wgi": 0.75,
+            "vulnerability": 0.15,
+            "sril": 0.11,
+            "srilNormalized": 11.0,
+            "vulnerabilityDetails": {
+                "inDegree": 0,
+                "outDegree": 1,
+                "dependencyCount": 0,
+                "upstreamConcentration": 0,
+                "edgeTypes": [
+                    "Supply"
+                ]
+            },
+            "keyRiskFactors": [
+                "High supply concentration"
+            ]
+        },
+        {
+            "nodeId": "REF_KR_POSCO_PILBARA",
+            "name": "POSCO Pilbara Lithium Solution",
+            "type": "Refinery",
+            "country": "SouthKorea",
+            "hhi": 1.0,
+            "wgi": 0.88,
+            "vulnerability": 0.50,
+            "sril": 0.44,
+            "srilNormalized": 44.0,
+            "vulnerabilityDetails": {
+                "inDegree": 1,
+                "outDegree": 1,
+                "dependencyCount": 1,
+                "upstreamConcentration": 1,
+                "edgeTypes": [
+                    "Supply",
+                    "Ownership"
+                ]
+            },
+            "keyRiskFactors": [
+                "High supply concentration"
+            ]
+        },
+        {
+            "nodeId": "REF_AR_POSCO",
+            "name": "POSCO Argentina",
+            "type": "Refinery",
+            "country": "Argentina",
+            "hhi": 1.0,
+            "wgi": 0.45,
+            "vulnerability": 0.15,
+            "sril": 0.07,
+            "srilNormalized": 7.0,
+            "vulnerabilityDetails": {
+                "inDegree": 0,
+                "outDegree": 1,
+                "dependencyCount": 1,
+                "upstreamConcentration": 0,
+                "edgeTypes": [
+                    "Ownership"
+                ]
+            },
+            "keyRiskFactors": [
+                "Low WGI (0.45)",
+                "High supply concentration"
+            ]
+        },
+        {
+            "nodeId": "MAT_KR_LG_CHEM",
+            "name": "LG Chem Cheongju",
+            "type": "Factory",
+            "country": "SouthKorea",
+            "hhi": 1.0,
+            "wgi": 0.88,
+            "vulnerability": 0.70,
+            "sril": 0.62,
+            "srilNormalized": 62.0,
+            "vulnerabilityDetails": {
+                "inDegree": 2,
+                "outDegree": 0,
+                "dependencyCount": 0,
+                "upstreamConcentration": 2,
+                "edgeTypes": [
+                    "Supply"
+                ]
+            },
+            "keyRiskFactors": [
+                "High supply concentration"
+            ]
+        },
+        {
+            "nodeId": "MAT_KR_ECOPRO_BM",
+            "name": "EcoPro BM Pohang",
+            "type": "Factory",
+            "country": "SouthKorea",
+            "hhi": 1.0,
+            "wgi": 0.88,
+            "vulnerability": 0.00,
+            "sril": 0.00,
+            "srilNormalized": 0.0,
+            "vulnerabilityDetails": {
+                "inDegree": 0,
+                "outDegree": 0,
+                "dependencyCount": 0,
+                "upstreamConcentration": 0,
+                "edgeTypes": []
+            },
+            "keyRiskFactors": [
+                "High supply concentration"
+            ]
+        },
+        {
+            "nodeId": "MAT_KR_POSCO_FUTUREM",
+            "name": "POSCO Future M Gwangyang",
+            "type": "Factory",
+            "country": "SouthKorea",
+            "hhi": 1.0,
+            "wgi": 0.88,
+            "vulnerability": 0.66,
+            "sril": 0.58,
+            "srilNormalized": 58.0,
+            "vulnerabilityDetails": {
+                "inDegree": 2,
+                "outDegree": 0,
+                "dependencyCount": 0,
+                "upstreamConcentration": 2,
+                "edgeTypes": [
+                    "Ownership"
+                ]
+            },
+            "keyRiskFactors": [
+                "High supply concentration"
+            ]
+        },
+        {
+            "nodeId": "MINE_CL_SQM",
+            "name": "Chile SQM Atacama",
+            "type": "Mine",
+            "country": "Chile",
+            "hhi": 1.0,
+            "wgi": 0.75,
+            "vulnerability": 0.15,
+            "sril": 0.11,
+            "srilNormalized": 11.0,
+            "vulnerabilityDetails": {
+                "inDegree": 0,
+                "outDegree": 1,
+                "dependencyCount": 0,
+                "upstreamConcentration": 0,
+                "edgeTypes": [
+                    "Supply"
+                ]
+            },
+            "keyRiskFactors": [
+                "High supply concentration"
+            ]
+        },
+        {
+            "nodeId": "MINE_AR_SALTA",
+            "name": "Argentina Salta Salt Flat",
+            "type": "Mine",
+            "country": "Argentina",
+            "hhi": 1.0,
+            "wgi": 0.45,
+            "vulnerability": 0.15,
+            "sril": 0.07,
+            "srilNormalized": 7.0,
+            "vulnerabilityDetails": {
+                "inDegree": 0,
+                "outDegree": 1,
+                "dependencyCount": 0,
+                "upstreamConcentration": 0,
+                "edgeTypes": [
+                    "Supply"
+                ]
+            },
+            "keyRiskFactors": [
+                "ESG status unknown",
+                "Low WGI (0.45)",
+                "High supply concentration"
+            ]
+        },
+        {
+            "nodeId": "REF_CN_LITHIUM",
+            "name": "China Lithium Refinery Core",
+            "type": "Refinery",
+            "country": "China",
+            "hhi": 1.0,
+            "wgi": 0.30,
+            "vulnerability": 0.85,
+            "sril": 0.25,
+            "srilNormalized": 25.0,
+            "vulnerabilityDetails": {
+                "inDegree": 2,
+                "outDegree": 1,
+                "dependencyCount": 1,
+                "upstreamConcentration": 2,
+                "edgeTypes": [
+                    "Supply",
+                    "Delivery"
+                ]
+            },
+            "keyRiskFactors": [
+                "ESG non-compliant",
+                "Low WGI (0.3)",
+                "High supply concentration",
+                "High network dependency"
+            ]
+        },
+        {
+            "nodeId": "MAT_CN_HUNAN_YUNENG",
+            "name": "Hunan Yuneng",
+            "type": "Factory",
+            "country": "China",
+            "hhi": 1.0,
+            "wgi": 0.30,
+            "vulnerability": 0.37,
+            "sril": 0.11,
+            "srilNormalized": 11.0,
+            "vulnerabilityDetails": {
+                "inDegree": 1,
+                "outDegree": 0,
+                "dependencyCount": 0,
+                "upstreamConcentration": 1,
+                "edgeTypes": [
+                    "Delivery"
+                ]
+            },
+            "keyRiskFactors": [
+                "ESG status unknown",
+                "Low WGI (0.3)",
+                "High supply concentration"
+            ]
+        },
+        {
+            "nodeId": "MINE_AU_LITHIUM_EU",
+            "name": "AU Lithium Mine (EU Target)",
+            "type": "Mine",
+            "country": "Australia",
+            "hhi": 1.0,
+            "wgi": 0.92,
+            "vulnerability": 0.15,
+            "sril": 0.14,
+            "srilNormalized": 14.0,
+            "vulnerabilityDetails": {
+                "inDegree": 0,
+                "outDegree": 1,
+                "dependencyCount": 0,
+                "upstreamConcentration": 0,
+                "edgeTypes": [
+                    "Supply"
+                ]
+            },
+            "keyRiskFactors": [
+                "High supply concentration"
+            ]
+        },
+        {
+            "nodeId": "MINE_CL_LITHIUM_EU",
+            "name": "CL Lithium Mine (EU Target)",
+            "type": "Mine",
+            "country": "Chile",
+            "hhi": 1.0,
+            "wgi": 0.75,
+            "vulnerability": 0.15,
+            "sril": 0.11,
+            "srilNormalized": 11.0,
+            "vulnerabilityDetails": {
+                "inDegree": 0,
+                "outDegree": 1,
+                "dependencyCount": 0,
+                "upstreamConcentration": 0,
+                "edgeTypes": [
+                    "Supply"
+                ]
+            },
+            "keyRiskFactors": [
+                "High supply concentration"
+            ]
+        },
+        {
+            "nodeId": "REF_KR_UMICORE",
+            "name": "Umicore Cheonan",
+            "type": "Refinery",
+            "country": "SouthKorea",
+            "hhi": 1.0,
+            "wgi": 0.88,
+            "vulnerability": 1.00,
+            "sril": 0.88,
+            "srilNormalized": 88.0,
+            "vulnerabilityDetails": {
+                "inDegree": 2,
+                "outDegree": 2,
+                "dependencyCount": 2,
+                "upstreamConcentration": 2,
+                "edgeTypes": [
+                    "Supply",
+                    "Ownership"
+                ]
+            },
+            "keyRiskFactors": [
+                "High supply concentration",
+                "High network dependency"
+            ]
+        },
+        {
+            "nodeId": "MAT_PL_UMICORE",
+            "name": "Umicore Poland",
+            "type": "Factory",
+            "country": "Poland",
+            "hhi": 1.0,
+            "wgi": 0.82,
+            "vulnerability": 0.33,
+            "sril": 0.27,
+            "srilNormalized": 27.0,
+            "vulnerabilityDetails": {
+                "inDegree": 1,
+                "outDegree": 0,
+                "dependencyCount": 0,
+                "upstreamConcentration": 1,
+                "edgeTypes": [
+                    "Ownership"
+                ]
+            },
+            "keyRiskFactors": [
+                "High supply concentration"
+            ]
+        },
+        {
+            "nodeId": "MAT_KR_UMICORE",
+            "name": "Umicore Cheonan Plant",
+            "type": "Factory",
+            "country": "SouthKorea",
+            "hhi": 1.0,
+            "wgi": 0.88,
+            "vulnerability": 0.33,
+            "sril": 0.29,
+            "srilNormalized": 29.0,
+            "vulnerabilityDetails": {
+                "inDegree": 1,
+                "outDegree": 0,
+                "dependencyCount": 0,
+                "upstreamConcentration": 1,
+                "edgeTypes": [
+                    "Ownership"
+                ]
+            },
+            "keyRiskFactors": [
+                "High supply concentration"
+            ]
+        }
+    ]
+}

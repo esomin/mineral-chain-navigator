@@ -8,7 +8,7 @@
 | 파일 | 내용 | 소스 | 상태 |
 |------|------|------|------|
 | `usgs-prod-reserves.json` | 리튬 국가별 생산량(2024확정/2025추정) + 매장량 | USGS MCS2026 | ✅ 완료 |
-| `comtrade-api-response.json` | HS 282520 무역 통계 원시 API 응답 (2025, 한국/일본 수입) | UN Comtrade API | ✅ 완료 |
+| `raw/comtrade/comtrade-api-response.json` | HS 282520 무역 통계 원시 API 응답 (2025, 한국/일본 수입) | UN Comtrade API | ✅ 완료 |
 | `komis-price.json` | LiOH 56.5%min FOB China 월별 시세 (2025-07~2026-06) | KOMIS | ✅ 완료 |
 
 ## 노드 데이터 (`nodes/`)

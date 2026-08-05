@@ -1,6 +1,7 @@
 export {
     computeNodeHHI,
     computeNodeRisk,
+    computeSRILNodeRisk,
     computeEdgeRisk,
     flagHighRisk,
     normalizeScore,
@@ -12,7 +13,7 @@ export {
     DEFAULT_REGULATORY_WEIGHT,
 } from './compute-risk.js';
 
-export type { NodeRiskFactors, EdgeRiskFactors } from './compute-risk.js';
+export type { NodeRiskFactors, SRILNodeFactors, EdgeRiskFactors } from './compute-risk.js';
 
 export {
     recalculateAffected,

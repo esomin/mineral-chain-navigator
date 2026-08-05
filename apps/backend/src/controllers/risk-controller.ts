@@ -1,10 +1,15 @@
 // 리스크 분석 컨트롤러
+import { readFileSync, existsSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { RiskScore, Country } from '@navigator/shared';
 import {
     computeNodeHHI,
     computeNodeRisk,
+    computeSRILNodeRisk,
     computeEdgeRisk,
     flagHighRisk,
+    type SRILNodeFactors,
 } from '@navigator/core';
 import type { DataStore } from '@navigator/database';
 
@@ -21,12 +26,41 @@ const DEFAULT_WGI_SCORES: Map<Country, number> = new Map([
 /** 고위험 임계값 */
 const HIGH_RISK_THRESHOLD = 60;
 
+interface SRILScoreItem extends SRILNodeFactors {
+    nodeId: string;
+}
+
+/** sril-scores.json 파일 로드 */
+function loadSRILScores(): Map<string, SRILScoreItem> {
+    const map = new Map<string, SRILScoreItem>();
+    try {
+        const currentDir = dirname(fileURLToPath(import.meta.url));
+        const srilPath = join(currentDir, '..', '..', '..', 'packages', 'pipeline', 'data', 'risk-factors', 'sril-scores.json');
+        if (existsSync(srilPath)) {
+            const raw = readFileSync(srilPath, 'utf-8');
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed.nodes)) {
+                for (const item of parsed.nodes) {
+                    if (item.nodeId) {
+                        map.set(item.nodeId, item);
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('[RiskController] Failed to load sril-scores.json:', e);
+    }
+    return map;
+}
+
 /**
  * 리스크 계산 컨트롤러.
  * @navigator/core의 비즈니스 로직과 @navigator/database의 데이터를 조합하여
  * 리스크 점수를 계산한다.
  */
 export class RiskController {
+    private readonly srilScoresMap = loadSRILScores();
+
     constructor(private readonly store: DataStore) { }
 
     /**
@@ -37,6 +71,13 @@ export class RiskController {
     getNodeRisk(nodeId: string): RiskScore | null {
         const node = this.store.getNodeById(nodeId);
         if (!node) return null;
+
+        const srilData = this.srilScoresMap.get(nodeId);
+        if (srilData) {
+            const riskScore = computeSRILNodeRisk(node, srilData);
+            const [flagged] = flagHighRisk([riskScore], HIGH_RISK_THRESHOLD);
+            return flagged;
+        }
 
         const inboundEdges = this.store.getInboundEdges(nodeId);
         const hhi = computeNodeHHI(nodeId, inboundEdges);
@@ -74,12 +115,17 @@ export class RiskController {
         const allEdges = this.store.getEdges();
         const results: RiskScore[] = [];
 
-        // 모든 노드 리스크 재계산
+        // 모든 노드 리스크 재계산 (SRIL 점수 우선 사용)
         for (const node of nodes) {
-            const inboundEdges = this.store.getInboundEdges(node.id);
-            const hhi = computeNodeHHI(node.id, inboundEdges);
-            const wgi = DEFAULT_WGI_SCORES.get(node.country) ?? 50;
-            results.push(computeNodeRisk(node, { hhi, wgi }));
+            const srilData = this.srilScoresMap.get(node.id);
+            if (srilData) {
+                results.push(computeSRILNodeRisk(node, srilData));
+            } else {
+                const inboundEdges = this.store.getInboundEdges(node.id);
+                const hhi = computeNodeHHI(node.id, inboundEdges);
+                const wgi = DEFAULT_WGI_SCORES.get(node.country) ?? 50;
+                results.push(computeNodeRisk(node, { hhi, wgi }));
+            }
         }
 
         // 모든 엣지 리스크 재계산

@@ -62,9 +62,56 @@ export interface NodeRiskFactors {
     wgi: number;  // 0-100 (WGI 종합 점수; 높을수록 안정적)
 }
 
+export interface SRILNodeFactors {
+    sril: number;            // 0~1 raw SRIL
+    srilNormalized: number;  // 0~100 normalized SRIL (sril * 100)
+    hhi?: number;            // 0~1
+    wgi?: number;            // 0~1
+    vulnerability?: number;  // 0~1
+    keyRiskFactors?: string[];
+}
+
 export interface EdgeRiskFactors {
     tradeDependency: number;  // 0-1 (전체 공급 중 비중)
     regulatoryRisk: number;   // 0-100 (IRA 미준수 등)
+}
+
+/** 노드 SRIL 리스크 점수 계산 */
+export function computeSRILNodeRisk(
+    node: SupplyChainNode,
+    factors: SRILNodeFactors,
+): RiskScore {
+    const score = normalizeScore(factors.srilNormalized);
+
+    const hhiFactor: RiskFactor = {
+        category: 'supply_concentration',
+        weight: 0.33,
+        rawValue: factors.hhi ?? 0,
+        normalizedValue: (factors.hhi ?? 0) * 100,
+    };
+
+    const wgiFactor: RiskFactor = {
+        category: 'geopolitical',
+        weight: 0.33,
+        rawValue: factors.wgi ?? 0,
+        normalizedValue: (factors.wgi ?? 0) * 100,
+    };
+
+    const vulnerabilityFactor: RiskFactor = {
+        category: 'route_vulnerability',
+        weight: 0.34,
+        rawValue: factors.vulnerability ?? 0,
+        normalizedValue: (factors.vulnerability ?? 0) * 100,
+    };
+
+    return {
+        entityId: node.id,
+        entityType: 'node',
+        score,
+        factors: [hhiFactor, wgiFactor, vulnerabilityFactor],
+        isHighRisk: false,
+        computedAt: new Date(),
+    };
 }
 
 /** 노드 리스크 점수 계산 (HHI + WGI) */
