@@ -82,7 +82,7 @@ router.get('/graph', (_req: Request, res: Response) => {
 
 /** POST /api/simulation/run - 시뮬레이션 실행 */
 router.post('/simulation/run', async (req: Request, res: Response) => {
-    const { scenario } = req.body;
+    const { scenario, criterion } = req.body;
 
     if (!scenario || !scenario.id || !scenario.disruptions) {
         res.status(400).json({ error: '유효한 시나리오를 제공해야 합니다.', statusCode: 400 });
@@ -90,11 +90,24 @@ router.post('/simulation/run', async (req: Request, res: Response) => {
     }
 
     try {
-        const result = await simulationController.runSimulation(scenario);
+        const result = await simulationController.runSimulation(scenario, criterion);
         res.json(result);
     } catch (err) {
         res.status(500).json({ error: '시뮬레이션 실행 중 오류가 발생했습니다.', statusCode: 500 });
     }
+});
+
+/** POST /api/simulation/reroute - 대체 경로 최적화 재계산 */
+router.post('/simulation/reroute', (req: Request, res: Response) => {
+    const { scenarioId, criterion } = req.body;
+
+    if (!scenarioId) {
+        res.status(400).json({ error: 'scenarioId가 필요합니다.', statusCode: 400 });
+        return;
+    }
+
+    const rerouteResults = simulationController.computeReroute(scenarioId, criterion);
+    res.json(rerouteResults);
 });
 
 /** GET /api/simulation/:id - 시뮬레이션 결과 조회 */

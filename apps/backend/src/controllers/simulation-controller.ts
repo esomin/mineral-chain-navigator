@@ -1,6 +1,5 @@
-// 시뮬레이션 실행 컨트롤러
-import type { DisruptionScenario, SimulationResult } from '@navigator/shared';
-import { runSingleSimulation } from '@navigator/core';
+import type { DisruptionScenario, SimulationResult, OptimizationCriterion, ReroutingResult } from '@navigator/shared';
+import { runSingleSimulation, computeReroutingOptions } from '@navigator/core';
 import type { SimulationOptions } from '@navigator/core';
 import type { DataStore } from '@navigator/database';
 
@@ -20,9 +19,13 @@ export class SimulationController {
      * 시뮬레이션을 실행하고 결과를 저장한다.
      * 3초 타임아웃을 적용하며, 초과 시 부분 결과를 반환한다.
      * @param scenario 교란 시나리오
-     * @returns 시뮬레이션 결과
+     * @param criterion 대체 경로 최적화 기준 ('cost' | 'leadTime' | 'balanced')
+     * @returns 시뮬레이션 결과 (우회 경로 옵션 포함)
      */
-    async runSimulation(scenario: DisruptionScenario): Promise<SimulationResult> {
+    async runSimulation(
+        scenario: DisruptionScenario,
+        criterion: OptimizationCriterion = 'balanced',
+    ): Promise<SimulationResult> {
         const allNodes = this.store.getNodes();
         const allEdges = this.store.getEdges();
 
@@ -55,10 +58,34 @@ export class SimulationController {
         // 타임아웃을 적용하여 시뮬레이션 실행
         const result = await this.runWithTimeout(expandedScenario, allNodes, allEdges, options);
 
+        // 대체 우회 공급망 경로 자동 산출 (Re-routing Engine)
+        const reroutingResults = computeReroutingOptions(result, allNodes, allEdges, criterion);
+        result.reroutingResults = reroutingResults;
+
         // 결과를 인메모리 저장소에 보관
         this.results.set(scenario.id, result);
 
         return result;
+    }
+
+    /**
+     * 특정 최적화 기준에 따라 우회 경로 옵션을 재계산한다.
+     */
+    computeReroute(
+        scenarioId: string,
+        criterion: OptimizationCriterion = 'balanced',
+    ): ReroutingResult[] {
+        const result = this.results.get(scenarioId);
+        if (!result) return [];
+
+        const allNodes = this.store.getNodes();
+        const allEdges = this.store.getEdges();
+
+        const reroutingResults = computeReroutingOptions(result, allNodes, allEdges, criterion);
+        result.reroutingResults = reroutingResults;
+        this.results.set(scenarioId, result);
+
+        return reroutingResults;
     }
 
     /**
