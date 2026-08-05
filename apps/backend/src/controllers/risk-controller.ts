@@ -1,6 +1,6 @@
 // 리스크 분석 컨트롤러
 import { readFileSync, existsSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { RiskScore, Country } from '@navigator/shared';
 import {
@@ -35,17 +35,27 @@ function loadSRILScores(): Map<string, SRILScoreItem> {
     const map = new Map<string, SRILScoreItem>();
     try {
         const currentDir = dirname(fileURLToPath(import.meta.url));
-        const srilPath = join(currentDir, '..', '..', '..', 'packages', 'pipeline', 'data', 'risk-factors', 'sril-scores.json');
+        // apps/backend/src/controllers/ -> packages/pipeline/data/risk-factors/ (4 levels up)
+        let srilPath = resolve(currentDir, '..', '..', '..', '..', 'packages', 'pipeline', 'data', 'risk-factors', 'sril-scores.json');
+        if (!existsSync(srilPath)) {
+            // cwd 기반 fallback (apps/backend에서 실행 시)
+            srilPath = resolve(process.cwd(), '..', '..', 'packages', 'pipeline', 'data', 'risk-factors', 'sril-scores.json');
+        }
+
         if (existsSync(srilPath)) {
             const raw = readFileSync(srilPath, 'utf-8');
             const parsed = JSON.parse(raw);
             if (Array.isArray(parsed.nodes)) {
                 for (const item of parsed.nodes) {
-                    if (item.nodeId) {
-                        map.set(item.nodeId, item);
+                    const id = item.nodeId || item.id;
+                    if (id) {
+                        map.set(id, item);
                     }
                 }
+                console.log(`[RiskController] Successfully loaded ${map.size} SRIL scores from ${srilPath}`);
             }
+        } else {
+            console.warn('[RiskController] sril-scores.json file not found at:', srilPath);
         }
     } catch (e) {
         console.warn('[RiskController] Failed to load sril-scores.json:', e);
