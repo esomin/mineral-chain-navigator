@@ -134,7 +134,7 @@ describe('calculateSupplyDeficit', () => {
             expect(results[1].deficitPercentage).toBe(0);
         });
 
-        it('volume이 undefined인 엣지는 0으로 처리', () => {
+        it('volume이 undefined인 엣지는 nodeCapacity로 대체하여 부족률 계산', () => {
             const nodes = [makeNode('A'), makeNode('B')];
             const edges: SupplyChainEdge[] = [{
                 id: 'E-AB',
@@ -153,8 +153,8 @@ describe('calculateSupplyDeficit', () => {
 
             const results = calculateSupplyDeficit(path, nodes, edges);
 
-            expect(results[1].originalSupply).toBe(0);
-            expect(results[1].deficitPercentage).toBe(0);
+            expect(results[1].originalSupply).toBe(10000);
+            expect(results[1].deficitPercentage).toBe(56);
         });
     });
 

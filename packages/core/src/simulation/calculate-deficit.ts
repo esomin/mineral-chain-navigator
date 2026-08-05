@@ -27,15 +27,11 @@ export function calculateSupplyDeficit(
         const nodeId = path.nodes[i];
         const attenuationFactor = path.attenuationFactors[i];
 
-        // 해당 노드로 들어오는 인바운드 엣지의 volume 합계 계산
+        // 해당 노드로 들어오는 인바운드 엣지 확인
         const inboundEdges = allEdges.filter((e) => e.targetNodeId === nodeId);
-        const originalSupply = inboundEdges.reduce(
-            (sum, edge) => sum + (edge.attributes.volume ?? 0),
-            0,
-        );
 
-        // 인바운드 엣지가 없으면 공급 부족 없음
-        if (originalSupply === 0) {
+        // 인바운드 엣지가 없는 소스 노드는 원래 공급량 0, 부족률 0
+        if (inboundEdges.length === 0) {
             results.push({
                 nodeId,
                 originalSupply: 0,
@@ -45,11 +41,31 @@ export function calculateSupplyDeficit(
             continue;
         }
 
+        let rawSupplySum = 0;
+        let hasExplicitVolume = false;
+        for (const edge of inboundEdges) {
+            if (typeof edge.attributes?.volume === 'number' && edge.attributes.volume > 0) {
+                rawSupplySum += edge.attributes.volume;
+                hasExplicitVolume = true;
+            }
+        }
+
+        const node = allNodes.find((n) => n.id === nodeId);
+        const nodeCapacity = Number(node?.metadata?.productionCapacity) || 0;
+
+        let originalSupply = 0;
+        if (hasExplicitVolume) {
+            originalSupply = rawSupplySum;
+        } else {
+            // 인바운드 엣지는 존재하나 volume이 미정의된 경우 노드 생산 용량(productionCapacity)으로 대체
+            originalSupply = nodeCapacity > 0 ? nodeCapacity : 100;
+        }
+
         // 교란된 공급량 = 원래 공급량 * (1 - 감쇄 계수)
-        const disruptedSupply = originalSupply * (1 - attenuationFactor);
+        const disruptedSupply = Math.round(originalSupply * (1 - attenuationFactor));
 
         // 부족률 = 감쇄 계수 * 100, [0, 100] 범위로 클램핑
-        const deficitPercentage = Math.min(100, Math.max(0, attenuationFactor * 100));
+        const deficitPercentage = Math.min(100, Math.max(0, Math.round(attenuationFactor * 100 * 10) / 10));
 
         results.push({
             nodeId,

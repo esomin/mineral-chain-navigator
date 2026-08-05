@@ -35,9 +35,51 @@ export interface DeficitResult {
     deficitPercentage: number; // 0-100
 }
 
+export type OptimizationCriterion = 'cost' | 'leadTime' | 'balanced';
+
+export interface ReroutingCostImpact {
+    unitExtraCostUsd: number;    // 톤당 추가 운임/비용 (USD/ton)
+    totalExtraCostUsd: number;   // 총 추가 비용 (USD)
+}
+
+export interface ReroutingLeadTimeImpact {
+    baseDays: number;            // 기존 리드타임 (일)
+    additionalDays: number;      // 추가 소요 리드타임 (일)
+    totalDays: number;           // 총 소요 리드타임 (일)
+}
+
+export interface ReroutingOption {
+    rank: number;
+    sourceNodeId: string;
+    sourceName: string;
+    targetNodeId: string;
+    targetName: string;
+    allocatedVolumeTons: number;
+    coveredDeficitPercentage: number;
+    costImpact: ReroutingCostImpact;
+    leadTimeImpact: ReroutingLeadTimeImpact;
+    transportType: string;
+    hsCode: string;
+    suggestedEdgeId: string;
+}
+
+export interface ReroutingResult {
+    simulationId: string;
+    targetNodeId: string;
+    targetNodeName: string;
+    defectQuantityTons: number;
+    originalDeficitPercentage: number;
+    remainingDeficitPercentage: number;
+    totalExtraCostUsd: number;
+    averageExtraLeadTimeDays: number;
+    criterion: OptimizationCriterion;
+    options: ReroutingOption[];
+}
+
 export interface SimulationResult {
     scenarioId: string;
     propagationPaths: PropagationPath[];
     deficits: DeficitResult[];
     executionTimeMs: number;
+    reroutingResults?: ReroutingResult[];
 }

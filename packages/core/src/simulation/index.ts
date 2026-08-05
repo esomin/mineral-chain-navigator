@@ -16,3 +16,5 @@ export {
     runConcurrentSimulations,
     type SimulationOptions,
 } from './run-simulation.js';
+
+export { computeReroutingOptions } from './rerouting-engine.js';
