@@ -26,8 +26,8 @@ const COMTRADE_API_KEY = process.env['COMTRADE_API_KEY'] || '';
 const BASE_URL = 'https://comtradeapi.un.org/data/v1/get/C/A/HS';
 const HS_CODES = '253090,283691,282520'; // 리튬광석, 탄산리튬, 수산화리튬
 const PERIOD = '2025';
-const REPORTER_CODES = '410,392';       // 수입국: 한국, 일본
-const PARTNER_CODES = '156,152,842';    // 수출국: 중국, 칠레, 미국
+const REPORTER_CODES = '410,616,156';    // 수입국: 한국(410), 폴란드(616), 중국(156)
+const PARTNER_CODES = '36,152,32,156'; // 수출국: 호주(36), 칠레(152), 아르헨티나(32), 중국(156)
 
 export const OUTPUT_PATH = join(__dirname, '..', '..', 'data', 'raw', 'comtrade', `raw-import-${PERIOD}.json`);
 
@@ -62,8 +62,8 @@ async function main() {
     const result = await response.json() as { count?: number; elapsedTime?: string };
     console.log(`  [OK] ${result.count ?? 0}건 (${result.elapsedTime ?? ''})`);
 
-    writeFileSync(OUTPUT_PATH, JSON.stringify(result, null, 4), 'utf-8');
-    console.log(`  [Saved] ${OUTPUT_PATH}`);
+    // writeFileSync(OUTPUT_PATH, JSON.stringify(result, null, 4), 'utf-8');
+    // console.log(`  [Saved] ${OUTPUT_PATH}`);
 }
 
 main().catch((err) => { console.error(err); process.exit(1); });

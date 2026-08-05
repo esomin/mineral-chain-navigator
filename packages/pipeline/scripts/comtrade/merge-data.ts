@@ -17,7 +17,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const PERIOD = '2025';
-const EXPORTER_CODES = [156, 152, 842]; // 중국, 칠레, 미국
+const EXPORTER_CODES = [36, 152, 32, 156]; // 호주(36), 칠레(152), 아르헨티나(32), 중국(156)
 
 // 국가명 매핑
 interface ComtradeCountry { id: number; text: string; }
