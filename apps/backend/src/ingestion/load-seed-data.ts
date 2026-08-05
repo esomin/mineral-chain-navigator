@@ -158,6 +158,22 @@ export function loadSeedData(seedDataBasePath?: string): SeedDataResult {
         }
     }
 
+    // 물류 정보(logistics-edges.json) 로드 및 병합
+    try {
+        const logisticsPath = resolvePath('logistics/logistics-edges.json');
+        const logisticsData = readJsonFile<{ edges?: Array<{ edgeId: string; logisticsInfo: unknown }> }>(logisticsPath);
+        if (logisticsData?.edges) {
+            const logisticsMap = new Map(logisticsData.edges.map((item) => [item.edgeId, item.logisticsInfo]));
+            for (const edge of edges) {
+                if (logisticsMap.has(edge.id)) {
+                    edge.attributes.logisticsInfo = logisticsMap.get(edge.id) as any;
+                }
+            }
+        }
+    } catch {
+        // 물류 파일이 없는 경우 무시
+    }
+
     // 결과 요약 로깅
     if (errors.length > 0) {
         console.warn(`[SeedData] Loaded with ${errors.length} error(s):`, errors);

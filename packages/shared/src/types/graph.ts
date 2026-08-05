@@ -25,6 +25,23 @@ export interface NodeMetadata {
     [key: string]: unknown;
 }
 
+export interface AlternativeRoute {
+    mode: string;
+    totalLeadTimeDays: number;
+    freightCostUsdPerTon: number;
+    note?: string;
+}
+
+export interface LogisticsInfo {
+    transportMode: 'Maritime' | 'Road' | 'Rail' | 'Air' | 'Multimodal' | string;
+    distanceKm: number;
+    leadTimeDays: number;
+    customsDelayDays: number;
+    totalLeadTimeDays: number;
+    freightCostUsdPerTon: number;
+    alternativeRoutes?: AlternativeRoute[];
+}
+
 export interface EdgeAttributes {
     volume?: number;          // 물량 (kg 또는 톤)
     price?: number;           // 금액 (USD)
@@ -33,6 +50,7 @@ export interface EdgeAttributes {
     hsCode: string;           // HS 코드 (필수: 2530.90, 2836.91, 2825.20)
     year?: number;            // 데이터 기준 연도
     iraCompliant?: boolean;   // IRA 준수 여부
+    logisticsInfo?: LogisticsInfo; // 물류 정보 (리드타임, 거리, 운임 단가 등)
     [key: string]: unknown;
 }
 

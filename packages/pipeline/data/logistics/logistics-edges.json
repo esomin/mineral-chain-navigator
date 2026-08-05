@@ -1,0 +1,216 @@
+{
+  "metadata": {
+    "source": "LLM Logistics & Transportation Route Analysis",
+    "calculatedAt": "2026-08-05T16:05:54.401Z",
+    "version": "1.0",
+    "description": "Logistics lead times, transport modes, and freight costs for supply chain edges",
+    "totalEdgesCount": 12,
+    "defaultAssumptions": {
+      "maritimeSpeedKnots": 18,
+      "roadSpeedKmH": 60,
+      "railSpeedKmH": 40
+    }
+  },
+  "edges": [
+    {
+      "edgeId": "E-MINE_AU_PILBARA-REF_KR_POSCO_PILBARA",
+      "sourceNodeId": "MINE_AU_PILBARA",
+      "targetNodeId": "REF_KR_POSCO_PILBARA",
+      "hsCode": "2530.90",
+      "logisticsInfo": {
+        "transportMode": "Maritime",
+        "distanceKm": 5400,
+        "leadTimeDays": 9.2,
+        "customsDelayDays": 2.0,
+        "totalLeadTimeDays": 11.2,
+        "freightCostUsdPerTon": 85.0
+      }
+    },
+    {
+      "edgeId": "E-MINE_AU_GREENBUSHES-MAT_KR_LG_CHEM",
+      "sourceNodeId": "MINE_AU_GREENBUSHES",
+      "targetNodeId": "MAT_KR_LG_CHEM",
+      "hsCode": "2825.20",
+      "logisticsInfo": {
+        "transportMode": "Maritime",
+        "distanceKm": 5700,
+        "leadTimeDays": 9.6,
+        "customsDelayDays": 2.0,
+        "totalLeadTimeDays": 11.6,
+        "freightCostUsdPerTon": 90.0
+      }
+    },
+    {
+      "edgeId": "E-MINE_CL_ATACAMA-MAT_KR_LG_CHEM",
+      "sourceNodeId": "MINE_CL_ATACAMA",
+      "targetNodeId": "MAT_KR_LG_CHEM",
+      "hsCode": "2836.91",
+      "logisticsInfo": {
+        "transportMode": "Maritime",
+        "distanceKm": 18000,
+        "leadTimeDays": 26.0,
+        "customsDelayDays": 2.0,
+        "totalLeadTimeDays": 28.0,
+        "freightCostUsdPerTon": 145.0
+      },
+      "alternativeRoutes": [
+        {
+          "mode": "Air",
+          "totalLeadTimeDays": 2.5,
+          "freightCostUsdPerTon": 1200.0,
+          "note": "Emergency backup for high urgency"
+        }
+      ]
+    },
+    {
+      "edgeId": "E-REF_KR_POSCO_PILBARA-MAT_KR_POSCO_FUTUREM",
+      "sourceNodeId": "REF_KR_POSCO_PILBARA",
+      "targetNodeId": "MAT_KR_POSCO_FUTUREM",
+      "hsCode": "2825.20",
+      "logisticsInfo": {
+        "transportMode": "Road",
+        "distanceKm": 120,
+        "leadTimeDays": 0.4,
+        "customsDelayDays": 0.0,
+        "totalLeadTimeDays": 0.4,
+        "freightCostUsdPerTon": 25.0
+      }
+    },
+    {
+      "edgeId": "E-REF_AR_POSCO-MAT_KR_POSCO_FUTUREM",
+      "sourceNodeId": "REF_AR_POSCO",
+      "targetNodeId": "MAT_KR_POSCO_FUTUREM",
+      "hsCode": "2836.91",
+      "logisticsInfo": {
+        "transportMode": "Maritime",
+        "distanceKm": 8000,
+        "leadTimeDays": 12.7,
+        "customsDelayDays": 2.0,
+        "totalLeadTimeDays": 14.7,
+        "freightCostUsdPerTon": 100.0
+      }
+    },
+    {
+      "edgeId": "E-MINE_CL_SQM-REF_CN_LITHIUM",
+      "sourceNodeId": "MINE_CL_SQM",
+      "targetNodeId": "REF_CN_LITHIUM",
+      "hsCode": "2836.91",
+      "logisticsInfo": {
+        "transportMode": "Maritime",
+        "distanceKm": 18500,
+        "leadTimeDays": 26.7,
+        "customsDelayDays": 2.0,
+        "totalLeadTimeDays": 28.7,
+        "freightCostUsdPerTon": 148.0
+      },
+      "alternativeRoutes": [
+        {
+          "mode": "Air",
+          "totalLeadTimeDays": 2.5,
+          "freightCostUsdPerTon": 1200.0,
+          "note": "Emergency backup for high urgency"
+        }
+      ]
+    },
+    {
+      "edgeId": "E-MINE_AR_SALTA-REF_CN_LITHIUM",
+      "sourceNodeId": "MINE_AR_SALTA",
+      "targetNodeId": "REF_CN_LITHIUM",
+      "hsCode": "2836.91",
+      "logisticsInfo": {
+        "transportMode": "Maritime",
+        "distanceKm": 19500,
+        "leadTimeDays": 28.0,
+        "customsDelayDays": 2.0,
+        "totalLeadTimeDays": 30.0,
+        "freightCostUsdPerTon": 150.0
+      },
+      "alternativeRoutes": [
+        {
+          "mode": "Air",
+          "totalLeadTimeDays": 2.5,
+          "freightCostUsdPerTon": 1200.0,
+          "note": "Emergency backup for high urgency"
+        }
+      ]
+    },
+    {
+      "edgeId": "E-REF_CN_LITHIUM-MAT_CN_HUNAN_YUNENG",
+      "sourceNodeId": "REF_CN_LITHIUM",
+      "targetNodeId": "MAT_CN_HUNAN_YUNENG",
+      "hsCode": "2836.91",
+      "logisticsInfo": {
+        "transportMode": "Maritime",
+        "distanceKm": 8000,
+        "leadTimeDays": 12.7,
+        "customsDelayDays": 0.0,
+        "totalLeadTimeDays": 12.7,
+        "freightCostUsdPerTon": 100.0
+      }
+    },
+    {
+      "edgeId": "E-MINE_AU_LITHIUM_EU-REF_KR_UMICORE",
+      "sourceNodeId": "MINE_AU_LITHIUM_EU",
+      "targetNodeId": "REF_KR_UMICORE",
+      "hsCode": "2530.90",
+      "logisticsInfo": {
+        "transportMode": "Maritime",
+        "distanceKm": 5600,
+        "leadTimeDays": 9.5,
+        "customsDelayDays": 2.0,
+        "totalLeadTimeDays": 11.5,
+        "freightCostUsdPerTon": 90.0
+      }
+    },
+    {
+      "edgeId": "E-MINE_CL_LITHIUM_EU-REF_KR_UMICORE",
+      "sourceNodeId": "MINE_CL_LITHIUM_EU",
+      "targetNodeId": "REF_KR_UMICORE",
+      "hsCode": "2836.91",
+      "logisticsInfo": {
+        "transportMode": "Maritime",
+        "distanceKm": 17500,
+        "leadTimeDays": 25.3,
+        "customsDelayDays": 2.0,
+        "totalLeadTimeDays": 27.3,
+        "freightCostUsdPerTon": 140.0
+      },
+      "alternativeRoutes": [
+        {
+          "mode": "Air",
+          "totalLeadTimeDays": 2.5,
+          "freightCostUsdPerTon": 1200.0,
+          "note": "Emergency backup for high urgency"
+        }
+      ]
+    },
+    {
+      "edgeId": "E-REF_KR_UMICORE-MAT_PL_UMICORE",
+      "sourceNodeId": "REF_KR_UMICORE",
+      "targetNodeId": "MAT_PL_UMICORE",
+      "hsCode": "2825.20",
+      "logisticsInfo": {
+        "transportMode": "Maritime",
+        "distanceKm": 8600,
+        "leadTimeDays": 13.5,
+        "customsDelayDays": 0.0,
+        "totalLeadTimeDays": 13.5,
+        "freightCostUsdPerTon": 110.0
+      }
+    },
+    {
+      "edgeId": "E-REF_KR_UMICORE-MAT_KR_UMICORE",
+      "sourceNodeId": "REF_KR_UMICORE",
+      "targetNodeId": "MAT_KR_UMICORE",
+      "hsCode": "2825.20",
+      "logisticsInfo": {
+        "transportMode": "Road",
+        "distanceKm": 180,
+        "leadTimeDays": 0.5,
+        "customsDelayDays": 0.0,
+        "totalLeadTimeDays": 0.5,
+        "freightCostUsdPerTon": 32.0
+      }
+    }
+  ]
+}

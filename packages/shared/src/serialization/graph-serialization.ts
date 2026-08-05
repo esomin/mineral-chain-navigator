@@ -78,9 +78,11 @@ export function serializeEdge(edge: SupplyChainEdge): SerializedEdge {
 export function deserializeEdge(json: any): SupplyChainEdge {
     const rawAttributes = json.attributes || {};
     const hsCode = json.hsCode ?? rawAttributes.hsCode ?? '2530.90';
+    const logisticsInfo = json.logisticsInfo ?? json.logistics_info ?? rawAttributes.logisticsInfo ?? rawAttributes.logistics_info;
     const attributes = {
         ...rawAttributes,
         hsCode,
+        ...(logisticsInfo ? { logisticsInfo } : {}),
     };
 
     return {
