@@ -4,9 +4,31 @@ import { Checkbox } from '../ui/checkbox';
 
 // HS 코드 필터 옵션
 const HS_CODE_OPTIONS = [
-    { value: '2530.90', label: '리튬 광석', hoverText: 'HS 2530.90', description: '리튬 광석 (Mine → Refinery)' },
-    { value: '2836.91', label: '탄산리튬', hoverText: 'HS 2836.91', description: '탄산리튬 (Refinery → LFP Factory)' },
-    { value: '2825.20', label: '수산화리튬', hoverText: 'HS 2825.20', description: '수산화리튬 (Refinery → NCM Factory)' },
+    {
+        value: '2530.90',
+        label: '리튬 광석',
+        badges: [
+            { text: '광산→정제소 원료', color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' },
+        ],
+        description: '리튬 광석 (2530.90): 광산 → 정제소 이동 원료',
+    },
+    {
+        value: '2836.91',
+        label: '탄산리튬',
+        badges: [
+            { text: '염호→정제소 원료', color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' },
+            { text: 'LFP계 양극재 원료', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20' },
+        ],
+        description: '탄산리튬 (2836.91): 염호 직조달 및 정제소 → LFP 양극재 공장 납품',
+    },
+    {
+        value: '2825.20',
+        label: '수산화리튬',
+        badges: [
+            { text: '삼원계 양극재 원료', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20' },
+        ],
+        description: '수산화리튬 (2825.20): 정제소 → 삼원계(NCM/NCA) 하이니켈 공장 납품',
+    },
 ] as const;
 
 // 국가 필터 옵션
@@ -74,12 +96,16 @@ export function FilterBar() {
             {/* 품목 필터 */}
             <div className="flex items-center gap-3 flex-wrap">
                 <span className="text-xs font-bold text-muted-foreground mr-2 w-12 shrink-0">품목명</span>
-                <div className="flex items-center gap-4 flex-wrap">
-                    {HS_CODE_OPTIONS.map(({ value, label, hoverText }) => {
+                <div className="flex items-center gap-5 flex-wrap">
+                    {HS_CODE_OPTIONS.map(({ value, label, badges, description }) => {
                         const isActive = filters.hsCode.includes(value);
                         const id = `hs-code-${value}`;
                         return (
-                            <div key={value} className="flex items-center gap-1.5" title={hoverText}>
+                            <div
+                                key={value}
+                                className="flex items-center gap-1.5 group relative"
+                                title={description}
+                            >
                                 <Checkbox
                                     id={id}
                                     checked={isActive}
@@ -87,19 +113,22 @@ export function FilterBar() {
                                 />
                                 <label
                                     htmlFor={id}
-                                    className="text-xs font-semibold text-foreground cursor-pointer select-none"
+                                    className="text-xs font-semibold text-foreground cursor-pointer select-none flex items-center gap-1.5"
                                 >
-                                    {label}
+                                    <span>{label}</span>
+                                    {badges.map((b, idx) => (
+                                        <span
+                                            key={idx}
+                                            className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${b.color}`}
+                                        >
+                                            {b.text}
+                                        </span>
+                                    ))}
                                 </label>
                             </div>
                         );
                     })}
                 </div>
-                {filters.hsCode.length > 0 && (
-                    <span className="text-xs text-muted-foreground ml-1">
-                        — {filters.hsCode.map((val) => HS_CODE_OPTIONS.find((o) => o.value === val)?.description).join(', ')}
-                    </span>
-                )}
             </div>
 
             {/* 국가 필터 */}

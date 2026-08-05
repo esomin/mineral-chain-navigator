@@ -24,22 +24,33 @@ export function serializeNode(node: SupplyChainNode): SerializedNode {
 
 /**
  * Deserializes a SerializedNode back into a SupplyChainNode.
- * Converts snake_case to camelCase and ISO 8601 string to Date.
+ * Handles both nested metadata and flat property structures for resilience.
  */
-export function deserializeNode(json: SerializedNode): SupplyChainNode {
+export function deserializeNode(json: any): SupplyChainNode {
+    const rawMetadata = json.metadata || {};
+    const metadata = {
+        productionCapacity: json.productionCapacity ?? rawMetadata.productionCapacity ?? 0,
+        capacityUnit: json.capacityUnit ?? rawMetadata.capacityUnit ?? 'tons',
+        annualOutput: json.annualOutput ?? rawMetadata.annualOutput,
+        owner: json.owner ?? rawMetadata.owner,
+        esgStatus: json.esgStatus ?? rawMetadata.esgStatus,
+        certifications: json.certifications ?? rawMetadata.certifications ?? [],
+        ...rawMetadata,
+    };
+
     return {
         id: json.id,
         type: json.type as SupplyChainNode['type'],
         name: json.name,
         country: json.country as SupplyChainNode['country'],
         coordinates: {
-            latitude: json.coordinates.lat,
-            longitude: json.coordinates.lng,
+            latitude: json.coordinates?.lat ?? json.coordinates?.latitude ?? 0,
+            longitude: json.coordinates?.lng ?? json.coordinates?.longitude ?? 0,
         },
-        metadata: { ...json.metadata } as SupplyChainNode['metadata'],
-        description: json.description,
-        createdAt: new Date(json.created_at),
-        updatedAt: new Date(json.updated_at),
+        metadata: metadata as SupplyChainNode['metadata'],
+        description: json.description || '',
+        createdAt: json.created_at ? new Date(json.created_at) : (json.createdAt ? new Date(json.createdAt) : new Date()),
+        updatedAt: json.updated_at ? new Date(json.updated_at) : (json.updatedAt ? new Date(json.updatedAt) : new Date()),
     };
 }
 
@@ -61,16 +72,24 @@ export function serializeEdge(edge: SupplyChainEdge): SerializedEdge {
 
 /**
  * Deserializes a SerializedEdge back into a SupplyChainEdge.
- * Converts snake_case to camelCase and ISO 8601 string to Date.
+ * Supports both snake_case (source_node_id) and camelCase (sourceNodeId),
+ * and handles top-level hsCode.
  */
-export function deserializeEdge(json: SerializedEdge): SupplyChainEdge {
+export function deserializeEdge(json: any): SupplyChainEdge {
+    const rawAttributes = json.attributes || {};
+    const hsCode = json.hsCode ?? rawAttributes.hsCode ?? '2530.90';
+    const attributes = {
+        ...rawAttributes,
+        hsCode,
+    };
+
     return {
         id: json.id,
         type: json.type as SupplyChainEdge['type'],
-        sourceNodeId: json.source_node_id,
-        targetNodeId: json.target_node_id,
-        attributes: { ...json.attributes } as SupplyChainEdge['attributes'],
-        createdAt: new Date(json.created_at),
-        updatedAt: new Date(json.updated_at),
+        sourceNodeId: json.sourceNodeId ?? json.source_node_id,
+        targetNodeId: json.targetNodeId ?? json.target_node_id,
+        attributes: attributes as SupplyChainEdge['attributes'],
+        createdAt: json.created_at ? new Date(json.created_at) : (json.createdAt ? new Date(json.createdAt) : new Date()),
+        updatedAt: json.updated_at ? new Date(json.updated_at) : (json.updatedAt ? new Date(json.updatedAt) : new Date()),
     };
 }

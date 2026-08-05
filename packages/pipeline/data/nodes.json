@@ -8,18 +8,16 @@
             "lat": -21.03,
             "lng": 118.82
         },
-        "metadata": {
-            "productionCapacity": 755000,
-            "capacityUnit": "tons_lithium",
-            "annualOutput": 755000,
-            "owner": "Pilbara Minerals / POSCO",
-            "esgStatus": "compliant",
-            "certifications": [
-                "ISO 14001",
-                "ISO 9001",
-                "RMI"
-            ]
-        },
+        "productionCapacity": 755000,
+        "capacityUnit": "tons_lithium",
+        "annualOutput": 755000,
+        "owner": "Pilbara Minerals / POSCO",
+        "esgStatus": "compliant",
+        "certifications": [
+            "ISO 14001",
+            "ISO 9001",
+            "RMI"
+        ],
         "description": "포스코의 핵심 리튬 공급원으로 원료 안정성이 높으나, 호주 현지 기후 및 물류 리스크가 존재함."
     },
     {
@@ -31,17 +29,15 @@
             "lat": -33.86,
             "lng": 116.05
         },
-        "metadata": {
-            "productionCapacity": 1480000,
-            "capacityUnit": "tons_lithium",
-            "annualOutput": 1480000,
-            "owner": "Talison Lithium / LG Chem",
-            "esgStatus": "compliant",
-            "certifications": [
-                "ISO 14001",
-                "IRMA"
-            ]
-        },
+        "productionCapacity": 1480000,
+        "capacityUnit": "tons_lithium",
+        "annualOutput": 1480000,
+        "owner": "Talison Lithium / LG Chem",
+        "esgStatus": "compliant",
+        "certifications": [
+            "ISO 14001",
+            "IRMA"
+        ],
         "description": "세계 최대 규모의 하드락 리튬 광산. LG화학의 핵심 원료 공급망이나 지분 구조상 지정학적 리스크 내재."
     },
     {
@@ -53,17 +49,15 @@
             "lat": -23.38,
             "lng": -68.10
         },
-        "metadata": {
-            "productionCapacity": 210000,
-            "capacityUnit": "tons_lithium",
-            "annualOutput": 210000,
-            "owner": "SQM / ALB / LG Chem",
-            "esgStatus": "compliant",
-            "certifications": [
-                "ISO 14001",
-                "IRMA"
-            ]
-        },
+        "productionCapacity": 210000,
+        "capacityUnit": "tons_lithium",
+        "annualOutput": 210000,
+        "owner": "SQM / ALB / LG Chem",
+        "esgStatus": "compliant",
+        "certifications": [
+            "ISO 14001",
+            "IRMA"
+        ],
         "description": "염수형 리튬의 글로벌 핵심 노드. 칠레 정부의 자원 국유화 정책 및 수자원 고갈 관련 ESG 리스크 상존."
     },
     {
@@ -75,18 +69,16 @@
             "lat": 34.93,
             "lng": 127.70
         },
-        "metadata": {
-            "productionCapacity": 43000,
-            "capacityUnit": "tons_lithium",
-            "annualOutput": 43000,
-            "owner": "POSCO Holdings",
-            "esgStatus": "compliant",
-            "certifications": [
-                "ISO 9001",
-                "ISO 14001",
-                "ISO 45001"
-            ]
-        },
+        "productionCapacity": 43000,
+        "capacityUnit": "tons_lithium",
+        "annualOutput": 43000,
+        "owner": "POSCO Holdings",
+        "esgStatus": "compliant",
+        "certifications": [
+            "ISO 9001",
+            "ISO 14001",
+            "ISO 45001"
+        ],
         "description": "포스코 그룹의 국내 수산화리튬 정제 허브. 미국 IRA 규제 대응에 필수적이나 초기 수율 확보가 관건."
     },
     {
@@ -98,16 +90,14 @@
             "lat": -24.78,
             "lng": -65.41
         },
-        "metadata": {
-            "productionCapacity": 25000,
-            "capacityUnit": "tons_lithium",
-            "annualOutput": 25000,
-            "owner": "POSCO Holdings",
-            "esgStatus": "compliant",
-            "certifications": [
-                "ISO 14001"
-            ]
-        },
+        "productionCapacity": 25000,
+        "capacityUnit": "tons_lithium",
+        "annualOutput": 25000,
+        "owner": "POSCO Holdings",
+        "esgStatus": "compliant",
+        "certifications": [
+            "ISO 14001"
+        ],
         "description": "포스코의 남미 염수 기반 자체 정제 거점. 인프라 불비 및 아르헨티나의 경제적 불안정성이 주요 변수."
     },
     {
@@ -119,18 +109,16 @@
             "lat": 36.64,
             "lng": 127.48
         },
-        "metadata": {
-            "productionCapacity": 88000,
-            "capacityUnit": "tons_cathode",
-            "annualOutput": 88000,
-            "owner": "LG Chem",
-            "esgStatus": "compliant",
-            "certifications": [
-                "ISO 14001",
-                "ISO 9001",
-                "IATF 16949"
-            ]
-        },
+        "productionCapacity": 88000,
+        "capacityUnit": "tons_cathode",
+        "annualOutput": 88000,
+        "owner": "LG Chem",
+        "esgStatus": "compliant",
+        "certifications": [
+            "ISO 14001",
+            "ISO 9001",
+            "IATF 16949"
+        ],
         "description": "LG화학의 핵심 삼원계 양극재 생산 기지. 글로벌 OEM 대응을 위한 핵심 기지이나 원료 다변화 필요."
     },
     {
@@ -142,19 +130,17 @@
             "lat": 36.02,
             "lng": 129.37
         },
-        "metadata": {
-            "productionCapacity": 80000,
-            "capacityUnit": "tons_cathode",
-            "annualOutput": 80000,
-            "owner": "EcoPro BM",
-            "esgStatus": "compliant",
-            "certifications": [
-                "ISO 14001",
-                "ISO 9001",
-                "IATF 16949",
-                "RMI"
-            ]
-        },
+        "productionCapacity": 80000,
+        "capacityUnit": "tons_cathode",
+        "annualOutput": 80000,
+        "owner": "EcoPro BM",
+        "esgStatus": "compliant",
+        "certifications": [
+            "ISO 14001",
+            "ISO 9001",
+            "IATF 16949",
+            "RMI"
+        ],
         "description": "글로벌 하이니켈 양극재 핵심 생산 단지. 리튬 수급 민감도가 높아 리스크 타격 피드백이 빠른 노드."
     },
     {
@@ -166,18 +152,16 @@
             "lat": 34.94,
             "lng": 127.69
         },
-        "metadata": {
-            "productionCapacity": 72000,
-            "capacityUnit": "tons_cathode",
-            "annualOutput": 72000,
-            "owner": "POSCO Future M",
-            "esgStatus": "compliant",
-            "certifications": [
-                "ISO 14001",
-                "ISO 9001",
-                "IATF 16949"
-            ]
-        },
+        "productionCapacity": 72000,
+        "capacityUnit": "tons_cathode",
+        "annualOutput": 72000,
+        "owner": "POSCO Future M",
+        "esgStatus": "compliant",
+        "certifications": [
+            "ISO 14001",
+            "ISO 9001",
+            "IATF 16949"
+        ],
         "description": "포스코 그룹 내부 정제망과 연계된 양극재 생산 거점. 그룹 밸류체인을 통한 원료 수급 안정성 우수."
     },
     {
@@ -189,17 +173,15 @@
             "lat": -23.38,
             "lng": -68.10
         },
-        "metadata": {
-            "productionCapacity": 210000,
-            "capacityUnit": "tons_lithium",
-            "annualOutput": 210000,
-            "owner": "SQM",
-            "esgStatus": "compliant",
-            "certifications": [
-                "ISO 14001",
-                "IRMA"
-            ]
-        },
+        "productionCapacity": 210000,
+        "capacityUnit": "tons_lithium",
+        "annualOutput": 210000,
+        "owner": "SQM",
+        "esgStatus": "compliant",
+        "certifications": [
+            "ISO 14001",
+            "IRMA"
+        ],
         "description": "중국 LFP 밸류체인에 대량 공급되는 탄산리튬 노드. 칠레-중국 간의 강력한 물동 결속이 특징."
     },
     {
@@ -211,14 +193,12 @@
             "lat": -24.78,
             "lng": -65.41
         },
-        "metadata": {
-            "productionCapacity": 50000,
-            "capacityUnit": "tons_lithium",
-            "annualOutput": 50000,
-            "owner": "Ganfeng / Multiple",
-            "esgStatus": "unknown",
-            "certifications": []
-        },
+        "productionCapacity": 50000,
+        "capacityUnit": "tons_lithium",
+        "annualOutput": 50000,
+        "owner": "Ganfeng / Multiple",
+        "esgStatus": "unknown",
+        "certifications": [],
         "description": "중국 자본이 공격적으로 투입 중인 아르헨티나 리튬 염호. 현지 인프라 열위 및 정치적 변수가 리스크."
     },
     {
@@ -230,16 +210,14 @@
             "lat": 27.88,
             "lng": 114.93
         },
-        "metadata": {
-            "productionCapacity": 150000,
-            "capacityUnit": "tons_lithium",
-            "annualOutput": 150000,
-            "owner": "Ganfeng / Tianqi",
-            "esgStatus": "non_compliant",
-            "certifications": [
-                "ISO 9001"
-            ]
-        },
+        "productionCapacity": 150000,
+        "capacityUnit": "tons_lithium",
+        "annualOutput": 150000,
+        "owner": "Ganfeng / Tianqi",
+        "esgStatus": "non_compliant",
+        "certifications": [
+            "ISO 9001"
+        ],
         "description": "세계 최대의 리튬 화합물 정제 클러스터. 가격 경쟁력은 우수하나 서방 진영의 공급망 규제 표적."
     },
     {
@@ -251,17 +229,15 @@
             "lat": 27.88,
             "lng": 112.87
         },
-        "metadata": {
-            "productionCapacity": 1137000,
-            "capacityUnit": "tons_cathode",
-            "annualOutput": 1137000,
-            "owner": "Hunan Yuneng",
-            "esgStatus": "unknown",
-            "certifications": [
-                "ISO 9001",
-                "ISO 14001"
-            ]
-        },
+        "productionCapacity": 1137000,
+        "capacityUnit": "tons_cathode",
+        "annualOutput": 1137000,
+        "owner": "Hunan Yuneng",
+        "esgStatus": "unknown",
+        "certifications": [
+            "ISO 9001",
+            "ISO 14001"
+        ],
         "description": "글로벌 1위 LFP 양극재 생산 기업. 압도적 규모의 경제를 구축했으나 중국 내수 의존도가 높음."
     },
     {
@@ -273,17 +249,15 @@
             "lat": -31.95,
             "lng": 115.86
         },
-        "metadata": {
-            "productionCapacity": 100000,
-            "capacityUnit": "tons_lithium",
-            "annualOutput": 100000,
-            "owner": "Various / Umicore Supply",
-            "esgStatus": "compliant",
-            "certifications": [
-                "ISO 14001",
-                "RMI"
-            ]
-        },
+        "productionCapacity": 100000,
+        "capacityUnit": "tons_lithium",
+        "annualOutput": 100000,
+        "owner": "Various / Umicore Supply",
+        "esgStatus": "compliant",
+        "certifications": [
+            "ISO 14001",
+            "RMI"
+        ],
         "description": "유럽 양극재 밸류체인에 원료를 조달하는 호주 광산 노드. 장거리 해상 운송에 따른 물류 리스크 존재."
     },
     {
@@ -295,16 +269,14 @@
             "lat": -23.38,
             "lng": -68.10
         },
-        "metadata": {
-            "productionCapacity": 150000,
-            "capacityUnit": "tons_lithium",
-            "annualOutput": 150000,
-            "owner": "Various / Umicore Supply",
-            "esgStatus": "compliant",
-            "certifications": [
-                "ISO 14001"
-            ]
-        },
+        "productionCapacity": 150000,
+        "capacityUnit": "tons_lithium",
+        "annualOutput": 150000,
+        "owner": "Various / Umicore Supply",
+        "esgStatus": "compliant",
+        "certifications": [
+            "ISO 14001"
+        ],
         "description": "유럽 법의 환경 기준을 충족하는 칠레 리튬 염호. CRMA 법안 대응을 위한 원료 다변화 노드."
     },
     {
@@ -316,18 +288,16 @@
             "lat": 36.81,
             "lng": 127.15
         },
-        "metadata": {
-            "productionCapacity": 80000,
-            "capacityUnit": "tons_lithium",
-            "annualOutput": 75000,
-            "owner": "Umicore",
-            "esgStatus": "compliant",
-            "certifications": [
-                "ISO 14001",
-                "ISO 9001",
-                "IATF 16949"
-            ]
-        },
+        "productionCapacity": 80000,
+        "capacityUnit": "tons_lithium",
+        "annualOutput": 75000,
+        "owner": "Umicore",
+        "esgStatus": "compliant",
+        "certifications": [
+            "ISO 14001",
+            "ISO 9001",
+            "IATF 16949"
+        ],
         "description": "유미코아의 아시아 핵심 정제 및 가공 거점. 유럽 및 한국 공장으로의 수산화리튬 공급 허브."
     },
     {
@@ -339,18 +309,16 @@
             "lat": 50.47,
             "lng": 17.33
         },
-        "metadata": {
-            "productionCapacity": 138125,
-            "capacityUnit": "tons_cathode",
-            "annualOutput": 138125,
-            "owner": "Umicore",
-            "esgStatus": "compliant",
-            "certifications": [
-                "ISO 14001",
-                "ISO 9001",
-                "IATF 16949"
-            ]
-        },
+        "productionCapacity": 138125,
+        "capacityUnit": "tons_cathode",
+        "annualOutput": 138125,
+        "owner": "Umicore",
+        "esgStatus": "compliant",
+        "certifications": [
+            "ISO 14001",
+            "ISO 9001",
+            "IATF 16949"
+        ],
         "description": "85GWh(약 13.8만 톤) 규모의 유럽 첫 기가팩토리 연계 양극재 공장. 에너지 비용 상승이 주요 리스크."
     },
     {
@@ -362,18 +330,16 @@
             "lat": 36.81,
             "lng": 127.15
         },
-        "metadata": {
-            "productionCapacity": 65000,
-            "capacityUnit": "tons_cathode",
-            "annualOutput": 65000,
-            "owner": "Umicore",
-            "esgStatus": "compliant",
-            "certifications": [
-                "ISO 14001",
-                "ISO 9001",
-                "IATF 16949"
-            ]
-        },
+        "productionCapacity": 65000,
+        "capacityUnit": "tons_cathode",
+        "annualOutput": 65000,
+        "owner": "Umicore",
+        "esgStatus": "compliant",
+        "certifications": [
+            "ISO 14001",
+            "ISO 9001",
+            "IATF 16949"
+        ],
         "description": "40GWh(약 6.5만 톤) 규모의 한국 내 유미코아 양극재 생산 공장. 아시아 배터리 셀 업체 공급 담당."
     }
 ]

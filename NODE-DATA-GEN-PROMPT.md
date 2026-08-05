@@ -84,20 +84,18 @@
 3. 품목 및 무역 분류: UN Comtrade 및 한국무역협회(KITA) HS 코드 체계 참조 (2530.90 리튬광, 2825.20 수산화리튬, 2836.91 탄산리튬, 2841.90 양극재 등)
 4. ESG 및 인증: 기업 지속가능경영보고서 및 RMI, IRMA, ISO 인증(9001, 14001, 45001, IATF 16949) 현황 조사
 
-## 엣지(Edge) 타입 정의 및 단계별 지정 규칙
-엣지의 `type`은 리튬 공급망의 흐름 단계 `[Mine -> Refinery -> Factory]`에 따라 아래 규칙을 엄격히 적용하여 정의하세요.
+## 엣지(Edge) 타입 및 HS 코드 지정 규칙
 
-1. **`Supply` (Mine -> Refinery)**:
-   - **의미**: 원광, 염수 등 자연 상태의 원재료를 채굴하여 1차 정제소로 조달하는 상류(Upstream) 원천 관계.
-   - **평가 요소**: 지정학적 채굴권, 원광 매장량 배분, 현지 가동률 등.
-   
-2. **`Delivery` (Refinery -> Factory / 타 기업 간)**:
-   - **의미**: 정제된 리튬 화학물질(수산화리튬/탄산리튬)을 서로 다른 기업 간에 무역 및 실물 납품(수출입)하는 관계.
-   - **평가 요소**: UN Comtrade 무역 통계, 해상 물류 리스크, FTA/IRA 법안 충족 여부 등.
+### 1) 엣지 타입 (`type`) 지정 규칙 (`[Mine ->(Supply)-> Refinery ->(Delivery/Ownership)-> Factory]`)
+- **`Supply` (Mine -> Refinery)**: 원광, 염수 등 자연 상태의 원재료를 채굴하여 1차 정제소로 조달하는 상류(Upstream) 원천 관계. (중간 정제소가 생략되고 광산에서 양극재 공장으로 원천 직조달되는 케이스 포함)
+- **`Delivery` (Refinery -> Factory / 타 기업 간)**: 정제된 리튬 화학물질(수산화리튬/탄산리튬)을 서로 다른 기업 간에 무역 및 실물 납품(수출입)하는 관계.
+- **`Ownership` (Refinery -> Factory / 동일 그룹 내)**: 정제소와 양극재 공장이 동일한 기업 그룹(계열사)에 속해 있어 수직계열화 형태로 내부 이동하는 관계.
 
-3. **`Ownership` (Refinery -> Factory / 동일 그룹 내)**:
-   - **의미**: 정제소와 양극재 공장이 동일한 기업 그룹(계열사)에 속해 있어 수직계열화 형태로 내부 이동하는 관계.
-   - **평가 요소**: 그룹 내 자급률, 수직계열화 수급 안정성 등.
+### 2) 엣지 HS 코드 (`hs_code`) 자동 부여 규칙
+엣지는 시설 간 물품 이동(무역/조달)을 나타내므로, 이동하는 화합물의 종류에 맞춰 아래 규칙대로 `hs_code` 속성을 직접 부여하세요.
+- **`2530.90` (리튬 광석/정광)**: 광산(Mine) -> 정제소(Refinery) 이동 엣지 (스포듀민 등)
+- **`2836.91` (탄산리튬)**: 염호/정제소 -> LFP 양극재 공장 이동 엣지 또는 염수 추출 리튬 화합물 이동 엣지
+- **`2825.20` (수산화리튬)**: 정제소 -> NCM/NCA/하이니켈 양극재 공장 이동 엣지
 
 ## 수집 대상 노드 목록
 
@@ -141,31 +139,31 @@
 
 ## 수집할 정보 및 규격
 
-1. **Node 정보**:
+1. **Node 정보 (Flat 구조)**:
    - id: 노드 ID (목록의 ID 그대로 사용)
    - type: Mine | Refinery | Factory
    - name: 노드 이름
    - country: 영문 국가명
    - coordinates: 위도(lat), 경도(lng) (소수점 2자리)
-   - metadata: 
-     - productionCapacity: 생산능력 (숫자, 톤 단위 환산 / 1 GWh = 1,625톤)
-     - capacityUnit: tons_cathode | tons_lithium | GWh
-     - annualOutput: 연간 생산량 (숫자)
-     - owner: 소유 기업
-     - esgStatus: compliant | non_compliant | unknown
-     - certifications: 인증 목록 배열 (예: ["ISO 14001", "RMI"])
+   - productionCapacity: 생산능력 (숫자, 톤 단위 환산 / 1 GWh = 1,625톤)
+   - capacityUnit: tons_cathode | tons_lithium | GWh
+   - annualOutput: 연간 생산량 (숫자)
+   - owner: 소유 기업
+   - esgStatus: compliant | non_compliant | unknown
+   - certifications: 인증 목록 배열 (예: ["ISO 14001", "RMI"])
    - description: 노드의 전략적 중요성 및 리스크 요인 (100자 이내)
 
-2. **Edge 정보 (간결한 출발지-도착지 관계 중심)**:
-   - id: "E-{source_node_id}-{target_node_id}"
-   - type: Delivery | Ownership | Supply
-   - source_node_id: 소스 노드 ID
-   - target_node_id: 타겟 노드 ID
+2. **Edge 정보**:
+   - id: "{sourceNodeId}-{targetNodeId}" (E 접두사 제거, camelCase만 사용)
+   - type: Delivery | Ownership | Supply (위 엣지 타입 정의 규칙 준수)
+   - sourceNodeId: 소스 노드 ID (camelCase)
+   - targetNodeId: 타겟 노드 ID (camelCase)
+   - hsCode: "2530.90" | "2836.91" | "2825.20" (위 HS 코드 부여 규칙 및 camelCase 준수)
    - description: 노드 간 연결 관계 및 물류/소유 흐름 설명 (50자 이내)
 
 ## 출력 JSON 형식 (Nodes와 Edges 분리)
 
-### 1. Nodes JSON 형식
+### 1. Nodes JSON 형식 (Flat 구조)
 ```json
 [
   {
@@ -177,14 +175,12 @@
       "lat": 위도,
       "lng": 경도
     },
-    "metadata": {
-      "productionCapacity": 생산능력,
-      "capacityUnit": "tons_cathode|tons_lithium|GWh",
-      "annualOutput": 연간생산량,
-      "owner": "소유기업",
-      "esgStatus": "compliant|non_compliant|unknown",
-      "certifications": ["인증1", "인증2"]
-    },
+    "productionCapacity": 생산능력,
+    "capacityUnit": "tons_cathode|tons_lithium|GWh",
+    "annualOutput": 연간생산량,
+    "owner": "소유기업",
+    "esgStatus": "compliant|non_compliant|unknown",
+    "certifications": ["인증1", "인증2"],
     "description": "노드 설명"
   }
 ]
@@ -196,8 +192,9 @@
   {
     "id": "E-소스노드ID-타겟노드ID",
     "type": "Delivery|Ownership|Supply",
-    "source_node_id": "소스 노드 ID",
-    "target_node_id": "타겟 노드 ID",
+    "sourceNodeId": "소스 노드 ID",
+    "targetNodeId": "타겟 노드 ID",
+    "hsCode": "HS 코드",
     "description": "연결 관계 설명"
   }
 ]
