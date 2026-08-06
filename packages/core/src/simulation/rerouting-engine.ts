@@ -251,5 +251,96 @@ export function computeReroutingOptions(
         });
     }
 
+    // 차질 발생 노드가 존재하면 전역 통합 대체 시나리오(Global Combined Rerouting Result)를 생성하여 최상단에 배치
+    if (results.length > 0) {
+        const totalDisruptedTons = results.reduce((sum, r) => sum + r.defectQuantityTons, 0);
+        const avgOriginalDeficit = Math.round((results.reduce((sum, r) => sum + r.originalDeficitPercentage, 0) / results.length) * 10) / 10;
+
+        const criteria: OptimizationCriterion[] = ['cost', 'leadTime', 'balanced'];
+        const planTitles: Record<OptimizationCriterion, string> = {
+            cost: '1안: 비용 우선',
+            leadTime: '2안: 운송시간 우선',
+            balanced: '3안: 밸런스',
+        };
+
+        const globalPlans: ReroutingProposalPlan[] = ([1, 2, 3] as const).map((planNum) => {
+            const crit = criteria[planNum - 1];
+            let globalTotalExtraCost = 0;
+            let weightedLeadTimeSum = 0;
+            let globalRemainingDeficitSum = 0;
+
+            const supplierMap = new Map<string, ReroutingOption>();
+
+            results.forEach((nodeResult) => {
+                const plan = nodeResult.plans?.find((p) => p.planNumber === planNum) || nodeResult.plans?.[0];
+                if (!plan) return;
+
+                globalTotalExtraCost += plan.totalExtraCostUsd;
+                weightedLeadTimeSum += plan.averageExtraLeadTimeDays * (nodeResult.defectQuantityTons || 1);
+                globalRemainingDeficitSum += plan.remainingDeficitPercentage;
+
+                plan.options.forEach((opt) => {
+                    const existing = supplierMap.get(opt.sourceNodeId);
+                    if (existing) {
+                        existing.allocatedVolumeTons += opt.allocatedVolumeTons;
+                        existing.costImpact.totalExtraCostUsd += opt.costImpact.totalExtraCostUsd;
+                    } else {
+                        supplierMap.set(opt.sourceNodeId, {
+                            ...opt,
+                            targetNodeId: 'GLOBAL_TOTAL',
+                            targetName: `전체 ${results.length}개 노드`,
+                            costImpact: { ...opt.costImpact },
+                            leadTimeImpact: { ...opt.leadTimeImpact },
+                        });
+                    }
+                });
+            });
+
+            const mergedOptions = Array.from(supplierMap.values());
+            mergedOptions.sort((a, b) => b.allocatedVolumeTons - a.allocatedVolumeTons);
+            mergedOptions.forEach((opt, idx) => {
+                opt.rank = idx + 1;
+                opt.coveredDeficitPercentage = totalDisruptedTons > 0
+                    ? Math.round((opt.allocatedVolumeTons / totalDisruptedTons) * avgOriginalDeficit * 10) / 10
+                    : 0;
+            });
+
+            const avgRemainingDeficit = Math.round((globalRemainingDeficitSum / results.length) * 10) / 10;
+            const avgGlobalLeadTime = totalDisruptedTons > 0
+                ? Math.round((weightedLeadTimeSum / totalDisruptedTons) * 10) / 10
+                : 0;
+
+            return {
+                planNumber: planNum,
+                title: planTitles[crit],
+                criterion: crit,
+                coveredDeficitPercentage: Math.max(0, Math.round((avgOriginalDeficit - avgRemainingDeficit) * 10) / 10),
+                remainingDeficitPercentage: avgRemainingDeficit,
+                totalExtraCostUsd: globalTotalExtraCost,
+                averageExtraLeadTimeDays: avgGlobalLeadTime,
+                options: mergedOptions,
+            };
+        });
+
+        const defaultGlobalPlan = globalPlans.find((p) => p.criterion === defaultCriterion) || globalPlans[0];
+
+        const globalCombinedResult: ReroutingResult = {
+            simulationId: simulationResult.scenarioId,
+            targetNodeId: 'GLOBAL_TOTAL',
+            targetNodeName: `전체 통합 (${results.length}개 노드)`,
+            isGlobalCombined: true,
+            defectQuantityTons: totalDisruptedTons,
+            originalDeficitPercentage: avgOriginalDeficit,
+            remainingDeficitPercentage: defaultGlobalPlan.remainingDeficitPercentage,
+            totalExtraCostUsd: defaultGlobalPlan.totalExtraCostUsd,
+            averageExtraLeadTimeDays: defaultGlobalPlan.averageExtraLeadTimeDays,
+            criterion: defaultCriterion,
+            options: defaultGlobalPlan.options,
+            plans: globalPlans,
+        };
+
+        results.unshift(globalCombinedResult);
+    }
+
     return results;
 }

@@ -128,11 +128,12 @@ describe('computeReroutingOptions', () => {
 
         const reroutes = computeReroutingOptions(result, mockNodes, mockEdges, 'balanced');
 
-        expect(reroutes).toHaveLength(1);
-        expect(reroutes[0].targetNodeId).toBe('REF_KR_POSCO_PILBARA');
-        expect(reroutes[0].options.length).toBe(2);
+        expect(reroutes).toHaveLength(2); // 1 global combined + 1 individual node
+        expect(reroutes[0].isGlobalCombined).toBe(true);
+        expect(reroutes[1].targetNodeId).toBe('REF_KR_POSCO_PILBARA');
+        expect(reroutes[1].options.length).toBe(2);
         // Candidates for Refinery must be Mines
-        expect(reroutes[0].options[0].sourceNodeId).toMatch(/^MINE_/);
+        expect(reroutes[1].options[0].sourceNodeId).toMatch(/^MINE_/);
     });
 
     it('should calculate rerouting options for Factory node (recommending Refineries)', () => {
@@ -147,10 +148,11 @@ describe('computeReroutingOptions', () => {
 
         const reroutes = computeReroutingOptions(result, mockNodes, mockEdges, 'balanced');
 
-        expect(reroutes).toHaveLength(1);
-        expect(reroutes[0].targetNodeId).toBe('MAT_KR_POSCO_FUTUREM');
-        expect(reroutes[0].options.length).toBeGreaterThan(0);
+        expect(reroutes).toHaveLength(2); // 1 global combined + 1 individual node
+        expect(reroutes[0].isGlobalCombined).toBe(true);
+        expect(reroutes[1].targetNodeId).toBe('MAT_KR_POSCO_FUTUREM');
+        expect(reroutes[1].options.length).toBeGreaterThan(0);
         // Candidates for Factory must be Refineries
-        expect(reroutes[0].options[0].sourceNodeId).toMatch(/^REF_/);
+        expect(reroutes[1].options[0].sourceNodeId).toMatch(/^REF_/);
     });
 });

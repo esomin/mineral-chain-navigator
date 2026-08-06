@@ -78,6 +78,7 @@ export interface ReroutingResult {
     simulationId: string;
     targetNodeId: string;
     targetNodeName: string;
+    isGlobalCombined?: boolean;
     defectQuantityTons: number;
     originalDeficitPercentage: number;
     remainingDeficitPercentage: number;
