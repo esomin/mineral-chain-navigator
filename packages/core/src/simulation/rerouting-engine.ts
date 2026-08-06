@@ -287,8 +287,7 @@ export function computeReroutingOptions(
                     } else {
                         supplierMap.set(opt.sourceNodeId, {
                             ...opt,
-                            targetNodeId: 'GLOBAL_TOTAL',
-                            targetName: `전체 ${results.length}개 노드`,
+                            targetNodeId: opt.targetNodeId,
                             costImpact: { ...opt.costImpact },
                             leadTimeImpact: { ...opt.leadTimeImpact },
                         });

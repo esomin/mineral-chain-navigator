@@ -87,14 +87,14 @@ export function SimulationResultSection({
                                 </tr>
                             </thead>
                             <tbody>
-                                {sortedDeficits.map((d) => {
+                                {sortedDeficits.map((d, index) => {
                                     const node = nodes.find((n) => n.id === d.nodeId);
                                     const nameStr = node
                                         ? `${node.name} (${node.country === 'NA' ? '' : getCountryDisplayName(node.country) + ', '}${getNodeTypeLabel(node.type)})`
                                         : d.nodeId;
                                     const hasDeficit = d.deficitPercentage > 0;
                                     return (
-                                        <tr key={d.nodeId} className="border-b border-border/40 last:border-b-0 text-foreground hover:bg-muted/50">
+                                        <tr key={`${d.nodeId}-${index}`} className="border-b border-border/40 last:border-b-0 text-foreground hover:bg-muted/50">
                                             <td className="py-1 px-2 font-medium text-[11px] truncate max-w-[190px]" title={nameStr}>
                                                 {nameStr}
                                             </td>

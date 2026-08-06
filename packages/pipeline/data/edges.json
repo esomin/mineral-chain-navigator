@@ -94,5 +94,21 @@
         "targetNodeId": "MAT_KR_UMICORE",
         "hsCode": "2825.20",
         "description": "유미코아 천안 정제소에서 천안 NCM 양극재 공장으로 수산화리튬 자체 공급"
+    },
+    {
+        "id": "E-REF_KR_POSCO_PILBARA-MAT_KR_ECOPRO_BM",
+        "type": "Delivery",
+        "sourceNodeId": "REF_KR_POSCO_PILBARA",
+        "targetNodeId": "MAT_KR_ECOPRO_BM",
+        "hsCode": "2825.20",
+        "description": "포스코필바라 율촌 정제소에서 에코프로비엠 포항 공장으로 수산화리튬 납품"
+    },
+    {
+        "id": "E-REF_CN_LITHIUM-MAT_KR_ECOPRO_BM",
+        "type": "Delivery",
+        "sourceNodeId": "REF_CN_LITHIUM",
+        "targetNodeId": "MAT_KR_ECOPRO_BM",
+        "hsCode": "2825.20",
+        "description": "중국 리튬 정제소에서 에코프로비엠 포항 공장으로 수산화리튬 납품"
     }
 ]

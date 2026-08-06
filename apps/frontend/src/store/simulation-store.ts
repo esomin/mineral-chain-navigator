@@ -264,11 +264,26 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
 
     triggerRerouteCalculation: async () => {
         set({ isRerouteLoading: true });
-        // UX 상태 시각화를 위해 1.2초 로딩 후 완료
-        await new Promise((resolve) => setTimeout(resolve, 1200));
+        const state = get();
+
+        // activeRerouteOptions가 없거나 비어있는 경우 시뮬레이션 결과에서 복원 또는 백엔드 재계산 수행
+        if (state.result && (!state.activeRerouteOptions || state.activeRerouteOptions.length === 0)) {
+            if (state.result.reroutingResults && state.result.reroutingResults.length > 0) {
+                set({ activeRerouteOptions: state.result.reroutingResults });
+            } else {
+                await state.recalculateReroute('balanced');
+            }
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 800));
+
+        const currentState = get();
+        const options = currentState.activeRerouteOptions || currentState.result?.reroutingResults || [];
+
         set({
             isRerouteLoading: false,
-            isRerouteApplied: true,
+            isRerouteApplied: options.length > 0,
+            activeRerouteOptions: options,
             selectedPlanNumber: 1,
         });
     },

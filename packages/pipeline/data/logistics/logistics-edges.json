@@ -205,11 +205,39 @@
       "hsCode": "2825.20",
       "logisticsInfo": {
         "transportMode": "Road",
-        "distanceKm": 180,
-        "leadTimeDays": 0.5,
+        "distanceKm": 18,
+        "leadTimeDays": 0.4,
         "customsDelayDays": 0.0,
-        "totalLeadTimeDays": 0.5,
-        "freightCostUsdPerTon": 32.0
+        "totalLeadTimeDays": 0.4,
+        "freightCostUsdPerTon": 22.0
+      }
+    },
+    {
+      "edgeId": "E-REF_KR_POSCO_PILBARA-MAT_KR_ECOPRO_BM",
+      "sourceNodeId": "REF_KR_POSCO_PILBARA",
+      "targetNodeId": "MAT_KR_ECOPRO_BM",
+      "hsCode": "2825.20",
+      "logisticsInfo": {
+        "transportMode": "Road",
+        "distanceKm": 120,
+        "leadTimeDays": 0.4,
+        "customsDelayDays": 0.0,
+        "totalLeadTimeDays": 0.4,
+        "freightCostUsdPerTon": 25.0
+      }
+    },
+    {
+      "edgeId": "E-REF_CN_LITHIUM-MAT_KR_ECOPRO_BM",
+      "sourceNodeId": "REF_CN_LITHIUM",
+      "targetNodeId": "MAT_KR_ECOPRO_BM",
+      "hsCode": "2825.20",
+      "logisticsInfo": {
+        "transportMode": "Maritime",
+        "distanceKm": 1800,
+        "leadTimeDays": 4.5,
+        "customsDelayDays": 0.0,
+        "totalLeadTimeDays": 4.5,
+        "freightCostUsdPerTon": 85.0
       }
     }
   ]

@@ -102,38 +102,55 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
 
         // 우회 경로 시각화 적용 시 초록색 점선 엣지 및 타겟 노드 테두리 상태 갱신 (선택된 1/2/3안 반영)
         if (isRerouteApplied && activeRerouteOptions && activeRerouteOptions.length > 0) {
-            const mainResult = activeRerouteOptions[0];
-            const plans = mainResult.plans || [];
-            const planIndex = (selectedPlanNumber >= 1 && selectedPlanNumber <= plans.length) ? selectedPlanNumber - 1 : 0;
-            const currentPlanOptions = plans[planIndex]?.options || mainResult.options;
+            const realNodeResults = activeRerouteOptions.filter((r) => !r.isGlobalCombined);
+            const targetsToProcess = realNodeResults.length > 0 ? realNodeResults : activeRerouteOptions;
 
-            currentPlanOptions.forEach((opt) => {
-                const rerouteEdgeId = opt.suggestedEdgeId || `REROUTE-${opt.sourceNodeId}-${opt.targetNodeId}`;
-                if (!g6Edges.some((e) => e.id === rerouteEdgeId)) {
-                    g6Edges.push({
-                        id: rerouteEdgeId,
-                        source: opt.sourceNodeId,
-                        target: opt.targetNodeId,
-                        style: {
-                            stroke: '#52c41a',
-                            lineWidth: 3,
-                            lineDash: [6, 4],
-                            endArrow: true,
-                            endArrowSize: 8,
-                        },
-                        data: {
-                            isRerouteEdge: true,
-                            rank: opt.rank,
-                        },
-                    } as any);
+            const resolvedTargetNodeIds = new Set<string>();
+
+            targetsToProcess.forEach((nodeResult) => {
+                const plans = nodeResult.plans || [];
+                const planIndex = (selectedPlanNumber >= 1 && selectedPlanNumber <= plans.length) ? selectedPlanNumber - 1 : 0;
+                const currentPlanOptions = plans[planIndex]?.options || nodeResult.options;
+
+                currentPlanOptions.forEach((opt) => {
+                    if (opt.sourceNodeId && opt.targetNodeId && opt.targetNodeId !== 'GLOBAL_TOTAL') {
+                        const sourceExists = g6Nodes.some((n) => n.id === opt.sourceNodeId);
+                        const targetExists = g6Nodes.some((n) => n.id === opt.targetNodeId);
+
+                        if (sourceExists && targetExists) {
+                            const rerouteEdgeId = opt.suggestedEdgeId || `REROUTE-${opt.sourceNodeId}-${opt.targetNodeId}`;
+                            if (!g6Edges.some((e) => e.id === rerouteEdgeId)) {
+                                g6Edges.push({
+                                    id: rerouteEdgeId,
+                                    source: opt.sourceNodeId,
+                                    target: opt.targetNodeId,
+                                    style: {
+                                        stroke: '#52c41a',
+                                        lineWidth: 3,
+                                        lineDash: [6, 4],
+                                        endArrow: true,
+                                        endArrowSize: 8,
+                                    },
+                                    data: {
+                                        isRerouteEdge: true,
+                                        rank: opt.rank,
+                                    },
+                                } as any);
+                            }
+                        }
+                    }
+                });
+
+                const remainingDeficit = plans[planIndex]?.remainingDeficitPercentage ?? nodeResult.remainingDeficitPercentage;
+                if (remainingDeficit === 0 && nodeResult.targetNodeId !== 'GLOBAL_TOTAL') {
+                    resolvedTargetNodeIds.add(nodeResult.targetNodeId);
                 }
             });
 
             // 결손 해소 시 타겟 노드 테두리 색상 정상화 (#52c41a)
-            const remainingDeficit = plans[planIndex]?.remainingDeficitPercentage ?? mainResult.remainingDeficitPercentage;
-            if (remainingDeficit === 0) {
+            if (resolvedTargetNodeIds.size > 0) {
                 g6Nodes = g6Nodes.map((n) => {
-                    if (n.id === mainResult.targetNodeId) {
+                    if (resolvedTargetNodeIds.has(n.id)) {
                         return {
                             ...n,
                             data: {
@@ -273,9 +290,11 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
                         shadowBlur: 6,
                     },
                     inactive: {
-                        opacity: 0.4,
-                        fillOpacity: 0.4,
-                        strokeOpacity: 0.4,
+                        fillOpacity: 0.35,
+                        strokeOpacity: 0.35,
+                        labelOpacity: 0.85,
+                        labelFill: '#E5E7EB',
+                        labelBackgroundOpacity: 0.85,
                     },
                     propagation: {
                         stroke: '#ff4d4f',
@@ -378,7 +397,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filteredNodes, filteredEdges, riskScores]);
 
-    // LOD 클러스터링 변경 시 그래프 데이터 업데이트
+    // LOD 클러스터링 및 우회 경로(Re-Routing) 시각화 변경 시 그래프 데이터 업데이트
     useEffect(() => {
         if (!graphRef.current || graphRef.current.destroyed || !isGraphReady || filteredNodes.length === 0) return;
         // 초기 렌더 중에는 무시 (위 effect에서 이미 데이터 설정됨)
@@ -398,7 +417,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
         } catch {
             // 그래프 인스턴스 파괴 중 호출되면 무시
         }
-    }, [isClustered, lodResult, buildGraphData, filteredNodes.length, isGraphReady]);
+    }, [isClustered, lodResult, buildGraphData, filteredNodes.length, isGraphReady, isRerouteApplied, activeRerouteOptions, selectedPlanNumber]);
 
     // 그래프 요소 비주얼 상태(하이라이트, 선택, 전파 경로) 통합 업데이트 (G6 공식 State 시스템 활용)
     useEffect(() => {

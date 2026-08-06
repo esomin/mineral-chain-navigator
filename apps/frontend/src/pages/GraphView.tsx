@@ -17,9 +17,11 @@ export function GraphView() {
         useSupplyChainStore();
 
     // 시뮬레이션 결과 및 실행 상태 가져오기
-    const { highlightedPath, isRunning } = useSimulationStore((state) => ({
+    const { highlightedPath, isRunning, isRerouteApplied, activeRerouteOptions } = useSimulationStore((state) => ({
         highlightedPath: state.highlightedPath,
         isRunning: state.isRunning,
+        isRerouteApplied: state.isRerouteApplied,
+        activeRerouteOptions: state.activeRerouteOptions,
     }));
 
     const [error, setError] = useState<string | null>(null);
@@ -119,19 +121,31 @@ export function GraphView() {
 
     // 필터링된 노드 계산 (200ms 이내 업데이트를 위해 useMemo 활용)
     const filteredNodes = useMemo(() => {
-        const hasHsCodeMatch = hsCodeFilteredNodeIds && hsCodeFilteredNodeIds.size > 0;
+        const hasHsCodeFilter = filters.hsCode.length > 0;
+        const hasCountryFilter = filters.countries.length > 0;
+        const hasHsCodeMatch = hasHsCodeFilter && hsCodeFilteredNodeIds && hsCodeFilteredNodeIds.size > 0;
+
         return nodes.filter((node) => {
-            // HS 코드 필터: 해당 HS 코드 엣지에 연결된 노드만 표시 (엣지에 hsCode 속성이 없을 경우 통과)
+            // 우회 수급 시각화 적용 시: 관련 노드는 필터에 구애받지 않고 항상 노출 보장
+            if (isRerouteApplied && activeRerouteOptions) {
+                const isInReroute = activeRerouteOptions.some((r) =>
+                    r.targetNodeId === node.id ||
+                    r.plans?.some((p) => p.options.some((o) => o.sourceNodeId === node.id || o.targetNodeId === node.id))
+                );
+                if (isInReroute) return true;
+            }
+
+            // HS 코드 필터 적용
             if (hasHsCodeMatch && !hsCodeFilteredNodeIds.has(node.id)) {
                 return false;
             }
             // 국가 필터 적용
-            if (filters.countries.length > 0 && !filters.countries.includes(node.country)) {
+            if (hasCountryFilter && !filters.countries.includes(node.country)) {
                 return false;
             }
             return true;
         });
-    }, [nodes, hsCodeFilteredNodeIds, filters.countries]);
+    }, [nodes, hsCodeFilteredNodeIds, filters.countries, filters.hsCode, isRerouteApplied, activeRerouteOptions]);
 
     // 필터링된 노드에 연결된 엣지만 포함 + HS 코드 필터 적용
     const filteredEdges = useMemo(() => {

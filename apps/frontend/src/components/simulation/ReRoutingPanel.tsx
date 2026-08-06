@@ -48,6 +48,15 @@ export const ReRoutingPanel: React.FC<ReRoutingPanelProps> = ({
     const activeResult = reroutingResults.find((r) => r.targetNodeId === activeNodeId) || reroutingResults[0];
     const plans = activeResult.plans || [];
 
+    const plan1 = plans.find((p) => p.planNumber === 1);
+    const plan2 = plans.find((p) => p.planNumber === 2);
+    const isIdenticalPlan = Boolean(
+        plan1 &&
+        plan2 &&
+        plan1.totalExtraCostUsd === plan2.totalExtraCostUsd &&
+        plan1.averageExtraLeadTimeDays === plan2.averageExtraLeadTimeDays
+    );
+
     // 활성화된 플랜 (1안, 2안, 3안 중 선택된 안)
     const currentPlanIndex = (selectedPlanNumber >= 1 && selectedPlanNumber <= plans.length) ? selectedPlanNumber - 1 : 0;
     const currentPlan = plans[currentPlanIndex] || {
@@ -90,28 +99,34 @@ export const ReRoutingPanel: React.FC<ReRoutingPanelProps> = ({
             </CardHeader>
 
             <CardContent className="p-3 pt-2.5 flex-1 min-h-0 flex flex-col overflow-y-auto space-y-2.5">
-                {/* 2. 세그먼트 컨트롤 탭 (3안 밸런스 탭은 숨김 처리) */}
+                {/* 2. 세그먼트 컨트롤 탭 (1안/2안 결과 동일 시 단일 최적안 통합 표시) */}
                 {plans.length > 0 && (
                     <div className="flex bg-muted/60 p-0.5 rounded-md border border-border/50 text-[11px] shrink-0">
-                        {plans
-                            .filter((p) => p.planNumber !== 3 /* 3안(밸런스) 탭 숨김 처리 */)
-                            .map((p) => {
-                                const isSelected = p.planNumber === selectedPlanNumber;
-                                const label = p.criterion === 'cost' ? '비용 우선' : p.criterion === 'leadTime' ? '시간 우선' : '밸런스';
-                                return (
-                                    <button
-                                        key={p.planNumber}
-                                        type="button"
-                                        onClick={() => setSelectedPlanNumber(p.planNumber)}
-                                        className={`flex-1 py-1 rounded text-center transition-all cursor-pointer ${isSelected
-                                            ? 'bg-card text-primary font-bold shadow-xs border border-border/60'
-                                            : 'text-muted-foreground hover:text-foreground'
-                                            }`}
-                                    >
-                                        {p.planNumber}안 ({label})
-                                    </button>
-                                );
-                            })}
+                        {isIdenticalPlan ? (
+                            <div className="flex-1 py-1 rounded text-center bg-card text-primary font-bold shadow-xs border border-border/60">
+                                비용·시간 단일 최적안
+                            </div>
+                        ) : (
+                            plans
+                                .filter((p) => p.planNumber !== 3 /* 3안(밸런스) 탭 숨김 처리 */)
+                                .map((p) => {
+                                    const isSelected = p.planNumber === selectedPlanNumber;
+                                    const label = p.criterion === 'cost' ? '비용 우선' : p.criterion === 'leadTime' ? '시간 우선' : '밸런스';
+                                    return (
+                                        <button
+                                            key={p.planNumber}
+                                            type="button"
+                                            onClick={() => setSelectedPlanNumber(p.planNumber)}
+                                            className={`flex-1 py-1 rounded text-center transition-all cursor-pointer ${isSelected
+                                                ? 'bg-card text-primary font-bold shadow-xs border border-border/60'
+                                                : 'text-muted-foreground hover:text-foreground'
+                                                }`}
+                                        >
+                                            {p.planNumber}안 ({label})
+                                        </button>
+                                    );
+                                })
+                        )}
                     </div>
                 )}
 
