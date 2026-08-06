@@ -60,7 +60,7 @@ export const ReRoutingPanel: React.FC<ReRoutingPanelProps> = ({
         remainingDeficitPercentage: activeResult.remainingDeficitPercentage,
         totalExtraCostUsd: activeResult.totalExtraCostUsd,
         averageExtraLeadTimeDays: activeResult.averageExtraLeadTimeDays,
-        options: activeResult.options,
+        options: plans[0]?.options || [],
     };
 
     return (

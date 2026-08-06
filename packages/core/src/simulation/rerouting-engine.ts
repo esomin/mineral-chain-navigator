@@ -246,7 +246,6 @@ export function computeReroutingOptions(
             totalExtraCostUsd: defaultPlan.totalExtraCostUsd,
             averageExtraLeadTimeDays: defaultPlan.averageExtraLeadTimeDays,
             criterion: defaultCriterion,
-            options: defaultPlan.options,
             plans,
         });
     }
@@ -263,8 +262,8 @@ export function computeReroutingOptions(
             balanced: '3안: 밸런스',
         };
 
-        const globalPlans: ReroutingProposalPlan[] = ([1, 2, 3] as const).map((planNum) => {
-            const crit = criteria[planNum - 1];
+        const globalPlans: ReroutingProposalPlan[] = criteria.map((crit, critIndex) => {
+            const planNum = (critIndex + 1) as 1 | 2 | 3;
             let globalTotalExtraCost = 0;
             let weightedLeadTimeSum = 0;
             let globalRemainingDeficitSum = 0;
@@ -346,7 +345,6 @@ export function computeReroutingOptions(
             totalExtraCostUsd: defaultGlobalPlan.totalExtraCostUsd,
             averageExtraLeadTimeDays: defaultGlobalPlan.averageExtraLeadTimeDays,
             criterion: defaultCriterion,
-            options: defaultGlobalPlan.options,
             plans: globalPlans,
         };
 

@@ -110,7 +110,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
             targetsToProcess.forEach((nodeResult) => {
                 const plans = nodeResult.plans || [];
                 const planIndex = (selectedPlanNumber >= 1 && selectedPlanNumber <= plans.length) ? selectedPlanNumber - 1 : 0;
-                const currentPlanOptions = plans[planIndex]?.options || nodeResult.options;
+                const currentPlanOptions = plans[planIndex]?.options || plans[0]?.options || [];
 
                 currentPlanOptions.forEach((opt) => {
                     if (opt.sourceNodeId && opt.targetNodeId && opt.targetNodeId !== 'GLOBAL_TOTAL') {

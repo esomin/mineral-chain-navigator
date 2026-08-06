@@ -95,8 +95,7 @@ export interface ReroutingResult {
     totalExtraCostUsd: number;
     averageExtraLeadTimeDays: number;
     criterion: OptimizationCriterion;
-    options: ReroutingOption[];
-    plans?: ReroutingProposalPlan[]; // 1안, 2안, 3안 종합 시나리오
+    plans: ReroutingProposalPlan[]; // 1안, 2안, 3안 종합 시나리오
 }
 
 export interface SimulationResult {
