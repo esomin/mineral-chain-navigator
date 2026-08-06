@@ -17,4 +17,8 @@ export {
     type SimulationOptions,
 } from './run-simulation.js';
 
-export { computeReroutingOptions } from './rerouting-engine.js';
+export {
+    computeReroutingOptions,
+    computeIndividualReroutingOptions,
+    computeGlobalReroutingOption,
+} from './rerouting-engine.js';
