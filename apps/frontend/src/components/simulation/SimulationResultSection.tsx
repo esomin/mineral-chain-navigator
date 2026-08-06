@@ -42,13 +42,12 @@ export function SimulationResultSection({
 
     return (
         <Card
-            className="border border-border bg-muted/40 flex-1 min-h-0 flex flex-col shadow-xs"
+            className="border border-border bg-muted/40 shadow-sm shrink-0 h-[460px] max-h-[460px] flex flex-col overflow-hidden"
             aria-label="시뮬레이션 결과"
             role="region"
         >
-            <CardHeader className="p-3.5 pb-0 flex flex-row items-center justify-between space-y-0">
+            <CardHeader className="p-3 pb-1 flex flex-row items-center justify-between space-y-0 shrink-0 border-b border-border/40">
                 <CardTitle className="text-xs font-bold text-primary">
-                    결과 요약
                 </CardTitle>
                 <Button
                     variant="ghost"
@@ -62,13 +61,13 @@ export function SimulationResultSection({
                     Clear
                 </Button>
             </CardHeader>
-            <CardContent className="p-3.5 pt-3 flex-1 min-h-0 flex flex-col">
-                <div className="grid grid-cols-3 gap-2 text-xs mb-3 text-foreground bg-card border border-border rounded-md p-2 shadow-xs shrink-0">
-                    <div className="text-center border-r border-border">
+            <CardContent className="p-3 pt-2.5 flex-1 min-h-0 flex flex-col overflow-y-auto space-y-2.5">
+                <div className="grid grid-cols-3 gap-2 text-xs text-foreground bg-card border border-border/60 rounded-md p-2 shadow-xs shrink-0">
+                    <div className="text-center border-r border-border/60">
                         <div className="text-[10px] text-muted-foreground">영향 노드</div>
                         <div className="font-bold text-foreground mt-0.5">{result.deficits.length}개</div>
                     </div>
-                    <div className="text-center border-r border-border">
+                    <div className="text-center border-r border-border/60">
                         <div className="text-[10px] text-muted-foreground">최대 부족률</div>
                         <div className="font-bold text-red-400 mt-0.5">{maxDeficit.toFixed(1)}%</div>
                     </div>
@@ -79,10 +78,10 @@ export function SimulationResultSection({
                 </div>
 
                 {sortedDeficits.length > 0 && (
-                    <div className="border border-border rounded-md bg-card shadow-xs flex-1 min-h-0 overflow-y-auto">
+                    <div className="border border-border/60 rounded-md bg-card shadow-xs flex-1 min-h-0 overflow-y-auto">
                         <table className="w-full text-xs border-collapse" aria-label="부족률 테이블">
                             <thead>
-                                <tr className="bg-muted border-b border-border text-muted-foreground">
+                                <tr className="bg-muted/60 border-b border-border/60 text-muted-foreground sticky top-0 bg-muted">
                                     <th className="text-left py-1.5 px-2 font-medium">노드</th>
                                     <th className="text-right py-1.5 px-2 font-medium">부족률</th>
                                 </tr>
@@ -95,7 +94,7 @@ export function SimulationResultSection({
                                         : d.nodeId;
                                     const hasDeficit = d.deficitPercentage > 0;
                                     return (
-                                        <tr key={d.nodeId} className="border-b border-border/50 last:border-b-0 text-foreground hover:bg-muted/50">
+                                        <tr key={d.nodeId} className="border-b border-border/40 last:border-b-0 text-foreground hover:bg-muted/50">
                                             <td className="py-1 px-2 font-medium text-[11px] truncate max-w-[190px]" title={nameStr}>
                                                 {nameStr}
                                             </td>
@@ -123,7 +122,7 @@ export function SimulationResultSection({
                     <Button
                         onClick={triggerRerouteCalculation}
                         disabled={isRerouteLoading}
-                        className="w-full mt-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs py-2 rounded-md shadow-md cursor-pointer transition-all flex items-center justify-center gap-2 shrink-0"
+                        className="w-full shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs py-2 rounded-md shadow-md cursor-pointer transition-all flex items-center justify-center gap-2"
                     >
                         <Route className="w-3.5 h-3.5" />
                         대체 공급망 최적화 시나리오 추천 ({deficitCount}개 노드 해소)

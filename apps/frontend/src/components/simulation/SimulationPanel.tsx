@@ -714,7 +714,7 @@ export function SimulationPanel() {
                                 </TabsTrigger>
                             </TabsList>
 
-                            <TabsContent value="result" className="flex-1 min-h-0 overflow-y-auto flex flex-col">
+                            <TabsContent value="result" className="flex-1 min-h-0 overflow-y-auto flex flex-col space-y-3 p-1">
                                 {result ? (
                                     <>
                                         <SimulationResultSection
