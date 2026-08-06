@@ -1,8 +1,9 @@
-import React from 'react';
-import type { ReroutingResult } from '@navigator/shared';
+import React, { useState } from 'react';
+import type { ReroutingResult, ReroutingOption } from '@navigator/shared';
 import { useSimulationStore } from '../../store/simulation-store';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
-import { Route, Loader2 } from 'lucide-react';
+import { Route, Loader2, Info } from 'lucide-react';
+import { SupplyDetailModal } from './SupplyDetailModal';
 
 interface ReRoutingPanelProps {
     reroutingResults: ReroutingResult[];
@@ -18,13 +19,8 @@ export const ReRoutingPanel: React.FC<ReRoutingPanelProps> = ({
         setSelectedPlanNumber,
     } = useSimulationStore();
 
-    const [selectedNodeId, setSelectedNodeId] = React.useState<string>('');
-
-    // 결과 목록이 업데이트되면 기본 선택 노드(전체 통합 시나리오) 설정
-    const firstNodeId = reroutingResults && reroutingResults.length > 0 ? reroutingResults[0].targetNodeId : '';
-    const activeNodeId = selectedNodeId && reroutingResults.some((r) => r.targetNodeId === selectedNodeId)
-        ? selectedNodeId
-        : firstNodeId;
+    const [modalOption, setModalOption] = useState<ReroutingOption | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
     if (isRerouteLoading) {
         const maxDeficit = reroutingResults.length > 0 ? reroutingResults[0].originalDeficitPercentage : 50;
@@ -45,23 +41,20 @@ export const ReRoutingPanel: React.FC<ReRoutingPanelProps> = ({
         return null;
     }
 
-    const activeResult = reroutingResults.find((r) => r.targetNodeId === activeNodeId) || reroutingResults[0];
+    // 항상 전체 통합 시나리오(isGlobalCombined)를 최우선 결과로 선택
+    const activeResult = reroutingResults.find((r) => r.isGlobalCombined || r.targetNodeId === 'GLOBAL_TOTAL') || reroutingResults[0];
     const plans = activeResult.plans || [];
 
+    // 1안과 2안의 추가 비용 및 리드타임이 동일한지 판단
     const plan1 = plans.find((p) => p.planNumber === 1);
     const plan2 = plans.find((p) => p.planNumber === 2);
-    const isIdenticalPlan = Boolean(
-        plan1 &&
-        plan2 &&
+    const isIdenticalPlan = plan1 && plan2 &&
         plan1.totalExtraCostUsd === plan2.totalExtraCostUsd &&
-        plan1.averageExtraLeadTimeDays === plan2.averageExtraLeadTimeDays
-    );
+        plan1.averageExtraLeadTimeDays === plan2.averageExtraLeadTimeDays;
 
-    // 활성화된 플랜 (1안, 2안, 3안 중 선택된 안)
-    const currentPlanIndex = (selectedPlanNumber >= 1 && selectedPlanNumber <= plans.length) ? selectedPlanNumber - 1 : 0;
-    const currentPlan = plans[currentPlanIndex] || {
+    const currentPlan = plans.find((p) => p.planNumber === selectedPlanNumber) || plans[0] || {
         planNumber: 1,
-        title: '1안: 비용 우선',
+        title: '비용 우선',
         criterion: 'cost',
         coveredDeficitPercentage: activeResult.originalDeficitPercentage - activeResult.remainingDeficitPercentage,
         remainingDeficitPercentage: activeResult.remainingDeficitPercentage,
@@ -71,98 +64,106 @@ export const ReRoutingPanel: React.FC<ReRoutingPanelProps> = ({
     };
 
     return (
-        <Card className="border border-border bg-muted/40 shadow-sm shrink-0 min-h-[360px] flex flex-col overflow-hidden text-xs text-foreground">
-            {/* 1. 헤더 (타이틀 및 하단 노드 선택 드롭다운) */}
-            <CardHeader className="p-3 pb-2 shrink-0 border-b border-border/40 flex flex-col space-y-1.5">
-                <CardTitle className="text-xs font-bold text-primary flex items-center gap-1.5 truncate">
-                    <Route className="w-3.5 h-3.5 text-primary shrink-0" />
-                    <span className="truncate">
-                        {activeResult.isGlobalCombined
-                            ? `전역 통합 대체 공급망 시나리오`
-                            : `대체 공급망 시나리오 (${activeResult.targetNodeName})`}
-                    </span>
-                </CardTitle>
-
-                {reroutingResults.length > 0 && (
-                    <select
-                        value={activeResult.targetNodeId}
-                        onChange={(e) => setSelectedNodeId(e.target.value)}
-                        className="w-full text-xs font-medium bg-background text-foreground border border-border/80 rounded px-2 py-1 outline-none cursor-pointer hover:border-primary transition-colors shrink-0"
-                    >
-                        {reroutingResults.map((r) => (
-                            <option key={r.targetNodeId} value={r.targetNodeId}>
-                                {r.isGlobalCombined ? '전체 통합 시나리오' : r.targetNodeName}
-                            </option>
-                        ))}
-                    </select>
-                )}
-            </CardHeader>
-
-            <CardContent className="p-3 pt-2.5 flex-1 min-h-0 flex flex-col overflow-y-auto space-y-2.5">
-                {/* 2. 세그먼트 컨트롤 탭 (1안/2안 결과 동일 시 단일 최적안 통합 표시) */}
-                {plans.length > 0 && (
-                    <div className="flex bg-muted/60 p-0.5 rounded-md border border-border/50 text-[11px] shrink-0">
-                        {isIdenticalPlan ? (
-                            <div className="flex-1 py-1 rounded text-center bg-card text-primary font-bold shadow-xs border border-border/60">
-                                비용·시간 단일 최적안
-                            </div>
-                        ) : (
-                            plans
-                                .filter((p) => p.planNumber !== 3 /* 3안(밸런스) 탭 숨김 처리 */)
-                                .map((p) => {
-                                    const isSelected = p.planNumber === selectedPlanNumber;
-                                    const label = p.criterion === 'cost' ? '비용 우선' : p.criterion === 'leadTime' ? '시간 우선' : '밸런스';
-                                    return (
-                                        <button
-                                            key={p.planNumber}
-                                            type="button"
-                                            onClick={() => setSelectedPlanNumber(p.planNumber)}
-                                            className={`flex-1 py-1 rounded text-center transition-all cursor-pointer ${isSelected
-                                                ? 'bg-card text-primary font-bold shadow-xs border border-border/60'
-                                                : 'text-muted-foreground hover:text-foreground'
-                                                }`}
-                                        >
-                                            {p.planNumber}안 ({label})
-                                        </button>
-                                    );
-                                })
-                        )}
+        <>
+            <Card
+                className="border border-border bg-muted/40 shadow-sm shrink-0 min-h-[360px] flex flex-col overflow-hidden text-foreground"
+                aria-label="대체 공급망 최적화 추천 결과"
+                role="region"
+            >
+                <CardHeader className="p-3 pb-2 flex flex-col space-y-2 shrink-0 border-b border-border/40">
+                    {/* 상단 타이틀 영역 */}
+                    <div className="flex items-center justify-between">
+                        <CardTitle className="text-xs font-bold text-primary flex items-center gap-1.5">
+                            <Route className="w-3.5 h-3.5" />
+                            전역 통합 대체 공급망 시나리오
+                        </CardTitle>
+                        <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded border border-border/30">
+                            5개 차질 노드 통합 최적화
+                        </span>
                     </div>
-                )}
+                </CardHeader>
 
-                {/* 3. 플랫 리스트 구조 (내용 과다 시 카드 내부 스크롤) */}
-                <div className="space-y-1.5 flex-1 min-h-0 overflow-y-auto">
-                    {currentPlan.options.map((opt) => (
-                        <div
-                            key={`${opt.rank}-${opt.sourceNodeId}`}
-                            className="p-2 rounded border-l-2 border-l-white border border-border/40 bg-card space-y-1 transition-colors"
-                        >
-                            <div className="flex items-center justify-between font-medium text-[11px] text-foreground">
-                                <span className="truncate font-semibold">{opt.rank}차 수급: {opt.sourceName}</span>
-                                <span className="font-bold text-primary shrink-0">
-                                    {opt.allocatedVolumeTons.toLocaleString()}톤 ({opt.coveredDeficitPercentage}%p)
-                                </span>
-                            </div>
-                            <div className="flex flex-col gap-0.5 text-[10px] text-muted-foreground">
-                                <div>추가 단가 <strong className="text-emerald-400 font-medium">+${opt.costImpact.unitExtraCostUsd}/톤</strong></div>
-                                <div>리드타임 <strong className="text-emerald-400 font-medium">+{opt.leadTimeImpact.additionalDays}일</strong> (총 {opt.leadTimeImpact.totalDays}일)</div>
-                            </div>
+                <CardContent className="p-3 pt-2.5 flex-1 min-h-0 flex flex-col overflow-y-auto space-y-2.5">
+                    {/* 2. 세그먼트 컨트롤 탭 (1안/2안 결과 동일 시 단일 최적안 통합 표시) */}
+                    {plans.length > 0 && (
+                        <div className="flex bg-muted/60 p-0.5 rounded-md border border-border/50 text-[11px] shrink-0">
+                            {isIdenticalPlan ? (
+                                <div className="flex-1 py-1 rounded text-center bg-card text-primary font-bold shadow-xs border border-border/60">
+                                    비용·시간 단일 최적안
+                                </div>
+                            ) : (
+                                plans
+                                    .filter((p) => p.planNumber !== 3 /* 3안(밸런스) 탭 숨김 처리 */)
+                                    .map((p) => {
+                                        const isSelected = p.planNumber === selectedPlanNumber;
+                                        const label = p.criterion === 'cost' ? '비용 우선' : p.criterion === 'leadTime' ? '시간 우선' : '밸런스';
+                                        return (
+                                            <button
+                                                key={p.planNumber}
+                                                type="button"
+                                                onClick={() => setSelectedPlanNumber(p.planNumber)}
+                                                className={`flex-1 py-1 rounded text-center transition-all cursor-pointer ${isSelected
+                                                    ? 'bg-card text-primary font-bold shadow-xs border border-border/60'
+                                                    : 'text-muted-foreground hover:text-foreground'
+                                                    }`}
+                                            >
+                                                {p.planNumber}안 ({label})
+                                            </button>
+                                        );
+                                    })
+                            )}
                         </div>
-                    ))}
-                </div>
+                    )}
 
-                {/* 4. 하단 요약 인라인 레이아웃 */}
-                <div className="pt-2 border-t border-border/60 flex items-center justify-between text-[11px] text-muted-foreground shrink-0">
-                    <div className="flex items-center gap-1.5 font-semibold text-foreground">
-                        <span className="text-emerald-400">+${currentPlan.totalExtraCostUsd.toLocaleString()}</span>
-                        <span>•</span>
-                        <span className="text-emerald-400">+{currentPlan.averageExtraLeadTimeDays}일</span>
+                    {/* 3. 플랫 리스트 구조 (내용 과다 시 카드 내부 스크롤) */}
+                    <div className="space-y-1.5 flex-1 min-h-0 overflow-y-auto">
+                        {currentPlan.options.map((opt) => (
+                            <div
+                                key={`${opt.rank}-${opt.sourceNodeId}`}
+                                onClick={() => {
+                                    setModalOption(opt);
+                                    setIsModalOpen(true);
+                                }}
+                                className="p-2 rounded border-l-2 border-l-white border border-border/40 bg-card space-y-1 transition-all cursor-pointer hover:border-primary/80 hover:bg-muted/40 group shadow-xs"
+                                title="클릭하여 노드간 세부 물량 수급 관계 보기"
+                            >
+                                <div className="flex items-center justify-between font-medium text-[11px] text-foreground">
+                                    <span className="truncate font-semibold group-hover:text-primary transition-colors flex items-center gap-1">
+                                        {opt.rank}차 수급: {opt.sourceName}
+                                        <Info className="w-3 h-3 text-muted-foreground group-hover:text-primary opacity-70 transition-opacity" />
+                                    </span>
+                                    <span className="font-bold text-primary shrink-0">
+                                        {opt.allocatedVolumeTons.toLocaleString()}톤 ({opt.coveredDeficitPercentage}%p)
+                                    </span>
+                                </div>
+                                <div className="flex flex-col gap-0.5 text-[10px] text-muted-foreground">
+                                    <div>추가 단가 <strong className="text-emerald-400 font-medium">+${opt.costImpact.unitExtraCostUsd}/톤</strong></div>
+                                    <div>리드타임 <strong className="text-emerald-400 font-medium">+{opt.leadTimeImpact.additionalDays}일</strong> (총 {opt.leadTimeImpact.totalDays}일)</div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                    <div>
-                        {activeResult.isGlobalCombined ? '평균 부족률' : '부족률'} <strong className="text-foreground">{activeResult.originalDeficitPercentage}%</strong> ➔ <strong className="text-primary font-bold">{currentPlan.remainingDeficitPercentage}%</strong>
+
+                    {/* 4. 하단 요약 인라인 레이아웃 */}
+                    <div className="pt-2 border-t border-border/60 flex items-center justify-between text-[11px] text-muted-foreground shrink-0">
+                        <div className="flex items-center gap-1.5 font-semibold text-foreground">
+                            <span className="text-emerald-400">+${currentPlan.totalExtraCostUsd.toLocaleString()}</span>
+                            <span>•</span>
+                            <span className="text-emerald-400">+{currentPlan.averageExtraLeadTimeDays}일</span>
+                        </div>
+                        <div>
+                            {activeResult.isGlobalCombined ? '평균 부족률' : '부족률'} <strong className="text-foreground">{activeResult.originalDeficitPercentage}%</strong> ➔ <strong className="text-primary font-bold">{currentPlan.remainingDeficitPercentage}%</strong>
+                        </div>
                     </div>
-                </div>
-            </CardContent>
-        </Card>
+                </CardContent>
+            </Card>
+
+            {/* 수급 세부 내역 상세 모달 */}
+            <SupplyDetailModal
+                option={modalOption}
+                open={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+            />
+        </>
     );
 };

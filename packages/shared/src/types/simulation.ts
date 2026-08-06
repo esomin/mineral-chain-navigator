@@ -48,6 +48,15 @@ export interface ReroutingLeadTimeImpact {
     totalDays: number;           // 총 소요 리드타임 (일)
 }
 
+export interface ReroutingTargetBreakdown {
+    targetNodeId: string;
+    targetName: string;
+    allocatedVolumeTons: number;
+    unitExtraCostUsd: number;
+    additionalLeadTimeDays: number;
+    totalLeadTimeDays: number;
+}
+
 export interface ReroutingOption {
     rank: number;
     sourceNodeId: string;
@@ -61,6 +70,7 @@ export interface ReroutingOption {
     transportType: string;
     hsCode: string;
     suggestedEdgeId: string;
+    targetBreakdown?: ReroutingTargetBreakdown[];
 }
 
 export interface ReroutingProposalPlan {

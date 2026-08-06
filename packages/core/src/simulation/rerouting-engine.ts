@@ -21,9 +21,9 @@ function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: num
     const a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos((lat1 * Math.PI) / 180) *
-            Math.cos((lat2 * Math.PI) / 180) *
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return Math.max(10, Math.round(R * c));
 }
@@ -281,15 +281,27 @@ export function computeReroutingOptions(
 
                 plan.options.forEach((opt) => {
                     const existing = supplierMap.get(opt.sourceNodeId);
+                    const breakdownItem = {
+                        targetNodeId: nodeResult.targetNodeId,
+                        targetName: nodeResult.targetNodeName,
+                        allocatedVolumeTons: opt.allocatedVolumeTons,
+                        unitExtraCostUsd: opt.costImpact.unitExtraCostUsd,
+                        additionalLeadTimeDays: opt.leadTimeImpact.additionalDays,
+                        totalLeadTimeDays: opt.leadTimeImpact.totalDays,
+                    };
+
                     if (existing) {
                         existing.allocatedVolumeTons += opt.allocatedVolumeTons;
                         existing.costImpact.totalExtraCostUsd += opt.costImpact.totalExtraCostUsd;
+                        existing.targetBreakdown = existing.targetBreakdown || [];
+                        existing.targetBreakdown.push(breakdownItem);
                     } else {
                         supplierMap.set(opt.sourceNodeId, {
                             ...opt,
                             targetNodeId: opt.targetNodeId,
                             costImpact: { ...opt.costImpact },
                             leadTimeImpact: { ...opt.leadTimeImpact },
+                            targetBreakdown: [breakdownItem],
                         });
                     }
                 });
