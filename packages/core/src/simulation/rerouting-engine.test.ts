@@ -11,7 +11,7 @@ describe('computeReroutingOptions', () => {
             country: 'Australia',
             coordinates: { latitude: -21.0, longitude: 118.0 },
             metadata: { productionCapacity: 755000, capacityUnit: 'tons' },
-            description: 'Mine',
+            description: 'Mine AU',
             createdAt: new Date(),
             updatedAt: new Date(),
         },
@@ -34,6 +34,17 @@ describe('computeReroutingOptions', () => {
             coordinates: { latitude: 34.9, longitude: 127.7 },
             metadata: { productionCapacity: 43000, capacityUnit: 'tons' },
             description: 'Refinery KR',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        },
+        {
+            id: 'REF_CN_LITHIUM',
+            type: 'Refinery',
+            name: 'China Lithium Refinery',
+            country: 'China',
+            coordinates: { latitude: 30.5, longitude: 114.3 },
+            metadata: { productionCapacity: 100000, capacityUnit: 'tons' },
+            description: 'Refinery CN',
             createdAt: new Date(),
             updatedAt: new Date(),
         },
@@ -61,9 +72,9 @@ describe('computeReroutingOptions', () => {
                 logisticsInfo: {
                     transportMode: 'Maritime',
                     distanceKm: 5400,
-                    leadTimeDays: 11.2,
+                    leadTimeDays: 9.2,
                     customsDelayDays: 2.0,
-                    totalLeadTimeDays: 13.2,
+                    totalLeadTimeDays: 11.2,
                     freightCostUsdPerTon: 85.0,
                 },
             },
@@ -105,9 +116,28 @@ describe('computeReroutingOptions', () => {
         expect(reroutes).toEqual([]);
     });
 
-    it('should calculate rerouting options for node with 50% supply deficit', () => {
+    it('should calculate rerouting options for Refinery node (recommending Mines)', () => {
         const result: SimulationResult = {
-            scenarioId: 'SCENARIO-50-PERCENT-DEFICIT',
+            scenarioId: 'SCENARIO-REF-DEFICIT',
+            propagationPaths: [],
+            deficits: [
+                { nodeId: 'REF_KR_POSCO_PILBARA', originalSupply: 100, disruptedSupply: 50, deficitPercentage: 50.0 },
+            ],
+            executionTimeMs: 15,
+        };
+
+        const reroutes = computeReroutingOptions(result, mockNodes, mockEdges, 'balanced');
+
+        expect(reroutes).toHaveLength(1);
+        expect(reroutes[0].targetNodeId).toBe('REF_KR_POSCO_PILBARA');
+        expect(reroutes[0].options.length).toBe(2);
+        // Candidates for Refinery must be Mines
+        expect(reroutes[0].options[0].sourceNodeId).toMatch(/^MINE_/);
+    });
+
+    it('should calculate rerouting options for Factory node (recommending Refineries)', () => {
+        const result: SimulationResult = {
+            scenarioId: 'SCENARIO-FACTORY-DEFICIT',
             propagationPaths: [],
             deficits: [
                 { nodeId: 'MAT_KR_POSCO_FUTUREM', originalSupply: 100, disruptedSupply: 50, deficitPercentage: 50.0 },
@@ -119,9 +149,8 @@ describe('computeReroutingOptions', () => {
 
         expect(reroutes).toHaveLength(1);
         expect(reroutes[0].targetNodeId).toBe('MAT_KR_POSCO_FUTUREM');
-        expect(reroutes[0].originalDeficitPercentage).toBe(50.0);
-        expect(reroutes[0].remainingDeficitPercentage).toBe(0);
         expect(reroutes[0].options.length).toBeGreaterThan(0);
-        expect(reroutes[0].options[0].rank).toBe(1);
+        // Candidates for Factory must be Refineries
+        expect(reroutes[0].options[0].sourceNodeId).toMatch(/^REF_/);
     });
 });

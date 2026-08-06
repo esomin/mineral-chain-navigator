@@ -139,4 +139,4 @@ sourceNodeId / targetNodeId 의 국가 정보와 실제 지리적 위치는 별�
 3. 추정 거리(km)를 설정하고, 모드별 평균 속도 가정으로 leadTimeDays 를 계산합니다.
 4. 국경 통과 여부에 따라 customsDelayDays 를 설정하고 totalLeadTimeDays 를 계산합니다.
 5. 구간 난이도와 거리, 모드를 고려해 freightCostUsdPerTon 을 설정합니다.
-6. 모든 엣지에 대해 logisticsInfo (및 필요한 경우 alternativeRoutes) 를 채워 JSON 스키마에 맞게 출력합니다.
+6. 모든 엣지에 대해 logisticsInfo를 채워 JSON 스키마에 맞게 출력합니다.

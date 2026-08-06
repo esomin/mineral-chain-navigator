@@ -63,6 +63,17 @@ export interface ReroutingOption {
     suggestedEdgeId: string;
 }
 
+export interface ReroutingProposalPlan {
+    planNumber: 1 | 2 | 3;
+    title: string;                 // 예: "1안: 비용 우선" | "2안: 운송시간 우선" | "3안: 밸런스"
+    criterion: OptimizationCriterion;
+    coveredDeficitPercentage: number;
+    remainingDeficitPercentage: number;
+    totalExtraCostUsd: number;
+    averageExtraLeadTimeDays: number;
+    options: ReroutingOption[];
+}
+
 export interface ReroutingResult {
     simulationId: string;
     targetNodeId: string;
@@ -74,6 +85,7 @@ export interface ReroutingResult {
     averageExtraLeadTimeDays: number;
     criterion: OptimizationCriterion;
     options: ReroutingOption[];
+    plans?: ReroutingProposalPlan[]; // 1안, 2안, 3안 종합 시나리오
 }
 
 export interface SimulationResult {
