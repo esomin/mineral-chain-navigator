@@ -82,7 +82,7 @@ export const ReRoutingPanel: React.FC<ReRoutingPanelProps> = ({
                     </div>
                 </CardHeader>
 
-                <CardContent className="p-3 pt-2.5 flex-1 min-h-0 flex flex-col overflow-y-auto space-y-2.5">
+                <CardContent className="p-3 pt-2.5 flex-1 min-h-0 flex flex-col overflow-y-auto custom-scrollbar space-y-2.5">
                     {/* 2. 세그먼트 컨트롤 탭 (1안/2안 결과 동일 시 단일 최적안 통합 표시) */}
                     {plans.length > 0 && (
                         <div className="flex bg-muted/60 p-0.5 rounded-md border border-border/50 text-[11px] shrink-0">
@@ -115,7 +115,7 @@ export const ReRoutingPanel: React.FC<ReRoutingPanelProps> = ({
                     )}
 
                     {/* 3. 플랫 리스트 구조 (내용 과다 시 카드 내부 스크롤) */}
-                    <div className="space-y-1.5 flex-1 min-h-0 overflow-y-auto">
+                    <div className="space-y-1.5 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
                         {currentPlan.options.map((opt) => (
                             <div
                                 key={`${opt.rank}-${opt.sourceNodeId}`}

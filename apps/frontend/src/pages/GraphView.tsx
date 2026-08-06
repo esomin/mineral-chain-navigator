@@ -233,7 +233,7 @@ export function GraphView() {
                         )}
                         시뮬레이션 제어
                     </Button>
-                    <Button
+                    {/* <Button
                         onClick={() => setShowAIPanel(!showAIPanel)}
                         variant={showAIPanel ? 'default' : 'outline'}
                         className="font-semibold shadow-xs"
@@ -241,7 +241,7 @@ export function GraphView() {
                         aria-pressed={showAIPanel}
                     >
                         <GiDiamonds color={showAIPanel ? '#93c5fd' : '#4796e3'} size={16} /> AI 인사이트
-                    </Button>
+                    </Button> */}
                     {/* <ViewSwitcher currentView="graph" /> */}
                 </div>
             </header>

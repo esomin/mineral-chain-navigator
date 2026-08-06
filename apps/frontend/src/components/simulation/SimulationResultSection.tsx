@@ -61,7 +61,7 @@ export function SimulationResultSection({
                     Clear
                 </Button>
             </CardHeader>
-            <CardContent className="p-3 pt-2.5 flex-1 min-h-0 flex flex-col overflow-y-auto space-y-2.5">
+            <CardContent className="p-3 pt-2.5 flex-1 min-h-0 flex flex-col overflow-y-auto custom-scrollbar space-y-2.5">
                 <div className="grid grid-cols-3 gap-2 text-xs text-foreground bg-card border border-border/60 rounded-md p-2 shadow-xs shrink-0">
                     <div className="text-center border-r border-border/60">
                         <div className="text-[10px] text-muted-foreground">영향 노드</div>
@@ -78,7 +78,7 @@ export function SimulationResultSection({
                 </div>
 
                 {sortedDeficits.length > 0 && (
-                    <div className="border border-border/60 rounded-md bg-card shadow-xs flex-1 min-h-0 overflow-y-auto">
+                    <div className="border border-border/60 rounded-md bg-card shadow-xs flex-1 min-h-0 overflow-y-auto custom-scrollbar">
                         <table className="w-full text-xs border-collapse" aria-label="부족률 테이블">
                             <thead>
                                 <tr className="bg-muted/60 border-b border-border/60 text-muted-foreground sticky top-0 bg-muted">
@@ -162,7 +162,7 @@ export function SimulationHistorySection({
                 )}
 
                 <ul
-                    className="m-0 p-0 list-none flex-1 min-h-0 overflow-y-auto space-y-1"
+                    className="m-0 p-0 list-none flex-1 min-h-0 overflow-y-auto custom-scrollbar space-y-1"
                     aria-label="시뮬레이션 이력 목록"
                     role="list"
                 >

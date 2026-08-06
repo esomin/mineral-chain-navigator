@@ -269,7 +269,7 @@ export function SimulationPanel() {
                     className="w-[380px] h-full bg-card border-r border-border p-4 pr-2 pt-3 shadow-md flex flex-col pointer-events-auto relative"
                     aria-label="시뮬레이션 입력 및 설정 제어"
                 >
-                    <div className="flex-1 min-h-0 overflow-y-auto space-y-3 p-1">
+                    <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar space-y-3 p-1">
                         {/* 시나리오 프리셋 선택 카드 (독립된 카드 형태) */}
                         <Card className="border border-border bg-muted/40 shadow-sm mb-3 overflow-visible relative z-10">
                             <CardHeader className="p-2.5 pb-1">
@@ -614,7 +614,7 @@ export function SimulationPanel() {
                                         Clear
                                     </Button>
                                 </div>
-                                <ul className="space-y-1 max-h-32 overflow-y-auto pr-1">
+                                <ul className="space-y-1 max-h-32 overflow-y-auto custom-scrollbar pr-1">
                                     {disruptions.map((d, idx) => (
                                         <li key={idx} className="flex justify-between items-center p-1.5 bg-card border border-border rounded text-[11px]">
                                             <span className="truncate pr-2 text-foreground">
@@ -714,7 +714,7 @@ export function SimulationPanel() {
                                 </TabsTrigger>
                             </TabsList>
 
-                            <TabsContent value="result" className="flex-1 min-h-0 overflow-y-auto flex flex-col space-y-3 p-1">
+                            <TabsContent value="result" className="flex-1 min-h-0 overflow-y-auto custom-scrollbar flex flex-col space-y-3 p-1">
                                 {result ? (
                                     <>
                                         <SimulationResultSection
