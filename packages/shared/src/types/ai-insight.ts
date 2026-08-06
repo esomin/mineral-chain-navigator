@@ -57,7 +57,7 @@ export interface InsightQueryRequest {
  * 대체 공급 경로 정보.
  * 시뮬레이션 결과 기반으로 추천된 대안 경로를 나타낸다.
  */
-export interface AlternativeRoute {
+export interface AiAlternativeRoute {
     /** 대안 경로 설명 */
     description: string;
     /** 대안 경로의 노드 ID 목록 */
@@ -74,7 +74,7 @@ export interface AlternativeRoute {
  */
 export interface RecommendationResponse extends InsightResponse {
     /** 대체 공급 경로 목록 */
-    alternatives: AlternativeRoute[];
+    alternatives: AiAlternativeRoute[];
 }
 
 /**

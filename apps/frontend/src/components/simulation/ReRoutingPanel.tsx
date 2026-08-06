@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { ReroutingResult, ReroutingOption } from '@navigator/shared';
+import type { ReroutingResult, ReroutingOption, ReroutingProposalPlan } from '@navigator/shared';
 import { useSimulationStore } from '../../store/simulation-store';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { Route, Loader2, Info } from 'lucide-react';
@@ -43,7 +43,7 @@ export const ReRoutingPanel: React.FC<ReRoutingPanelProps> = ({
 
     // 항상 전체 통합 시나리오(isGlobalCombined)를 최우선 결과로 선택
     const activeResult = reroutingResults.find((r) => r.isGlobalCombined || r.targetNodeId === 'GLOBAL_TOTAL') || reroutingResults[0];
-    const plans = activeResult.plans || [];
+    const plans: ReroutingProposalPlan[] = activeResult.plans || [];
 
     // 1안과 2안의 추가 비용 및 리드타임이 동일한지 판단
     const plan1 = plans.find((p) => p.planNumber === 1);
@@ -52,7 +52,9 @@ export const ReRoutingPanel: React.FC<ReRoutingPanelProps> = ({
         plan1.totalExtraCostUsd === plan2.totalExtraCostUsd &&
         plan1.averageExtraLeadTimeDays === plan2.averageExtraLeadTimeDays;
 
-    const currentPlan = plans.find((p) => p.planNumber === selectedPlanNumber) || plans[0] || {
+    const defaultOptions: ReroutingOption[] = plans[0] ? plans[0].options : [];
+
+    const currentPlan: ReroutingProposalPlan = plans.find((p) => p.planNumber === selectedPlanNumber) || plans[0] || {
         planNumber: 1,
         title: '비용 우선',
         criterion: 'cost',
@@ -60,7 +62,7 @@ export const ReRoutingPanel: React.FC<ReRoutingPanelProps> = ({
         remainingDeficitPercentage: activeResult.remainingDeficitPercentage,
         totalExtraCostUsd: activeResult.totalExtraCostUsd,
         averageExtraLeadTimeDays: activeResult.averageExtraLeadTimeDays,
-        options: plans[0]?.options || [],
+        options: defaultOptions,
     };
 
     return (
@@ -77,9 +79,6 @@ export const ReRoutingPanel: React.FC<ReRoutingPanelProps> = ({
                             <Route className="w-3.5 h-3.5" />
                             전역 통합 대체 공급망 시나리오
                         </CardTitle>
-                        <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded border border-border/30">
-                            5개 차질 노드 통합 최적화
-                        </span>
                     </div>
                 </CardHeader>
 
