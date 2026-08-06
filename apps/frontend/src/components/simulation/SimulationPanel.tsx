@@ -24,6 +24,7 @@ import {
     SimulationResultSection,
     SimulationHistorySection,
 } from './SimulationResultSection';
+import { ReRoutingPanel } from './ReRoutingPanel';
 
 /**
  * Simulation Controls 사이드 패널 컴포넌트.
@@ -39,6 +40,8 @@ export function SimulationPanel() {
         elapsedSeconds,
         error,
         result,
+        activeRerouteOptions,
+        isRerouteApplied,
         historyEntries,
         isLoadingHistory,
         setTargetId,
@@ -51,6 +54,8 @@ export function SimulationPanel() {
         runSimulation,
         clearResult,
         loadHistoryResult,
+        setRerouteApplied,
+        recalculateReroute,
     } = useSimulationStore();
 
     // '매장된 자원'을 제외한 유효 시설 노드 목록 생성
@@ -709,16 +714,21 @@ export function SimulationPanel() {
                                 </TabsTrigger>
                             </TabsList>
 
-                            <TabsContent value="result" className="flex-1 min-h-0 overflow-hidden flex flex-col">
+                            <TabsContent value="result" className="flex-1 min-h-0 overflow-y-auto flex flex-col">
                                 {result ? (
-                                    <SimulationResultSection
-                                        result={result}
-                                        onClear={() => {
-                                            clearResult();
-                                            clearDisruptions();
-                                            setIsSecondColumnOpen(false);
-                                        }}
-                                    />
+                                    <>
+                                        <SimulationResultSection
+                                            result={result}
+                                            onClear={() => {
+                                                clearResult();
+                                                clearDisruptions();
+                                                setIsSecondColumnOpen(false);
+                                            }}
+                                        />
+                                        <ReRoutingPanel
+                                            reroutingResults={activeRerouteOptions || result.reroutingResults || []}
+                                        />
+                                    </>
                                 ) : (
                                     <div className="flex-1 flex flex-col items-center justify-center text-center p-6 bg-muted/20 border border-dashed border-border rounded-lg text-muted-foreground">
                                         <p className="text-xs font-medium">실행된 시뮬레이션 결과가 없습니다.</p>

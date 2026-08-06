@@ -1,10 +1,10 @@
 import type { SimulationResult } from '@navigator/shared';
 import { useSupplyChainStore } from '../../store/supply-chain-store';
-import type { HistoryEntry } from '../../store/simulation-store';
+import { useSimulationStore, type HistoryEntry } from '../../store/simulation-store';
 import { getCountryDisplayName, getNodeTypeLabel } from '../../utils/graph-helpers';
 import { Button } from '../ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
-import { X } from 'lucide-react';
+import { X, Route } from 'lucide-react';
 
 export function formatExecutionTime(ms: number): string {
     if (ms < 1) {
@@ -31,15 +31,18 @@ export function SimulationResultSection({
     onClear: () => void;
 }) {
     const { nodes } = useSupplyChainStore();
+    const { triggerRerouteCalculation, isRerouteLoading } = useSimulationStore();
+
     // 부족률 내림차순 정렬
     const sortedDeficits = [...result.deficits].sort(
         (a, b) => b.deficitPercentage - a.deficitPercentage,
     );
     const maxDeficit = sortedDeficits.length > 0 ? sortedDeficits[0].deficitPercentage : 0;
+    const deficitCount = sortedDeficits.filter((d) => d.deficitPercentage > 0).length;
 
     return (
         <Card
-            className="border border-border bg-muted/40 flex-1 min-h-0 max-h-[calc(100vh-420px)] flex flex-col shadow-xs"
+            className="border border-border bg-muted/40 flex-1 min-h-0 flex flex-col shadow-xs"
             aria-label="시뮬레이션 결과"
             role="region"
         >
@@ -67,7 +70,7 @@ export function SimulationResultSection({
                     </div>
                     <div className="text-center border-r border-border">
                         <div className="text-[10px] text-muted-foreground">최대 부족률</div>
-                        <div className="font-bold text-foreground mt-0.5">{maxDeficit.toFixed(1)}%</div>
+                        <div className="font-bold text-red-400 mt-0.5">{maxDeficit.toFixed(1)}%</div>
                     </div>
                     <div className="text-center">
                         <div className="text-[10px] text-muted-foreground">실행 시간</div>
@@ -90,13 +93,22 @@ export function SimulationResultSection({
                                     const nameStr = node
                                         ? `${node.name} (${node.country === 'NA' ? '' : getCountryDisplayName(node.country) + ', '}${getNodeTypeLabel(node.type)})`
                                         : d.nodeId;
+                                    const hasDeficit = d.deficitPercentage > 0;
                                     return (
                                         <tr key={d.nodeId} className="border-b border-border/50 last:border-b-0 text-foreground hover:bg-muted/50">
                                             <td className="py-1 px-2 font-medium text-[11px] truncate max-w-[190px]" title={nameStr}>
                                                 {nameStr}
                                             </td>
-                                            <td className={`text-right py-1 px-2 font-semibold ${d.deficitPercentage > 50 ? 'text-red-400' : 'text-foreground'}`}>
-                                                {d.deficitPercentage.toFixed(1)}%
+                                            <td className="text-right py-1 px-2">
+                                                {hasDeficit ? (
+                                                    <span className="inline-block text-[10px] font-bold text-red-400 bg-red-950/40 border border-red-800/40 px-1.5 py-0.5 rounded">
+                                                        {d.deficitPercentage.toFixed(1)}%
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-block text-[10px] text-muted-foreground bg-muted/20 px-1.5 py-0.5 rounded">
+                                                        0.0%
+                                                    </span>
+                                                )}
                                             </td>
                                         </tr>
                                     );
@@ -104,6 +116,18 @@ export function SimulationResultSection({
                             </tbody>
                         </table>
                     </div>
+                )}
+
+                {/* Step 2: 대안 탐색 메인 CTA 버튼 */}
+                {deficitCount > 0 && (
+                    <Button
+                        onClick={triggerRerouteCalculation}
+                        disabled={isRerouteLoading}
+                        className="w-full mt-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs py-2 rounded-md shadow-md cursor-pointer transition-all flex items-center justify-center gap-2 shrink-0"
+                    >
+                        <Route className="w-3.5 h-3.5" />
+                        대체 공급망 최적화 시나리오 추천 ({deficitCount}개 노드 해소)
+                    </Button>
                 )}
             </CardContent>
         </Card>

@@ -5,6 +5,7 @@ import { getNodeRadius, getCountryColor, getNodeTypeColor, getRiskColor } from '
 import { useLODClustering } from '../../hooks/useLODClustering';
 import type { ClusterResult } from '../../utils/clustering';
 import { useSupplyChainStore } from '../../store/supply-chain-store';
+import { useSimulationStore } from '../../store/simulation-store';
 
 export type ColorMode = 'country' | 'nodeType' | 'risk';
 
@@ -42,8 +43,13 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
     // 그래프의 비동기 render가 완료되었는지 여부
     const [isGraphReady, setIsGraphReady] = useState(false);
 
-    // 스토어에서 선택된 노드 상태 조회
+    // 스토어에서 선택된 노드 및 우회 경로 상태 조회
     const { selectedNodeId } = useSupplyChainStore();
+    const { activeRerouteOptions, isRerouteApplied, selectedPlanNumber } = useSimulationStore((state) => ({
+        activeRerouteOptions: state.activeRerouteOptions,
+        isRerouteApplied: state.isRerouteApplied,
+        selectedPlanNumber: state.selectedPlanNumber,
+    }));
 
     // 노드 클릭 핸들러를 ref로 보관 (리렌더링 방지)
     const onNodeClickRef = useRef(onNodeClick);
@@ -82,7 +88,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
         }
 
         // 클러스터링 비활성: 모든 노드 개별 렌더링
-        const g6Nodes = filteredNodes.map((node) => buildRegularNode(node, riskScores, colorMode));
+        let g6Nodes = filteredNodes.map((node) => buildRegularNode(node, riskScores, colorMode));
 
         const g6Edges = filteredEdges.map((edge) => ({
             id: edge.id,
@@ -94,8 +100,56 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
             },
         }));
 
+        // 우회 경로 시각화 적용 시 초록색 점선 엣지 및 타겟 노드 테두리 상태 갱신 (선택된 1/2/3안 반영)
+        if (isRerouteApplied && activeRerouteOptions && activeRerouteOptions.length > 0) {
+            const mainResult = activeRerouteOptions[0];
+            const plans = mainResult.plans || [];
+            const planIndex = (selectedPlanNumber >= 1 && selectedPlanNumber <= plans.length) ? selectedPlanNumber - 1 : 0;
+            const currentPlanOptions = plans[planIndex]?.options || mainResult.options;
+
+            currentPlanOptions.forEach((opt) => {
+                const rerouteEdgeId = opt.suggestedEdgeId || `REROUTE-${opt.sourceNodeId}-${opt.targetNodeId}`;
+                if (!g6Edges.some((e) => e.id === rerouteEdgeId)) {
+                    g6Edges.push({
+                        id: rerouteEdgeId,
+                        source: opt.sourceNodeId,
+                        target: opt.targetNodeId,
+                        style: {
+                            stroke: '#52c41a',
+                            lineWidth: 3,
+                            lineDash: [6, 4],
+                            endArrow: true,
+                            endArrowSize: 8,
+                        },
+                        data: {
+                            isRerouteEdge: true,
+                            rank: opt.rank,
+                        },
+                    } as any);
+                }
+            });
+
+            // 결손 해소 시 타겟 노드 테두리 색상 정상화 (#52c41a)
+            const remainingDeficit = plans[planIndex]?.remainingDeficitPercentage ?? mainResult.remainingDeficitPercentage;
+            if (remainingDeficit === 0) {
+                g6Nodes = g6Nodes.map((n) => {
+                    if (n.id === mainResult.targetNodeId) {
+                        return {
+                            ...n,
+                            data: {
+                                ...n.data,
+                                stroke: '#52c41a',
+                                strokeWidth: 4,
+                            },
+                        };
+                    }
+                    return n;
+                });
+            }
+        }
+
         return { nodes: g6Nodes, edges: g6Edges };
-    }, [filteredNodes, filteredEdges, riskScores, isClustered, lodResult, colorMode]);
+    }, [filteredNodes, filteredEdges, riskScores, isClustered, lodResult, colorMode, isRerouteApplied, activeRerouteOptions, selectedPlanNumber]);
 
     // 초기 렌더 완료 여부 — afterrender에서 불필요한 재렌더 방지
     const isInitialRenderRef = useRef(true);

@@ -4,6 +4,8 @@ import type {
     DisruptionScenario,
     DisruptionType,
     SimulationResult,
+    ReroutingResult,
+    OptimizationCriterion,
 } from '@navigator/shared';
 
 // 시뮬레이션 이력 항목 인터페이스
@@ -27,6 +29,10 @@ export interface SimulationState {
 
     // 시뮬레이션 결과
     result: SimulationResult | null;
+    activeRerouteOptions: ReroutingResult[] | null;
+    isRerouteApplied: boolean;
+    isRerouteLoading: boolean;
+    selectedPlanNumber: 1 | 2 | 3;
 
     // 로딩 상태
     isRunning: boolean;
@@ -57,6 +63,10 @@ export interface SimulationState {
     setHighlightedPath: (path: { nodeIds: string[]; edgeIds: string[] } | null) => void;
     setElapsedSeconds: (seconds: number) => void;
     loadHistoryResult: (scenarioId: string) => Promise<void>;
+    setRerouteApplied: (applied: boolean) => void;
+    setSelectedPlanNumber: (planNum: 1 | 2 | 3) => void;
+    triggerRerouteCalculation: () => Promise<void>;
+    recalculateReroute: (criterion: OptimizationCriterion) => Promise<void>;
 }
 
 // Zustand 스토어 생성 - 시뮬레이션 상태 관리
@@ -206,6 +216,10 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
 
             set((state) => ({
                 result,
+                activeRerouteOptions: result.reroutingResults || null,
+                isRerouteApplied: false,
+                isRerouteLoading: false,
+                selectedPlanNumber: 1,
                 isRunning: false,
                 history: [...state.history, result],
                 historyEntries: [...state.historyEntries, historyEntry],
@@ -225,13 +239,62 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
     },
 
     // 결과 초기화
-    clearResult: () => set({ result: null, highlightedPath: null, error: null }),
+    clearResult: () => set({
+        result: null,
+        activeRerouteOptions: null,
+        isRerouteApplied: false,
+        isRerouteLoading: false,
+        selectedPlanNumber: 1,
+        highlightedPath: null,
+        error: null,
+    }),
 
     // 하이라이트 경로 설정
     setHighlightedPath: (path) => set({ highlightedPath: path }),
 
     // 경과 시간 설정
     setElapsedSeconds: (seconds) => set({ elapsedSeconds: seconds }),
+
+    setRerouteApplied: (applied) => set({ isRerouteApplied: applied }),
+
+    setSelectedPlanNumber: (planNum: 1 | 2 | 3) => set({
+        selectedPlanNumber: planNum,
+        isRerouteApplied: true,
+    }),
+
+    triggerRerouteCalculation: async () => {
+        set({ isRerouteLoading: true });
+        // UX 상태 시각화를 위해 1.2초 로딩 후 완료
+        await new Promise((resolve) => setTimeout(resolve, 1200));
+        set({
+            isRerouteLoading: false,
+            isRerouteApplied: true,
+            selectedPlanNumber: 1,
+        });
+    },
+
+    recalculateReroute: async (criterion: OptimizationCriterion) => {
+        const state = get();
+        if (!state.result) return;
+
+        try {
+            const response = await fetch('/api/simulation/reroute', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    scenarioId: state.result.scenarioId,
+                    criterion,
+                }),
+            });
+
+            if (response.ok) {
+                const reroutingResults: ReroutingResult[] = await response.json();
+                set({ activeRerouteOptions: reroutingResults });
+            }
+        } catch (err) {
+            console.error('Failed to recalculate reroute options:', err);
+        }
+    },
 
     // 이력에서 시뮬레이션 결과를 재로드하고 그래프 하이라이트를 복원
     loadHistoryResult: async (scenarioId: string) => {
@@ -256,6 +319,8 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
 
             set({
                 result,
+                activeRerouteOptions: result.reroutingResults || null,
+                isRerouteApplied: false,
                 isLoadingHistory: false,
                 highlightedPath: {
                     nodeIds: Array.from(nodeIds),
