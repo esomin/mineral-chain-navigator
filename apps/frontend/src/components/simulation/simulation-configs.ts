@@ -118,7 +118,7 @@ export const SCENARIO_PRESETS: ScenarioPreset[] = [
             nodeType: 'Refinery',
             disruptionType: 'export_restriction',
             severity: 0.8,
-            targetId: 'RF-01',
+            targetId: 'REF_CN_LITHIUM',
         },
     },
     {
@@ -132,20 +132,20 @@ export const SCENARIO_PRESETS: ScenarioPreset[] = [
             nodeType: 'Mine',
             disruptionType: 'stockpile_policy',
             severity: 0.3,
-            targetId: 'M-01',
+            targetId: 'MINE_CL_ATACAMA',
         },
     },
     {
         id: 'sea-route-blockade',
         name: '주요 해상 경로 봉쇄',
-        description: '핵심 대양 해상 항로 마비 및 항만 지정학 지정 이슈로 호주 광산-중국 제련소 간 핵심 수송 리드타임이 3배로 대폭 지연되는 물류 마비 시나리오입니다.',
+        description: '핵심 대양 해상 항로 마비 및 항만 지정학 지정 이슈로 호주 광산-중국/한국 제련소 간 핵심 수송 리드타임이 3배로 대폭 지연되는 물류 마비 시나리오입니다.',
         badge: '물류',
         config: {
             targetType: 'edge',
-            sourceNodeId: 'M-04',
+            sourceNodeId: 'MINE_AU_PILBARA',
             disruptionType: 'logistics_disruption',
             severity: 3.0,
-            targetId: 'E-M04-RF01',
+            targetId: 'MINE_AU_PILBARA-REF_KR_POSCO_PILBARA',
         },
     },
 ];
