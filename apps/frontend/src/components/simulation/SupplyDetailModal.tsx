@@ -14,6 +14,17 @@ export const SupplyDetailModal: React.FC<SupplyDetailModalProps> = ({
     open,
     onClose,
 }) => {
+    React.useEffect(() => {
+        if (!open) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [open, onClose]);
+
     if (!open || !option) return null;
 
     const breakdown = option.targetBreakdown || [
@@ -28,12 +39,16 @@ export const SupplyDetailModal: React.FC<SupplyDetailModalProps> = ({
     ];
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200"
+            onClick={onClose}
+        >
             <div
-                className="relative w-full max-w-4xl bg-card border border-border/80 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] text-foreground"
+                className="relative w-full max-w-4xl bg-accent border border-border/80 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] text-foreground"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="supply-detail-modal-title"
+                onClick={(e) => e.stopPropagation()}
             >
                 {/* 모달 상단 헤더 */}
                 <div className="px-5 py-4 border-b border-border/60 flex items-center justify-between bg-muted/40 shrink-0">
@@ -117,7 +132,7 @@ export const SupplyDetailModal: React.FC<SupplyDetailModalProps> = ({
                             </span>
                         </div>
 
-                        <div className="border border-border/60 rounded-lg overflow-hidden bg-card shadow-xs">
+                        <div className="border border-border/60 rounded-lg overflow-hidden bg-accent shadow-xs">
                             <table className="w-full text-xs border-collapse">
                                 <thead>
                                     <tr className="bg-muted/70 border-b border-border/60 text-muted-foreground font-medium text-[11px]">
