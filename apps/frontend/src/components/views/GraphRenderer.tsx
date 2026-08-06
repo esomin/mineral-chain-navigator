@@ -458,6 +458,21 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
 
                 const hasActiveSelection = !!selectedNodeId || !!highlightedPath;
 
+                // 우회 수급 적용 시 해소된 노드 세트 계산
+                const resolvedTargetNodeIds = new Set<string>();
+                if (isRerouteApplied && activeRerouteOptions && activeRerouteOptions.length > 0) {
+                    const realNodeResults = activeRerouteOptions.filter((r) => !r.isGlobalCombined);
+                    const targetsToProcess = realNodeResults.length > 0 ? realNodeResults : activeRerouteOptions;
+                    targetsToProcess.forEach((nodeResult) => {
+                        const plans = nodeResult.plans || [];
+                        const planIndex = (selectedPlanNumber >= 1 && selectedPlanNumber <= plans.length) ? selectedPlanNumber - 1 : 0;
+                        const remainingDeficit = plans[planIndex]?.remainingDeficitPercentage ?? nodeResult.remainingDeficitPercentage;
+                        if (remainingDeficit === 0 && nodeResult.targetNodeId !== 'GLOBAL_TOTAL') {
+                            resolvedTargetNodeIds.add(nodeResult.targetNodeId);
+                        }
+                    });
+                }
+
                 // 2. 모든 노드/엣지 상태 배치 맵 구성
                 const nodeStatesMap: Record<string, string[]> = {};
                 const edgeStatesMap: Record<string, string[]> = {};
@@ -468,9 +483,10 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
                     if (!nodeId) continue;
 
                     const states: string[] = [];
+                    const isResolvedNode = isRerouteApplied && resolvedTargetNodeIds.has(nodeId);
 
                     if (hasActiveSelection) {
-                        if (highlightedPath && highlightedPath.nodeIds.includes(nodeId)) {
+                        if (highlightedPath && highlightedPath.nodeIds.includes(nodeId) && !isResolvedNode) {
                             states.push('propagation');
                         } else if (selectedNodeId === nodeId) {
                             states.push('selected');
@@ -494,8 +510,9 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
                     if (!edgeId) continue;
 
                     const states: string[] = [];
+                    const isRerouteEdge = (edge.data as any)?.isRerouteEdge;
 
-                    if (hasActiveSelection) {
+                    if (hasActiveSelection && !isRerouteEdge) {
                         if (highlightedPath && highlightedPath.edgeIds.includes(edgeId)) {
                             states.push('propagation');
                         } else {
@@ -522,7 +539,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
         }, 50);
 
         return () => clearTimeout(timer);
-    }, [selectedNodeId, highlightedPath, filteredEdges, isGraphReady]);
+    }, [selectedNodeId, highlightedPath, filteredEdges, isGraphReady, isRerouteApplied, activeRerouteOptions, selectedPlanNumber]);
 
     return (
         <div
