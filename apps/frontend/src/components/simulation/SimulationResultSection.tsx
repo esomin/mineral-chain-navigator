@@ -42,7 +42,7 @@ export function SimulationResultSection({
 
     return (
         <Card
-            className="border border-border bg-muted/40 shadow-sm shrink-0 h-[460px] max-h-[460px] flex flex-col overflow-hidden"
+            className="border border-border bg-muted/40 shadow-sm shrink-0 h-[400px] max-h-[400px] flex flex-col overflow-hidden"
             aria-label="시뮬레이션 결과"
             role="region"
         >

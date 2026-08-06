@@ -95,13 +95,12 @@ export const ReRoutingPanel: React.FC<ReRoutingPanelProps> = ({
                             className="p-2 rounded border-l-2 border-l-white border border-border/40 bg-card space-y-1 transition-colors"
                         >
                             <div className="flex items-center justify-between font-medium text-[11px] text-foreground">
-                                <span className="truncate font-semibold">{opt.rank}순위: {opt.sourceName}</span>
+                                <span className="truncate font-semibold">{opt.rank}차 수급: {opt.sourceName}</span>
                                 <span className="font-bold text-primary shrink-0">{opt.allocatedVolumeTons.toLocaleString()}톤 ({opt.coveredDeficitPercentage}%p)</span>
                             </div>
-                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                                <span>추가 단가 <strong className="text-foreground font-medium">+${opt.costImpact.unitExtraCostUsd}/톤</strong></span>
-                                <span>•</span>
-                                <span>리드타임 <strong className="text-foreground font-medium">+{opt.leadTimeImpact.additionalDays}일</strong> (총 {opt.leadTimeImpact.totalDays}일)</span>
+                            <div className="flex flex-col gap-0.5 text-[10px] text-muted-foreground">
+                                <div>추가 단가 <strong className="text-emerald-400 font-medium">+${opt.costImpact.unitExtraCostUsd}/톤</strong></div>
+                                <div>리드타임 <strong className="text-emerald-400 font-medium">+{opt.leadTimeImpact.additionalDays}일</strong> (총 {opt.leadTimeImpact.totalDays}일)</div>
                             </div>
                         </div>
                     ))}
@@ -109,13 +108,13 @@ export const ReRoutingPanel: React.FC<ReRoutingPanelProps> = ({
 
                 {/* 4. 하단 요약 인라인 레이아웃 */}
                 <div className="pt-2 border-t border-border/60 flex items-center justify-between text-[11px] text-muted-foreground shrink-0">
-                    <div>
-                        부족률 <strong className="text-foreground">{mainResult.originalDeficitPercentage}%</strong> ➔ <strong className="text-emerald-400 font-bold">{currentPlan.remainingDeficitPercentage}%</strong>
-                    </div>
                     <div className="flex items-center gap-1.5 font-semibold text-foreground">
                         <span className="text-emerald-400">+${currentPlan.totalExtraCostUsd.toLocaleString()}</span>
                         <span>•</span>
                         <span className="text-emerald-400">+{currentPlan.averageExtraLeadTimeDays}일</span>
+                    </div>
+                    <div>
+                        부족률 <strong className="text-foreground">{mainResult.originalDeficitPercentage}%</strong> ➔ <strong className="text-primary font-bold">{currentPlan.remainingDeficitPercentage}%</strong>
                     </div>
                 </div>
             </CardContent>
