@@ -36,7 +36,7 @@ function createTestGraphContext(): GraphContext {
             type: 'Supply',
             sourceNodeId: 'M-01',
             targetNodeId: 'RF-01',
-            attributes: { volume: 30000, price: 15000000, year: 2024 },
+            attributes: { volume: 30000, price: 15000000, year: 2024, hsCode: '2836.91' },
             createdAt: new Date(),
             updatedAt: new Date(),
         },

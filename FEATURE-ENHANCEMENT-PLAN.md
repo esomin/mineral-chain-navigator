@@ -1,5 +1,5 @@
 # 대체 공급망 추천 및 경로 재설정 (Re-routing Engine) 기능 기획안
-본 문서는 Mineral Chain Navigator에서 공급망 충격 시나리오 발생 시 결손 물량을 보완하고, 최적의 우회 경로를 제안하는 '대체 공급망 자동 추천(Re-routing Engine)' 기능의 핵심 아이디어와 구현 방안을 정리한 문서입니다.
+본 문서는 Lithium Supply Chain Navigator에서 공급망 충격 시나리오 발생 시 결손 물량을 보완하고, 최적의 우회 경로를 제안하는 '대체 공급망 자동 추천(Re-routing Engine)' 기능의 핵심 아이디어와 구현 방안을 정리한 문서입니다.
 
 ---
 

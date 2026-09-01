@@ -212,7 +212,7 @@ export function GraphView() {
         <div className="w-screen h-screen flex flex-col bg-background text-foreground">
             <header className="px-4 py-3 border-b border-border bg-card flex items-center justify-between">
                 <div>
-                    <h1 className="m-0 text-xl font-bold text-foreground">Mineral Chain Navigator</h1>
+                    <h1 className="m-0 text-xl font-bold text-foreground">Lithium Supply Chain Navigator</h1>
                     <p className="mt-1 mb-0 text-sm text-muted-foreground">
                         리튬 공급망 그래프 시각화 • 노드: {filteredNodes.length}/{nodes.length} | 엣지: {filteredEdges.length}/{edges.length}
                     </p>

@@ -1,4 +1,4 @@
-       # Mineral Chain Navigator
+# Lithium Supply Chain Navigator
 
 ## Overview
 
