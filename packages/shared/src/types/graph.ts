@@ -72,6 +72,7 @@ export interface SupplyChainEdge {
     sourceNodeId: string;
     targetNodeId: string;
     attributes: EdgeAttributes;
+    description?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -97,6 +98,7 @@ export interface CreateEdgeInput {
     sourceNodeId: string;
     targetNodeId: string;
     attributes?: EdgeAttributes;
+    description?: string;
 }
 
 // Validation result

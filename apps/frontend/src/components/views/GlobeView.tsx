@@ -130,7 +130,7 @@ export function GlobeView({
         );
 
         return edges
-            .map((edge) => {
+            .map((edge): ArcData | null => {
                 const source = nodeMap.get(edge.sourceNodeId);
                 const target = nodeMap.get(edge.targetNodeId);
                 if (!source || !target) return null;

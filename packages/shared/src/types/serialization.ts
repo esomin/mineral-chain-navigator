@@ -18,6 +18,7 @@ export interface SerializedEdge {
     source_node_id: string;
     target_node_id: string;
     attributes: Record<string, unknown>;
+    description?: string;
     created_at: string;   // ISO 8601
     updated_at: string;   // ISO 8601
 }

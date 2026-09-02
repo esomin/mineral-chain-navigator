@@ -65,6 +65,7 @@ export function serializeEdge(edge: SupplyChainEdge): SerializedEdge {
         source_node_id: edge.sourceNodeId,
         target_node_id: edge.targetNodeId,
         attributes: { ...edge.attributes } as Record<string, unknown>,
+        ...(edge.description ? { description: edge.description } : {}),
         created_at: edge.createdAt.toISOString(),
         updated_at: edge.updatedAt.toISOString(),
     };
@@ -91,6 +92,7 @@ export function deserializeEdge(json: any): SupplyChainEdge {
         sourceNodeId: json.sourceNodeId ?? json.source_node_id,
         targetNodeId: json.targetNodeId ?? json.target_node_id,
         attributes: attributes as SupplyChainEdge['attributes'],
+        description: json.description ?? rawAttributes.description,
         createdAt: json.created_at ? new Date(json.created_at) : (json.createdAt ? new Date(json.createdAt) : new Date()),
         updatedAt: json.updated_at ? new Date(json.updated_at) : (json.updatedAt ? new Date(json.updatedAt) : new Date()),
     };
