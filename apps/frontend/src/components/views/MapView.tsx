@@ -125,8 +125,8 @@ export function MapView({ nodes, edges, riskScores, onNodeClick }: MapViewProps)
             pickable: true,
             getSourcePosition: (d) => [d.source.coordinates.longitude, d.source.coordinates.latitude],
             getTargetPosition: (d) => [d.target.coordinates.longitude, d.target.coordinates.latitude],
-            getSourceColor: (d) => getTransportModeColors(d.attributes?.logisticsInfo?.transportMode).source,
-            getTargetColor: (d) => getTransportModeColors(d.attributes?.logisticsInfo?.transportMode).target,
+            getSourceColor: [0, 180, 255, 170],
+            getTargetColor: [255, 140, 50, 170],
             getWidth: (d) => {
                 // 무역량에 비례하는 아크 두께 (1.5~6px)
                 const volume = d.attributes?.volume ?? 1;
@@ -220,63 +220,10 @@ export function MapView({ nodes, edges, riskScores, onNodeClick }: MapViewProps)
                 <MapGL mapStyle={MAP_STYLE} />
             </DeckGL>
 
-            {/* 운송 수단 범례 (이모지 없음) */}
-            <div className="absolute bottom-6 left-6 bg-card/90 backdrop-blur-md border border-border rounded-lg px-3 py-2.5 text-xs shadow-lg space-y-1.5 select-none z-10">
-                <div className="font-bold text-[11px] text-foreground border-b border-border/50 pb-1">
-                    운송 수단 범례
-                </div>
-                <div className="flex items-center gap-2">
-                    <span className="w-3 h-1.5 rounded-full bg-cyan-400 shrink-0" />
-                    <span className="text-[11px] text-muted-foreground">해상 운송 (Maritime)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <span className="w-3 h-1.5 rounded-full bg-amber-500 shrink-0" />
-                    <span className="text-[11px] text-muted-foreground">육상 운송 (Road)</span>
-                </div>
-            </div>
-
             {/* 호버 툴팁 */}
             {tooltip && <MapTooltip info={tooltip} />}
         </div>
     );
-}
-
-/**
- * 운송 수단(transportMode)별 아크 색상 (출발지, 도착지 RGBA)
- * - 해상 운송(Maritime): 청록/오션 블루
- * - 육상 트럭(Truck/Road): 앰버/오렌지
- * - 철도(Rail): 에메랄드 그린
- * - 항공(Air): 퍼플/바이올렛
- */
-function getTransportModeColors(mode?: string): { source: [number, number, number, number]; target: [number, number, number, number] } {
-    switch (mode) {
-        case 'Maritime':
-            return {
-                source: [0, 180, 255, 190],
-                target: [56, 217, 245, 190],
-            };
-        case 'Truck':
-        case 'Road':
-            return {
-                source: [245, 158, 11, 200],
-                target: [251, 191, 36, 200],
-            };
-        case 'Rail':
-            return {
-                source: [16, 185, 129, 200],
-                target: [52, 211, 153, 200],
-            };
-        case 'Air':
-            return {
-                source: [168, 85, 247, 200],
-                target: [192, 132, 252, 200],
-            };
-        default:
-            return {
-                source: [0, 180, 255, 180],
-                target: [255, 140, 50, 180],
-            };
-    }
 }
 
 /**
