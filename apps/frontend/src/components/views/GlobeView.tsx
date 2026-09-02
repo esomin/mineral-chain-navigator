@@ -1,7 +1,7 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useMemo } from 'react';
 import Globe, { type GlobeInstance } from 'globe.gl';
 import type { SupplyChainNode, SupplyChainEdge } from '@navigator/shared';
-import { useNavigate } from 'react-router-dom';
+import { getNodeRadius, getRiskColor } from '../../utils/graph-helpers';
 
 // 아크 가중치 모드 타입
 export type ArcWeightMode = 'volume' | 'price';
@@ -11,6 +11,7 @@ export interface GlobeViewProps {
     edges: SupplyChainEdge[];
     riskScores: Map<string, number>;
     arcWeightMode: ArcWeightMode;
+    selectedNodeId?: string | null;
     onNodeClick?: (nodeId: string) => void;
 }
 
@@ -22,9 +23,18 @@ interface ArcData {
     endLng: number;
     color: [string, string];
     weight: number;
+    altitude: number;
     edgeId: string;
     sourceNodeId: string;
     targetNodeId: string;
+    sourceName: string;
+    targetName: string;
+    hsCode?: string;
+    description?: string;
+    volume?: number;
+    price?: number;
+    distanceKm?: number;
+    transportMode?: string;
 }
 
 // 포인트 데이터를 위한 인터페이스
@@ -35,142 +45,173 @@ interface PointData {
     color: string;
     nodeId: string;
     name: string;
-}
-
-// 리스크 점수 기반 색상 반환
-function getPointColor(score: number | undefined): string {
-    if (score === undefined) return '#888888';
-    if (score <= 33) return '#52c41a'; // 저위험: 녹색
-    if (score <= 66) return '#faad14'; // 중위험: 노란색
-    return '#f5222d'; // 고위험: 빨간색
-}
-
-// 아크 색상 반환 (소스 노드 국가 기반) — 밝은 파스텔 톤 + 투명도로 지구본 위 가독성 확보
-function getArcColor(sourceCountry: string): [string, string] {
-    const colors: Record<string, [string, string]> = {
-        China: ['rgba(255, 160, 120, 0.75)', 'rgba(255, 160, 120, 0.35)'],         // 밝은 살몬(연한 주황)
-        Chile: ['rgba(220, 220, 220, 0.8)', 'rgba(220, 220, 220, 0.4)'],           // 밝은 회색 (지구본 배경 대비 무채색)
-        UnitedStates: ['rgba(180, 160, 255, 0.75)', 'rgba(180, 160, 255, 0.35)'],  // 연한 라벤더
-        SouthKorea: ['rgba(100, 220, 240, 0.75)', 'rgba(100, 220, 240, 0.35)'],    // 밝은 시안
-        Japan: ['rgba(255, 170, 210, 0.75)', 'rgba(255, 170, 210, 0.35)'],         // 연한 분홍
-        Australia: ['rgba(120, 177, 220, 0.75)', 'rgba(120, 177, 220, 0.35)'],     // 밝은 초록
-        Argentina: ['rgba(255, 220, 100, 0.75)', 'rgba(255, 220, 100, 0.35)'],     // 밝은 노랑
-    };
-    return colors[sourceCountry] || ['rgba(200, 200, 200, 0.65)', 'rgba(200, 200, 200, 0.3)'];
+    country: string;
+    nodeType: string;
+    productionCapacity: number;
+    capacityUnit: string;
+    riskScore: number;
 }
 
 /**
  * 3D 지구본 뷰 컴포넌트.
- * Globe.gl을 활용하여 리튬 공급망 경로를 아크로 렌더링한다.
- * - 27개 마스터 노드 포인트 표시 (호주, 아르헨티나 신규 노드 포함, 태스크 18 확장)
- * - 7개국 간 공급망 아크 렌더링 (국가별 색상 구분)
- * - Requirements 10.1, 10.2, 10.3, 10.4 구현.
+ * Globe.gl을 활용하여 공급망 노드와 물류 경로를 3D 지구본 상에 실시간 렌더링한다.
+ * - 2D MapView와 동일한 리스크 색상, 물류 흐름(출발지->도착지) 그라데이션 및 애니메이션 적용
+ * - 노드 클릭 시 상세 정보 패널 연동 및 부드러운 카메라 시점 전환
  */
-export function GlobeView({ nodes, edges, riskScores, arcWeightMode, onNodeClick }: GlobeViewProps) {
+export function GlobeView({
+    nodes,
+    edges,
+    riskScores,
+    arcWeightMode,
+    selectedNodeId,
+    onNodeClick,
+}: GlobeViewProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const globeRef = useRef<GlobeInstance | null>(null);
-    const navigate = useNavigate();
+
+    // 유효한 지리 좌표를 가진 노드만 필터링
+    const validNodes = useMemo(() => {
+        return nodes.filter(
+            (node) =>
+                node.country !== 'NA' &&
+                node.coordinates &&
+                typeof node.coordinates.latitude === 'number' &&
+                typeof node.coordinates.longitude === 'number' &&
+                !isNaN(node.coordinates.latitude) &&
+                !isNaN(node.coordinates.longitude) &&
+                (node.coordinates.latitude !== 0 || node.coordinates.longitude !== 0),
+        );
+    }, [nodes]);
 
     // 노드 ID → 노드 매핑
-    const nodeMap = useRef<Map<string, SupplyChainNode>>(new Map());
-
-    // 노드 맵 업데이트
-    useEffect(() => {
+    const nodeMap = useMemo(() => {
         const map = new Map<string, SupplyChainNode>();
-        nodes.forEach((node) => map.set(node.id, node));
-        nodeMap.current = map;
-    }, [nodes]);
+        validNodes.forEach((node) => map.set(node.id, node));
+        return map;
+    }, [validNodes]);
 
     // 아크 가중치 계산 (모드에 따라 volume 또는 price 비례)
     const computeArcWeight = useCallback(
-        (edge: SupplyChainEdge): number => {
+        (edge: SupplyChainEdge, maxVol: number, maxPrc: number): number => {
             if (arcWeightMode === 'volume') {
-                // volume 비례: 0~5 범위로 정규화
-                const volume = edge.attributes.volume || 0;
-                const maxVolume = 50_000_000; // 5천만 kg 기준
-                return Math.max(0.5, (volume / maxVolume) * 5);
+                const volume = edge.attributes?.volume || 0;
+                return Math.max(0.6, (volume / Math.max(maxVol, 1)) * 3.5);
             } else {
-                // price 비례: 0~5 범위로 정규화
-                const price = edge.attributes.price || 0;
-                const maxPrice = 500_000_000; // 5억 USD 기준
-                return Math.max(0.5, (price / maxPrice) * 5);
+                const price = edge.attributes?.price || 0;
+                return Math.max(0.6, (price / Math.max(maxPrc, 1)) * 3.5);
             }
         },
         [arcWeightMode],
     );
 
     // 포인트 데이터 생성
-    const pointsData: PointData[] = nodes
-        .filter((node) => node.country !== 'NA') // 글로벌 리소스 노드 제외
-        .map((node) => ({
-            lat: node.coordinates.latitude,
-            lng: node.coordinates.longitude,
-            size: Math.max(0.3, Math.min(1.0, node.metadata.productionCapacity / 100000)),
-            color: getPointColor(riskScores.get(node.id)),
-            nodeId: node.id,
-            name: node.name,
-        }));
+    const pointsData: PointData[] = useMemo(() => {
+        return validNodes.map((node) => {
+            const score = riskScores.get(node.id) ?? 0;
+            const radius = getNodeRadius(
+                node.metadata?.productionCapacity || 0,
+                node.metadata?.capacityUnit || 'tons',
+            );
+            // 지구본 상 포인트 크기 정규화 (0.3 ~ 1.2)
+            const normalizedSize = Math.max(0.3, Math.min(1.2, (radius / 25) * 0.8));
 
-    // 아크 데이터 생성
-    const arcsData: ArcData[] = edges
-        .filter((edge) => {
-            const source = nodeMap.current.get(edge.sourceNodeId);
-            const target = nodeMap.current.get(edge.targetNodeId);
-            // 좌표가 있는 노드 간만 아크 생성 (Resource(N/A) 제외)
-            return source && target && source.country !== 'NA' && target.country !== 'NA';
-        })
-        .map((edge) => {
-            const source = nodeMap.current.get(edge.sourceNodeId)!;
-            const target = nodeMap.current.get(edge.targetNodeId)!;
             return {
-                startLat: source.coordinates.latitude,
-                startLng: source.coordinates.longitude,
-                endLat: target.coordinates.latitude,
-                endLng: target.coordinates.longitude,
-                color: getArcColor(source.country),
-                weight: computeArcWeight(edge),
-                edgeId: edge.id,
-                sourceNodeId: edge.sourceNodeId,
-                targetNodeId: edge.targetNodeId,
+                lat: node.coordinates.latitude,
+                lng: node.coordinates.longitude,
+                size: normalizedSize,
+                color: getRiskColor(score),
+                nodeId: node.id,
+                name: node.name,
+                country: node.country,
+                nodeType: node.type,
+                productionCapacity: node.metadata?.productionCapacity || 0,
+                capacityUnit: node.metadata?.capacityUnit || 'tons',
+                riskScore: score,
             };
         });
+    }, [validNodes, riskScores]);
+
+    // 아크 데이터 생성
+    const arcsData: ArcData[] = useMemo(() => {
+        const maxVol = Math.max(...edges.map((e) => e.attributes?.volume ?? 1), 1);
+        const maxPrc = Math.max(...edges.map((e) => e.attributes?.price ?? 1), 1);
+        const maxDist = Math.max(
+            ...edges.map((e) => e.attributes?.logisticsInfo?.distanceKm ?? 1000),
+            20000,
+        );
+
+        return edges
+            .map((edge) => {
+                const source = nodeMap.get(edge.sourceNodeId);
+                const target = nodeMap.get(edge.targetNodeId);
+                if (!source || !target) return null;
+
+                const distanceKm = edge.attributes?.logisticsInfo?.distanceKm ?? 3000;
+                // 운송 거리에 비례하는 아크 고도 (0.1 ~ 0.55)
+                const altitude = 0.1 + Math.min(distanceKm / maxDist, 1.0) * 0.45;
+
+                return {
+                    startLat: source.coordinates.latitude,
+                    startLng: source.coordinates.longitude,
+                    endLat: target.coordinates.latitude,
+                    endLng: target.coordinates.longitude,
+                    // 출발지(Cyan) -> 도착지(Orange) 물류 흐름 색상
+                    color: ['rgba(0, 180, 255, 0.85)', 'rgba(255, 140, 50, 0.85)'] as [string, string],
+                    weight: computeArcWeight(edge, maxVol, maxPrc),
+                    altitude,
+                    edgeId: edge.id,
+                    sourceNodeId: edge.sourceNodeId,
+                    targetNodeId: edge.targetNodeId,
+                    sourceName: source.name,
+                    targetName: target.name,
+                    hsCode: edge.attributes?.hsCode,
+                    description: edge.description,
+                    volume: edge.attributes?.volume,
+                    price: edge.attributes?.price,
+                    distanceKm,
+                    transportMode: edge.attributes?.logisticsInfo?.transportMode,
+                };
+            })
+            .filter((d): d is ArcData => d !== null);
+    }, [edges, nodeMap, computeArcWeight]);
 
     // Globe.gl 초기화
     useEffect(() => {
         if (!containerRef.current) return;
 
         const globe = new Globe(containerRef.current, { animateIn: true })
-            .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-            // .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
+            .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
             .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
             .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
-            // 60fps 유지를 위한 렌더링 최적화
+            .showAtmosphere(true)
+            .atmosphereColor('#3a86ff')
+            .atmosphereAltitude(0.2)
             .width(containerRef.current.clientWidth)
             .height(containerRef.current.clientHeight);
 
-        // 렌더러 성능 최적화 설정
         const renderer = globe.renderer();
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
         // 초기 시점: 한국 좌표(위도 36.5, 경도 127.5) 중심으로 설정
-        globe.pointOfView({ lat: 36.5, lng: 127.5, altitude: 2.5 });
+        globe.pointOfView({ lat: 36.5, lng: 127.5, altitude: 2.2 });
 
         globeRef.current = globe;
 
-        // 리사이즈 대응
-        const handleResize = () => {
-            if (containerRef.current && globeRef.current) {
-                globeRef.current
-                    .width(containerRef.current.clientWidth)
-                    .height(containerRef.current.clientHeight);
+        // ResizeObserver로 컨테이너 크기 변경(패널 토글 등)에 즉각 반응
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                if (globeRef.current && entry.contentRect.width > 0 && entry.contentRect.height > 0) {
+                    globeRef.current
+                        .width(entry.contentRect.width)
+                        .height(entry.contentRect.height);
+                }
             }
-        };
+        });
 
-        window.addEventListener('resize', handleResize);
+        resizeObserver.observe(containerRef.current);
 
         return () => {
-            window.removeEventListener('resize', handleResize);
-            // 정리: Globe 인스턴스의 controls 및 렌더러 해제
+            resizeObserver.disconnect();
             if (globeRef.current) {
                 globeRef.current.controls().dispose();
                 globeRef.current.renderer().dispose();
@@ -180,6 +221,22 @@ export function GlobeView({ nodes, edges, riskScores, arcWeightMode, onNodeClick
         };
     }, []);
 
+    // 선택된 노드 변경 시 카메라 포커스 이동
+    useEffect(() => {
+        if (!globeRef.current || !selectedNodeId) return;
+        const targetNode = nodeMap.get(selectedNodeId);
+        if (targetNode?.coordinates) {
+            globeRef.current.pointOfView(
+                {
+                    lat: targetNode.coordinates.latitude,
+                    lng: targetNode.coordinates.longitude,
+                    altitude: 1.6,
+                },
+                1000,
+            );
+        }
+    }, [selectedNodeId, nodeMap]);
+
     // 포인트 레이어 업데이트
     useEffect(() => {
         if (!globeRef.current) return;
@@ -188,21 +245,38 @@ export function GlobeView({ nodes, edges, riskScores, arcWeightMode, onNodeClick
             .pointsData(pointsData)
             .pointLat((d: object) => (d as PointData).lat)
             .pointLng((d: object) => (d as PointData).lng)
-            .pointAltitude(0.01)
+            .pointAltitude(0.012)
             .pointRadius((d: object) => (d as PointData).size)
             .pointColor((d: object) => (d as PointData).color)
-            .pointLabel((d: object) => (d as PointData).name)
+            .pointLabel((d: object) => {
+                const p = d as PointData;
+                const formattedCapacity = Number(p.productionCapacity).toLocaleString();
+                return `
+                    <div style="background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; padding: 10px 12px; font-family: sans-serif; box-shadow: 0 4px 14px rgba(0,0,0,0.4); min-width: 170px;">
+                        <div style="font-weight: bold; font-size: 13px; color: #f8fafc; margin-bottom: 4px;">${p.name}</div>
+                        <div style="font-size: 11px; color: #94a3b8; display: flex; justify-content: space-between; margin-bottom: 2px;">
+                            <span>국가: <strong style="color: #cbd5e1;">${p.country}</strong></span>
+                            <span>유형: <strong style="color: #cbd5e1;">${p.nodeType}</strong></span>
+                        </div>
+                        <div style="font-size: 11px; color: #94a3b8; margin-bottom: 4px;">
+                            생산용량: <strong style="color: #38bdf8;">${formattedCapacity} ${p.capacityUnit}</strong>
+                        </div>
+                        <div style="font-size: 11px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 4px;">
+                            <span style="color: #94a3b8;">리스크 점수</span>
+                            <span style="font-weight: bold; color: ${p.color};">${p.riskScore}점</span>
+                        </div>
+                    </div>
+                `;
+            })
             .onPointClick((point: object) => {
                 const p = point as PointData;
                 if (onNodeClick) {
                     onNodeClick(p.nodeId);
                 }
-                // 지역 클릭 시 상세 지도 뷰로 전환 (Requirement 10.3)
-                navigate('/map');
             });
-    }, [pointsData, onNodeClick, navigate]);
+    }, [pointsData, onNodeClick]);
 
-    // 아크 레이어 업데이트
+    // 아크 레이어 업데이트 (흐름 애니메이션 및 그라데이션)
     useEffect(() => {
         if (!globeRef.current) return;
 
@@ -213,14 +287,32 @@ export function GlobeView({ nodes, edges, riskScores, arcWeightMode, onNodeClick
             .arcEndLat((d: object) => (d as ArcData).endLat)
             .arcEndLng((d: object) => (d as ArcData).endLng)
             .arcColor((d: object) => (d as ArcData).color)
+            .arcAltitude((d: object) => (d as ArcData).altitude)
             .arcStroke((d: object) => (d as ArcData).weight)
-            // 점선 애니메이션 설정
-            .arcDashLength(0.15)
-            .arcDashGap(0.05)
-            .arcDashAnimateTime(8000);
-        // .arcDashLength(0.001)
-        // .arcDashGap(0.001)
-        // .arcDashAnimateTime(100000)
+            .arcDashLength(0.35)
+            .arcDashGap(0.15)
+            .arcDashAnimateTime(2600)
+            .arcLabel((d: object) => {
+                const a = d as ArcData;
+                const formattedVol = a.volume ? Number(a.volume).toLocaleString() + ' kg' : 'N/A';
+                const formattedPrc = a.price ? '$' + Number(a.price).toLocaleString() : 'N/A';
+                const formattedDist = a.distanceKm ? Number(a.distanceKm).toLocaleString() + ' km' : 'N/A';
+
+                return `
+                    <div style="background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; padding: 10px 12px; font-family: sans-serif; box-shadow: 0 4px 14px rgba(0,0,0,0.4); min-width: 200px;">
+                        <div style="font-weight: bold; font-size: 12px; color: #f8fafc; margin-bottom: 6px;">
+                            ${a.sourceName} <span style="color: #38bdf8;">➔</span> ${a.targetName}
+                        </div>
+                        <div style="font-size: 11px; color: #94a3b8; line-height: 1.5;">
+                            ${a.hsCode ? `<div>HS 코드: <strong style="color: #cbd5e1;">${a.hsCode}</strong></div>` : ''}
+                            ${a.transportMode ? `<div>운송수단: <strong style="color: #cbd5e1;">${a.transportMode}</strong></div>` : ''}
+                            <div>운송거리: <strong style="color: #cbd5e1;">${formattedDist}</strong></div>
+                            <div>물동량: <strong style="color: #38bdf8;">${formattedVol}</strong></div>
+                            <div>거래금액: <strong style="color: #fb923c;">${formattedPrc}</strong></div>
+                        </div>
+                    </div>
+                `;
+            });
     }, [arcsData]);
 
     // 라벨 레이어 업데이트
@@ -232,18 +324,43 @@ export function GlobeView({ nodes, edges, riskScores, arcWeightMode, onNodeClick
             .labelLat((d: object) => (d as PointData).lat)
             .labelLng((d: object) => (d as PointData).lng)
             .labelText((d: object) => (d as PointData).name)
-            .labelSize(0.6)
+            .labelSize(0.65)
             .labelDotRadius(0.3)
-            .labelColor(() => 'rgba(255, 255, 255, 0.75)')
+            .labelColor(() => 'rgba(255, 255, 255, 0.85)')
             .labelResolution(2)
-            .labelAltitude(0.015);
+            .labelAltitude(0.016);
     }, [pointsData]);
 
     return (
-        <div
-            ref={containerRef}
-            className="w-full h-full"
-            aria-label="3D 지구본 뷰"
-        />
+        <div className="w-full h-full relative">
+            <div
+                ref={containerRef}
+                className="w-full h-full"
+                aria-label="3D 지구본 뷰"
+            />
+
+            {/* 물류 흐름 방향 범례 */}
+            <div className="absolute bottom-6 left-6 bg-card/90 backdrop-blur-md border border-border rounded-lg px-3.5 py-2.5 text-xs shadow-lg space-y-1.5 select-none z-10">
+                <div className="font-bold text-[11px] text-foreground border-b border-border/50 pb-1 flex items-center justify-between gap-4">
+                    <span>물류 흐름 방향</span>
+                    <span className="text-[10px] text-muted-foreground font-normal">Flow Direction</span>
+                </div>
+                <div className="flex items-center gap-2 text-[11px]">
+                    <div className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#00b4ff] shrink-0 shadow-xs" />
+                        <span className="font-medium text-foreground">출발지 (공급)</span>
+                    </div>
+                    {/* 그라데이션 라인 & 화살표 */}
+                    <div className="flex items-center gap-1 px-1">
+                        <div className="w-8 h-1 rounded-full bg-gradient-to-r from-[#00b4ff] to-[#ff8c32]" />
+                        <span className="text-[#ff8c32] text-xs font-bold leading-none select-none">→</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#ff8c32] shrink-0 shadow-xs" />
+                        <span className="font-medium text-foreground">도착지 (수요)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 }
