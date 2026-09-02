@@ -118,6 +118,11 @@ export function MapView({ nodes, edges, riskScores, onNodeClick }: MapViewProps)
 
         // 무역량 최대값 (아크 두께 정규화용)
         const maxVolume = Math.max(...edgeData.map((e) => e.attributes?.volume ?? 1), 1);
+        // 최대 운송 거리 (아크 높이/곡률 정규화용 - 20,000km 기준)
+        const maxDistance = Math.max(
+            ...edgeData.map((e) => e.attributes?.logisticsInfo?.distanceKm ?? 1000),
+            20000,
+        );
 
         return new ArcLayer<ArcData>({
             id: 'arcs-layer',
@@ -131,6 +136,12 @@ export function MapView({ nodes, edges, riskScores, onNodeClick }: MapViewProps)
                 // 무역량에 비례하는 아크 두께 (1.5~6px)
                 const volume = d.attributes?.volume ?? 1;
                 return 1.5 + (volume / maxVolume) * 4.5;
+            },
+            getHeight: (d) => {
+                // 운송 거리(distanceKm)에 비례하는 아크 높이/곡률 (단거리 0.25 ~ 장거리 1.35)
+                const dist = d.attributes?.logisticsInfo?.distanceKm ?? 3000;
+                const ratio = Math.min(Math.max(dist / maxDistance, 0.05), 1.0);
+                return 0.25 + ratio * 1.1;
             },
             greatCircle: false,
             wrapLongitude: true,
