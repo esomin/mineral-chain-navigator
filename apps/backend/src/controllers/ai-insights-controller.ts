@@ -1,3 +1,4 @@
+// unused
 // AI 인사이트 컨트롤러 — 질의 처리, 세션 관리, 대안 추천
 import type { DataStore } from '@navigator/database';
 import type {

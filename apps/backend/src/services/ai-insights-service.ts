@@ -1,3 +1,4 @@
+// unused
 // AI 인사이트 서비스 — Gemini 2.5 Flash API 연동 (멀티턴 대화 및 대안 추천)
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { GenerativeModel, GenerateContentResult, Content } from '@google/generative-ai';

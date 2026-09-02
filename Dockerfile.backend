@@ -1,0 +1,32 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# 루트 및 패키지 정의 파일 복사 (Docker 캐시 활용)
+COPY package.json package-lock.json tsconfig.json ./
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/core/package.json ./packages/core/
+COPY packages/database/package.json ./packages/database/
+COPY packages/pipeline/package.json ./packages/pipeline/
+COPY apps/backend/package.json ./apps/backend/
+COPY apps/frontend/package.json ./apps/frontend/
+
+# 의존성 설치 (production + build tools like tsx)
+RUN npm ci
+
+# 소스 코드 및 데이터 복사
+COPY packages ./packages
+COPY apps/backend ./apps/backend
+
+# 환경변수 기본값
+ENV NODE_ENV=production
+ENV PORT=3001
+
+EXPOSE 3001
+
+# 권한 설정 및 node 사용자 실행
+RUN chown -R node:node /app
+USER node
+
+# 백엔드 서버 기동
+CMD ["npm", "--workspace=@navigator/backend", "run", "start"]

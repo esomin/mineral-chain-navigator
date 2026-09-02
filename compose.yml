@@ -1,0 +1,32 @@
+services:
+  # 1. Lithium 백엔드 API 서버 (Node.js Express + TSX)
+  lithium-backend:
+    container_name: lithium-backend
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    restart: unless-stopped
+    environment:
+      - PORT=3001
+      - NODE_ENV=production
+    networks:
+      - lithium-network
+
+  # 2. Lithium 프론트엔드 웹서버 (Nginx: 정적 파일 서빙 + /api/ 백엔드 리버스 프록시)
+  lithium-frontend:
+    container_name: lithium-frontend
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    restart: unless-stopped
+    ports:
+      # GCP 호스트 Nginx의 3003번 포트와 매핑
+      - "3003:80"
+    depends_on:
+      - lithium-backend
+    networks:
+      - lithium-network
+
+networks:
+  lithium-network:
+    driver: bridge

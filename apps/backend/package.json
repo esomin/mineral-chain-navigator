@@ -7,8 +7,8 @@
     "types": "./src/index.ts",
     "scripts": {
         "build": "tsc --build",
-        "dev": "npx tsx --watch src/server.ts",
-        "start": "node dist/server.js",
+        "dev": "tsx --watch src/server.ts",
+        "start": "tsx src/server.ts",
         "test": "vitest --run"
     },
     "dependencies": {
@@ -19,7 +19,8 @@
         "@navigator/shared": "*",
         "cors": "^2.8.5",
         "dotenv": "^17.4.2",
-        "express": "^4.18.2"
+        "express": "^4.18.2",
+        "tsx": "^4.19.2"
     },
     "devDependencies": {
         "@types/cors": "^2.8.19",
