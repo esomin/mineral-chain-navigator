@@ -3,7 +3,7 @@ import { Cuboid } from 'lucide-react';
 import { ViewSwitcher } from './ViewSwitcher';
 
 export interface AppHeaderProps {
-    currentView: 'graph' | 'map' | 'globe';
+    currentView: 'graph' | 'map';
     actions?: ReactNode;
 }
 

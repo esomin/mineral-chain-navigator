@@ -6,7 +6,7 @@ import { useLODClustering } from '../../hooks/useLODClustering';
 import type { ClusterResult } from '../../utils/clustering';
 import { useSupplyChainStore } from '../../store/supply-chain-store';
 import { useSimulationStore } from '../../store/simulation-store';
-import { Play, Pause, Globe } from 'lucide-react';
+import { Play, Pause } from 'lucide-react';
 import { Button } from '../ui/button';
 
 export type ColorMode = 'country' | 'nodeType' | 'risk';

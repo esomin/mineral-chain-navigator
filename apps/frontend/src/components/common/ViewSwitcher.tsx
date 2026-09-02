@@ -2,22 +2,21 @@ import { useNavigate } from 'react-router-dom';
 import { useCallback } from 'react';
 
 export interface ViewSwitcherProps {
-    currentView: 'graph' | 'map' | 'globe';
+    currentView: 'graph' | 'map';
 }
 
 /**
  * 상단 헤더 네비게이션 바.
- * 영문 표기(Graph / 2D Map / 3D Map) 적용.
+ * 영문 표기(Graph / 2D Map) 적용.
  */
 export function ViewSwitcher({ currentView }: ViewSwitcherProps) {
     const navigate = useNavigate();
 
     const handleSwitch = useCallback(
-        (view: 'graph' | 'map' | 'globe') => {
+        (view: 'graph' | 'map') => {
             if (view === currentView) return;
             if (view === 'graph') navigate('/');
             else if (view === 'map') navigate('/map');
-            else if (view === 'globe') navigate('/globe');
         },
         [currentView, navigate],
     );
@@ -50,18 +49,6 @@ export function ViewSwitcher({ currentView }: ViewSwitcherProps) {
             >
                 2D Map
             </button>
-            {/* 3D 지구본 뷰 네비게이션 버튼 (주석 처리) */}
-            {/* <button
-                onClick={() => handleSwitch('globe')}
-                aria-current={currentView === 'globe' ? 'page' : undefined}
-                className={`h-full flex items-center justify-center min-w-[160px] px-5 text-base tracking-wide transition-colors cursor-pointer border-b-2 -mb-[1px] ${
-                    currentView === 'globe'
-                        ? 'text-primary font-bold border-primary'
-                        : 'text-muted-foreground hover:text-foreground font-medium border-transparent'
-                }`}
-            >
-                3D Map
-            </button> */}
         </nav>
     );
 }

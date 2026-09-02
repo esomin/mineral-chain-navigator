@@ -21,7 +21,6 @@
 | | 벡터 임베딩 & RAG 검색 | 정책/기술 문서 인덱싱, 청킹 및 유사도 검색 기반 AI 답변 강화 (인메모리 InMemoryVectorStore 구현) |
 | | 영속 DB 마이그레이션 | PostgreSQL + pgvector 실제 DB 인프라 구축 및 영속 저장소 전환 (미구현 - 현재 InMemoryStore 동작, PgStore 인터페이스만 정의) |
 | **Phase 3 (Spatial & Traceability)** | GIS 지도 시각화 | Deck.gl + MapLibre GL 세계 지도 위 물류 경로 시각화 및 지능형 맵 오버레이 |
-| | 3D 지구본 시각화 | Three.js / Globe.gl 기반 3D 공급망 시각화 및 LOD 클러스터링 (`/globe`) |
 | | ESG 역추적 | Factory→Mine 업스트림 경로 투명성 검증 및 탄소/윤리 리스크 추적 |
 | | 실시간 데이터 자동 동기화 | 관세청/UN Comtrade 주기적 크롤링 및 실시간 공급망 변동 자동 파이프라인 (미구현 - 현재 스크립트 수동 실행 방식) |
 
