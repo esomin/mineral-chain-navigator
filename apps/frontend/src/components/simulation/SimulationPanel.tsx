@@ -234,7 +234,7 @@ export function SimulationPanel() {
     useEffect(() => {
         setFilters({
             hsCode: ['2530.90', '2836.91', '2825.20'],
-            countries: ['SouthKorea', 'China', 'Chile', 'UnitedStates', 'Japan', 'Argentina', 'Australia'],
+            countries: ['SouthKorea', 'China', 'Chile', 'Argentina', 'Australia', 'Poland'],
         });
     }, [setFilters]);
 
@@ -247,7 +247,7 @@ export function SimulationPanel() {
     const handleRunSimulation = useCallback(() => {
         setFilters({
             hsCode: ['2530.90', '2836.91', '2825.20'],
-            countries: ['SouthKorea', 'China', 'Chile', 'UnitedStates', 'Japan', 'Argentina', 'Australia'],
+            countries: ['SouthKorea', 'China', 'Chile', 'Argentina', 'Australia', 'Poland'],
         });
         runSimulation();
     }, [runSimulation, setFilters]);

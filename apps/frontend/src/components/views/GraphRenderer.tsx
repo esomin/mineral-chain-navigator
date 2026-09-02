@@ -6,6 +6,8 @@ import { useLODClustering } from '../../hooks/useLODClustering';
 import type { ClusterResult } from '../../utils/clustering';
 import { useSupplyChainStore } from '../../store/supply-chain-store';
 import { useSimulationStore } from '../../store/simulation-store';
+import { Play, Pause, Globe } from 'lucide-react';
+import { Button } from '../ui/button';
 
 export type ColorMode = 'country' | 'nodeType' | 'risk';
 
@@ -19,12 +21,18 @@ export interface GraphRendererProps {
         edgeIds: string[];
     } | null;
     isSimulationOpen?: boolean;
+    onToggleSimulation?: () => void;
 }
 
-/**
- * @antv/G6 v5 기반 Force-directed 그래프 렌더러.
- */
-export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlightedPath, isSimulationOpen }: GraphRendererProps) {
+export function GraphRenderer({
+    nodes,
+    edges,
+    riskScores,
+    onNodeClick,
+    highlightedPath,
+    isSimulationOpen,
+    onToggleSimulation,
+}: GraphRendererProps) {
     // 보기 기준 (색상 표현 기준) 선택 상태 ('country' | 'nodeType' | 'risk') - 디폴트: 'nodeType'
     const [colorMode, setColorMode] = useState<ColorMode>('nodeType');
 
@@ -553,50 +561,115 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
             aria-label="리튬 공급망 그래프 시각화"
             role="img"
         >
-            {/* 우상단 컨트롤: 줌 표시 + 클러스터링 버튼 + 색상 표현 기준 버튼 그룹 (세로 순서 배치) */}
+            {/* 우상단 컨트롤 & 액션 버튼 영역 (가로 2컬럼 배치) */}
             <div
                 style={{
                     position: 'absolute',
-                    top: '0.5rem',
+                    top: '0.65rem',
                     right: '1.0rem',
                     display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'stretch',
-                    gap: '0.35rem',
-                    zIndex: 5,
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
+                    gap: '0.65rem',
+                    zIndex: 10,
                 }}
             >
-                {/* 1. 줌 레벨 표시 */}
-                <div className="bg-muted border border-border rounded px-2 py-1 text-[0.7rem] text-foreground text-center">
-                    Zoom: {zoomLevel.toFixed(2)}
+                {/* 좌측 버튼 컬럼: 충격 시뮬레이션 + 국가 클러스터링 */}
+                <div
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'stretch',
+                        gap: '0.35rem',
+                    }}
+                >
+                    {/* 1. 충격 시뮬레이션 버튼 */}
+                    {onToggleSimulation && (
+                        <Button
+                            id="tour-sim-button"
+                            onClick={onToggleSimulation}
+                            variant={isSimulationOpen ? "outline" : "default"}
+                            className={`font-semibold shadow-md flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer rounded px-3 py-1.5 text-xs h-[30px] ${
+                                isSimulationOpen
+                                    ? 'bg-card/95 text-foreground border border-border hover:bg-muted hover:text-foreground ring-1 ring-border'
+                                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                            }`}
+                            aria-label={isSimulationOpen ? "충격 시뮬레이션 패널 닫기" : "충격 시뮬레이션 패널 열기"}
+                            aria-pressed={isSimulationOpen}
+                        >
+                            {isSimulationOpen ? (
+                                <Pause className="w-3.5 h-3.5 fill-current" />
+                            ) : (
+                                <Play className="w-3.5 h-3.5 fill-current" />
+                            )}
+                            충격 시뮬레이션
+                        </Button>
+                    )}
+
+                    {/* 2. 국가 클러스터링 토글 스위치 (좌측 스위치 + 우측 텍스트) */}
+                    <div
+                        role="switch"
+                        aria-checked={clusteringEnabled}
+                        tabIndex={isSimulationOpen || !isGraphReady ? -1 : 0}
+                        onClick={() => {
+                            if (!isSimulationOpen && isGraphReady) {
+                                setClusteringEnabled((prev) => !prev);
+                            }
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                if (!isSimulationOpen && isGraphReady) {
+                                    setClusteringEnabled((prev) => !prev);
+                                }
+                            }
+                        }}
+                        title={
+                            !isGraphReady
+                                ? '그래프 렌더링 중...'
+                                : isSimulationOpen
+                                    ? '시뮬레이션 모드에서는 국가 클러스터링을 사용할 수 없습니다'
+                                    : clusteringEnabled
+                                        ? '국가 클러스터링 해제'
+                                        : '국가 클러스터링 활성화'
+                        }
+                        className={`font-semibold shadow-xs flex items-center justify-start gap-2 transition-all duration-200 rounded px-2.5 py-1.5 text-xs h-[30px] select-none border ${
+                            isSimulationOpen
+                                ? 'bg-card/40 border-border/40 text-muted-foreground cursor-not-allowed opacity-50'
+                                : 'bg-card text-foreground border-border hover:bg-accent/80 cursor-pointer shadow-xs'
+                        }`}
+                    >
+                        {/* 좌측 토글 스위치 UI */}
+                        <div
+                            className={`w-7 h-3.5 flex items-center rounded-full p-0.5 transition-colors duration-200 shrink-0 ${
+                                clusteringEnabled
+                                    ? 'bg-primary justify-end'
+                                    : 'bg-zinc-600 dark:bg-zinc-600 border border-zinc-500/50 justify-start'
+                            }`}
+                        >
+                            <div className="w-2.5 h-2.5 rounded-full bg-white shadow-xs" />
+                        </div>
+                        <span className="text-[0.75rem] font-semibold">국가 클러스터링</span>
+                    </div>
                 </div>
 
-                {/* 2. 국가별 클러스터링 토글 버튼 */}
-                <button
-                    disabled={isSimulationOpen || !isGraphReady}
-                    onClick={() => setClusteringEnabled((prev) => !prev)}
-                    aria-pressed={clusteringEnabled}
-                    title={
-                        !isGraphReady
-                            ? '그래프 렌더링 중...'
-                            : isSimulationOpen
-                                ? '시뮬레이션 모드에서는 국가 클러스터링을 사용할 수 없습니다'
-                                : clusteringEnabled
-                                    ? 'Country Level Clustering 해제'
-                                    : 'Country Level Clustering 활성화'
-                    }
-                    className={`w-full rounded border px-2 py-1.5 text-[0.7rem] font-semibold text-center transition-all ${isSimulationOpen
-                        ? 'bg-muted/50 border-border text-muted-foreground cursor-not-allowed opacity-50'
-                        : clusteringEnabled
-                            ? 'bg-primary/20 border-primary text-primary font-bold cursor-pointer opacity-100 shadow-xs'
-                            : 'bg-muted border-border text-foreground cursor-pointer opacity-100 hover:bg-accent hover:text-foreground'
-                        }`}
+                {/* 우측 플로팅 컨트롤: 줌 표시 + 시각화 모드 (세로) */}
+                <div
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'stretch',
+                        gap: '0.35rem',
+                        minWidth: '110px',
+                    }}
                 >
-                    Country Clustering
-                </button>
+                    {/* 1. 줌 레벨 표시 */}
+                    <div className="bg-muted border border-border rounded px-2 py-1 text-[0.7rem] text-foreground text-center h-[30px] flex items-center justify-center">
+                        Zoom: {zoomLevel.toFixed(2)}
+                    </div>
 
-                {/* 3. 클러스터링 버튼 밑: 시각화 모드 라디오 버튼 그룹 */}
-                <div className="bg-muted border border-border rounded p-2 shadow-md flex flex-col gap-1.5">
+                    {/* 2. 시각화 모드 라디오 버튼 그룹 */}
+                    <div className="bg-muted border border-border rounded p-2 shadow-md flex flex-col gap-1.5">
                     <span className="text-[0.7rem] font-bold text-foreground text-center block">시각화 모드</span>
                     <div className="flex flex-col gap-0.5">
                         <label
@@ -656,6 +729,7 @@ export function GraphRenderer({ nodes, edges, riskScores, onNodeClick, highlight
                 </div>
             </div>
         </div>
+    </div>
     );
 }
 

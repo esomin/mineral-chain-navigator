@@ -44,6 +44,7 @@ const COUNTRY_OPTIONS = [
 export interface FilterBarProps {
     nodeCount?: number;
     totalNodeCount?: number;
+    disabled?: boolean;
 }
 
 /**
@@ -51,8 +52,9 @@ export interface FilterBarProps {
  * - 품목명 (HS 코드) 다중 필터
  * - 국가별 다중 필터
  * - 현재 필터링된 노드 수/전체 노드 수 표시
+ * - disabled 상태 지원(시뮬레이션 모드 등에서 상시 유지 및 시프트 방지)
  */
-export function FilterBar({ nodeCount, totalNodeCount }: FilterBarProps) {
+export function FilterBar({ nodeCount, totalNodeCount, disabled = false }: FilterBarProps) {
     const { nodes, edges, filters, setFilters } = useSupplyChainStore();
 
     // HS 코드 필터 적용 시 해당 엣지에 연결된 노드 ID 집합 계산
@@ -90,6 +92,7 @@ export function FilterBar({ nodeCount, totalNodeCount }: FilterBarProps) {
 
     const handleHsCodeChange = useCallback(
         (hsCode: string) => {
+            if (disabled) return;
             const current = filters.hsCode;
             let next: string[];
             if (current.includes(hsCode)) {
@@ -104,11 +107,12 @@ export function FilterBar({ nodeCount, totalNodeCount }: FilterBarProps) {
             }
             setFilters({ hsCode: next });
         },
-        [filters.hsCode, setFilters],
+        [filters.hsCode, setFilters, disabled],
     );
 
     const handleCountryChange = useCallback(
         (country: string) => {
+            if (disabled) return;
             const current = filters.countries;
             let next: string[];
             if (current.includes(country)) {
@@ -123,14 +127,17 @@ export function FilterBar({ nodeCount, totalNodeCount }: FilterBarProps) {
             }
             setFilters({ countries: next });
         },
-        [filters.countries, setFilters],
+        [filters.countries, setFilters, disabled],
     );
 
     return (
         <div
-            className="flex items-center justify-between px-6 py-3 border-b border-border bg-card flex-wrap gap-4"
+            className={`flex items-center justify-between px-6 py-3 border-b border-border bg-card flex-wrap gap-4 transition-all duration-200 ${
+                disabled ? 'opacity-50 pointer-events-none select-none' : 'opacity-100'
+            }`}
             role="toolbar"
             aria-label="공급망 필터 바"
+            aria-disabled={disabled}
         >
             <div className="flex flex-col gap-2.5">
                 {/* 품목 필터 */}
@@ -149,6 +156,7 @@ export function FilterBar({ nodeCount, totalNodeCount }: FilterBarProps) {
                                     <Checkbox
                                         id={id}
                                         checked={isActive}
+                                        disabled={disabled}
                                         onCheckedChange={() => handleHsCodeChange(value)}
                                     />
                                     <label
@@ -183,6 +191,7 @@ export function FilterBar({ nodeCount, totalNodeCount }: FilterBarProps) {
                                     <Checkbox
                                         id={id}
                                         checked={isActive}
+                                        disabled={disabled}
                                         onCheckedChange={() => handleCountryChange(value)}
                                     />
                                     <label
@@ -198,8 +207,13 @@ export function FilterBar({ nodeCount, totalNodeCount }: FilterBarProps) {
                 </div>
             </div>
 
-            {/* 노드 카운트 표시 배지 */}
-            <div className="flex items-center self-center shrink-0">
+            {/* 우측 정보: 시뮬레이션 알림 + 노드 카운트 배지 */}
+            <div className="flex items-center gap-2.5 self-center shrink-0">
+                {disabled && (
+                    <span className="text-[11px] font-medium text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded">
+                        시뮬레이션 모드
+                    </span>
+                )}
                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/80 border border-border/80 rounded-md text-xs select-none">
                     <span className="text-muted-foreground font-medium">노드:</span>
                     <span className="font-bold text-foreground">{displayNodeCount}/{displayTotalCount}</span>

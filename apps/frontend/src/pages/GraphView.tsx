@@ -210,34 +210,14 @@ export function GraphView() {
 
     return (
         <div className="w-screen h-screen flex flex-col bg-background text-foreground">
-            <AppHeader
-                currentView="graph"
-                actions={
-                    <Button
-                        id="tour-sim-button"
-                        onClick={() => setShowSimulation(!showSimulation)}
-                        variant={showSimulation ? "secondary" : "default"}
-                        className="font-semibold shadow-xs flex items-center gap-1.5 transition-all duration-200 cursor-pointer rounded px-4"
-                        aria-label={showSimulation ? "충격 시뮬레이션 패널 닫기" : "충격 시뮬레이션 패널 열기"}
-                        aria-pressed={showSimulation}
-                    >
-                        {showSimulation ? (
-                            <Pause className="w-3.5 h-3.5 fill-current" />
-                        ) : (
-                            <Play className="w-3.5 h-3.5 fill-current" />
-                        )}
-                        충격 시뮬레이션
-                    </Button>
-                }
-            />
+            <AppHeader currentView="graph" />
 
-            {/* 필터 컨트롤 바 (시뮬레이션 제어 패널이 열려있지 않을 때만 표시) */}
-            {!showSimulation && (
-                <FilterBar
-                    nodeCount={filteredNodes.length}
-                    totalNodeCount={nodes.length}
-                />
-            )}
+            {/* 필터 컨트롤 바 (상시 렌더링으로 레이아웃 시프트 방지, 시뮬레이션 중에는 disabled 처리) */}
+            <FilterBar
+                nodeCount={filteredNodes.length}
+                totalNodeCount={nodes.length}
+                disabled={showSimulation}
+            />
 
             <main className="flex-1 relative overflow-hidden bg-background">
                 {/* 로딩 상태 */}
@@ -254,7 +234,7 @@ export function GraphView() {
                     </div>
                 )}
 
-                {/* 그래프 렌더러 — 필터링된 노드/엣지를 전달 */}
+                {/* 그래프 렌더러 — 필터링된 노드/엣지 및 시뮬레이션 토글 핸들러 전달 */}
                 {filteredNodes.length > 0 && (
                     <GraphRenderer
                         nodes={filteredNodes}
@@ -263,6 +243,7 @@ export function GraphView() {
                         onNodeClick={handleNodeClick}
                         highlightedPath={highlightedPath}
                         isSimulationOpen={showSimulation}
+                        onToggleSimulation={() => setShowSimulation(!showSimulation)}
                     />
                 )}
 
