@@ -7,7 +7,7 @@ export interface ViewSwitcherProps {
 
 /**
  * 상단 헤더 네비게이션 바.
- * 영문 표기(Graph / 2D Map) 적용.
+ * 영문 표기(Node Graph / 2D Map) 적용.
  */
 export function ViewSwitcher({ currentView }: ViewSwitcherProps) {
     const navigate = useNavigate();
@@ -36,7 +36,7 @@ export function ViewSwitcher({ currentView }: ViewSwitcherProps) {
                         : 'text-muted-foreground hover:text-foreground font-medium border-transparent'
                 }`}
             >
-                Graph
+                Node Graph
             </button>
             <button
                 onClick={() => handleSwitch('map')}
