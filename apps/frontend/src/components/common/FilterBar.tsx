@@ -207,16 +207,17 @@ export function FilterBar({ nodeCount, totalNodeCount, disabled = false }: Filte
                 </div>
             </div>
 
-            {/* 우측 정보: 시뮬레이션 알림 + 노드 카운트 배지 */}
-            <div className="flex items-center gap-2.5 self-center shrink-0">
+            {/* 우측 정보: 시뮬레이션 알림 + 노드 카운트 텍스트 (하단 정렬) */}
+            <div className="flex items-center gap-3 self-end shrink-0 pb-0.5">
                 {disabled && (
-                    <span className="text-[11px] font-medium text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded">
+                    <span className="text-[11px] font-medium text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">
                         시뮬레이션 모드
                     </span>
                 )}
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/80 border border-border/80 rounded-md text-xs select-none">
-                    <span className="text-muted-foreground font-medium">노드:</span>
-                    <span className="font-bold text-foreground">{displayNodeCount}/{displayTotalCount}</span>
+                <div className="text-xs text-muted-foreground select-none">
+                    <span>노드: </span>
+                    <span className="font-bold text-foreground">{displayNodeCount}</span>
+                    <span>/{displayTotalCount}</span>
                 </div>
             </div>
         </div>

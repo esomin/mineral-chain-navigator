@@ -231,6 +231,29 @@ export function MapView({ nodes, edges, riskScores, onNodeClick }: MapViewProps)
                 <MapGL mapStyle={MAP_STYLE} />
             </DeckGL>
 
+            {/* 물류 흐름 방향 범례 (이모지 없음) */}
+            <div className="absolute bottom-6 left-6 bg-card/90 backdrop-blur-md border border-border rounded-lg px-3.5 py-2.5 text-xs shadow-lg space-y-1.5 select-none z-10">
+                <div className="font-bold text-[11px] text-foreground border-b border-border/50 pb-1 flex items-center justify-between gap-4">
+                    <span>물류 흐름 방향</span>
+                    <span className="text-[10px] text-muted-foreground font-normal">Flow Direction</span>
+                </div>
+                <div className="flex items-center gap-2 text-[11px]">
+                    <div className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#00b4ff] shrink-0 shadow-xs" />
+                        <span className="font-medium text-foreground">출발지 (공급)</span>
+                    </div>
+                    {/* 그라데이션 라인 & 화살표 */}
+                    <div className="flex items-center gap-1 px-1">
+                        <div className="w-8 h-1 rounded-full bg-gradient-to-r from-[#00b4ff] to-[#ff8c32]" />
+                        <span className="text-[#ff8c32] text-xs font-bold leading-none select-none">→</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#ff8c32] shrink-0 shadow-xs" />
+                        <span className="font-medium text-foreground">도착지 (수요)</span>
+                    </div>
+                </div>
+            </div>
+
             {/* 호버 툴팁 */}
             {tooltip && <MapTooltip info={tooltip} />}
         </div>
