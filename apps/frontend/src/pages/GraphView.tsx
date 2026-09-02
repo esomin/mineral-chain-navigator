@@ -211,19 +211,18 @@ export function GraphView() {
     return (
         <div className="w-screen h-screen flex flex-col bg-background text-foreground">
             <header className="px-4 py-3 border-b border-border bg-card flex items-center justify-between">
-                <div>
-                    <h1 className="m-0 text-xl font-bold text-foreground">Lithium Supply Chain Navigator</h1>
-                    <p className="mt-1 mb-0 text-sm text-muted-foreground">
-                        리튬 공급망 그래프 시각화 • 노드: {filteredNodes.length}/{nodes.length} | 엣지: {filteredEdges.length}/{edges.length}
-                    </p>
-                </div>
-                {/* 뷰 전환 스위처 */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-end gap-3.5">
+                    <div>
+                        <h1 className="m-0 text-xl font-bold text-foreground">Lithium Supply Chain Navigator</h1>
+                        <p className="mt-1 mb-0 text-sm text-muted-foreground">
+                            리튬 공급망 그래프 시각화 • 노드: {filteredNodes.length}/{nodes.length} | 엣지: {filteredEdges.length}/{edges.length}
+                        </p>
+                    </div>
                     <Button
                         onClick={() => setShowSimulation(!showSimulation)}
-                        variant="default"
-                        className="font-semibold shadow-xs flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-primary text-primary-foreground hover:bg-primary-hover"
-                        aria-label={showSimulation ? "시뮬레이션 제어 패널 닫기" : "시뮬레이션 제어 패널 열기"}
+                        variant={showSimulation ? "secondary" : "default"}
+                        className="font-semibold shadow-xs flex items-center gap-1.5 transition-all duration-200 cursor-pointer ml-4 rounded px-8"
+                        aria-label={showSimulation ? "충격 시뮬레이션 패널 닫기" : "충격 시뮬레이션 패널 열기"}
                         aria-pressed={showSimulation}
                     >
                         {showSimulation ? (
@@ -231,17 +230,11 @@ export function GraphView() {
                         ) : (
                             <Play className="w-3.5 h-3.5 fill-current" />
                         )}
-                        시뮬레이션 제어
+                        충격 시뮬레이션
                     </Button>
-                    {/* <Button
-                        onClick={() => setShowAIPanel(!showAIPanel)}
-                        variant={showAIPanel ? 'default' : 'outline'}
-                        className="font-semibold shadow-xs"
-                        aria-label="AI 인사이트 패널 토글"
-                        aria-pressed={showAIPanel}
-                    >
-                        <GiDiamonds color={showAIPanel ? '#93c5fd' : '#4796e3'} size={16} /> AI 인사이트
-                    </Button> */}
+                </div>
+                {/* 우측 도구 및 뷰 전환 스위처 */}
+                <div className="flex items-center gap-3">
                     {/* <ViewSwitcher currentView="graph" /> */}
                 </div>
             </header>
