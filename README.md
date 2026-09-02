@@ -6,20 +6,24 @@
 
 5개국(한국, 일본, 중국, 칠레, 미국)의 14개 마스터 노드를 대상으로 광산→제련소→공장 공급망 구조를 그래프로 시각화하고, HHI(공급 집중도) + WGI(지정학적 안정성) 기반 리스크를 정량 분석한다.
 
-## Key Features
+## Key Features & Implementation Status
 
-| Phase | 기능 | 설명 |
-|-------|------|------|
-| **Phase 1 (MVP)** | 공급망 그래프 모델링 | 14개 노드(Resource/Mine/Refinery/Factory), Supply/Delivery 엣지 |
-| | 시드 데이터 파이프라인 | USGS, UN Comtrade, KOMIS 기반 2025년 데이터 로딩 |
-| | 리스크 분석 엔진 | HHI + WGI 2팩터 통합, 0-100 정규화, 고위험 플래깅 |
-| | Force-directed 그래프 시각화 | WebGL 캔버스, 노드 크기 비례 렌더링, 리스크 색상 코딩 |
-| | 필터 & 디테일 패널 | 국가/타입/리스크 필터, 노드 클릭 상세 정보 |
-| **Phase 2 (Interactive & Decision)** | 충격 시뮬레이션 | 수출 규제/시설 폐쇄 시나리오 전파 분석 |
-| | 대체 공급망 자동 추천 & 경로 재설정 | 마비 노드 발생 시 최적 우회 경로 탐색 및 리스크/비용 재계산 |
-| | AI 인사이트 패널 | LLM 기반 자연어 질의 및 대체 공급망 추천 리포트 생성 |
-| **Phase 3 (Spatial & Traceability)** | GIS 지도 시각화 | Deck.gl + Mapbox GL 세계 지도 위 물류 경로 시각화 및 지능형 맵 오버레이 |
-| | ESG 역추적 | Factory→Mine 업스트림 경로 투명성 검증 및 탄소/윤리 리스크 추적 |
+| Phase | 기능 | 설명 | 상태 |
+|-------|------|------|:---:|
+| **Phase 1 (MVP)** | 공급망 그래프 모델링 | 14개 노드(Resource/Mine/Refinery/Factory), Supply/Delivery 엣지 (현재 27개 노드로 확장) | ✅ 구현 완료 |
+| | 시드 데이터 파이프라인 | USGS, UN Comtrade, KOMIS 기반 2025년 데이터 로딩 | ✅ 구현 완료 |
+| | 리스크 분석 엔진 | HHI + WGI 2팩터 통합, 0-100 정규화, 고위험 플래깅 | ✅ 구현 완료 |
+| | Force-directed 그래프 시각화 | WebGL 캔버스, 노드 크기 비례 렌더링, 리스크 색상 코딩 | ✅ 구현 완료 |
+| | 필터 & 디테일 패널 | 국가/타입/리스크 필터, 노드 클릭 상세 정보 | ✅ 구현 완료 |
+| **Phase 2 (Interactive & Decision)** | 충격 시뮬레이션 | 수출 규제/시설 폐쇄 시나리오 전파 분석 | ✅ 구현 완료 |
+| | 대체 공급망 자동 추천 & 경로 재설정 | 마비 노드 발생 시 최적 우회 경로 탐색 및 리스크/비용 재계산 (Global/Individual Re-routing) | ✅ 구현 완료 |
+| | AI 인사이트 패널 | LLM 기반 자연어 질의 및 대체 공급망 추천 리포트 생성 (OpenAI / Gemini 연동 및 Fallback) | ✅ 구현 완료 |
+| | 벡터 임베딩 & RAG 검색 | 정책/기술 문서 인덱싱, 청킹 및 유사도 검색 기반 AI 답변 강화 | 🔄 인메모리 구현 (InMemoryVectorStore) |
+| | 영속 DB 마이그레이션 | PostgreSQL + pgvector 실제 DB 인프라 구축 및 영속 저장소 전환 | ⏳ **미구현** (현재 InMemoryStore 동작, PgStore 인터페이스만 정의) |
+| **Phase 3 (Spatial & Traceability)** | GIS 지도 시각화 | Deck.gl + MapLibre GL 세계 지도 위 물류 경로 시각화 및 지능형 맵 오버레이 | ✅ 구현 완료 |
+| | 3D 지구본 시각화 | Three.js / Globe.gl 기반 3D 공급망 시각화 및 LOD 클러스터링 (`/globe`) | ✅ 구현 완료 |
+| | ESG 역추적 | Factory→Mine 업스트림 경로 투명성 검증 및 탄소/윤리 리스크 추적 | ✅ 구현 완료 |
+| | 실시간 데이터 자동 동기화 | 관세청/UN Comtrade 주기적 크롤링 및 실시간 공급망 변동 자동 파이프라인 | ⏳ **미구현** (현재 스크립트 수동 실행 방식) |
 
 ## Architecture
 

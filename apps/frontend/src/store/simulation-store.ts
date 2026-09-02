@@ -73,9 +73,9 @@ export interface SimulationState {
 export const useSimulationStore = create<SimulationState>((set, get) => ({
     // 초기 상태
     currentDisruption: {
-        targetId: 'F-01',
+        targetId: 'REF_CN_LITHIUM',
         targetType: 'node',
-        disruptionType: 'demand_shock',
+        disruptionType: 'export_restriction',
         severity: 0.5,
     },
     disruptions: [],

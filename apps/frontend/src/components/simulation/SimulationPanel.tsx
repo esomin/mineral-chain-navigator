@@ -107,7 +107,7 @@ export function SimulationPanel() {
         setSelectedCountry('ALL');
         setSelectedNodeType('ALL');
         setSelectedSourceNodeId('ALL');
-        setDisruptionType('demand_shock');
+        setDisruptionType('export_restriction');
         setSeverity(0.5);
         setTargetId('');
     }, [setTargetType, setDisruptionType, setSeverity, setTargetId]);

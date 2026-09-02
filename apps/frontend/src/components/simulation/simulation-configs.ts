@@ -14,18 +14,6 @@ export interface DisruptionTypeConfig {
 }
 
 export const DISRUPTION_TYPE_CONFIGS: Partial<Record<DisruptionType, DisruptionTypeConfig>> = {
-    demand_shock: {
-        label: '수요 충격',
-        description: '[수요] ESS/대체 수요 급증',
-        sliderLabel: '초과 수요 발생률',
-        min: 0,
-        max: 1,
-        step: 0.05,
-        formatValue: (val: number) => `+${(val * 100).toFixed(0)}%`,
-        minLabel: '+0%',
-        maxLabel: '+100%',
-        defaultVal: 0.5,
-    },
     export_restriction: {
         label: '수출 통제',
         description: '[지정학] 국가별 수출 통제 및 관세',
@@ -40,7 +28,7 @@ export const DISRUPTION_TYPE_CONFIGS: Partial<Record<DisruptionType, DisruptionT
     },
     facility_closure: {
         label: '조업 중단',
-        description: '[조업] 광산/제련소 가동 중단',
+        description: '[공급] 광산/제련소 가동 중단',
         sliderLabel: '생산 능력 감소율',
         min: 0,
         max: 1,
@@ -49,18 +37,6 @@ export const DISRUPTION_TYPE_CONFIGS: Partial<Record<DisruptionType, DisruptionT
         minLabel: '0%',
         maxLabel: '100%',
         defaultVal: 0.5,
-    },
-    stockpile_policy: {
-        label: '비축 정책',
-        description: '[정책] 자원 국유화 및 국가 비축',
-        sliderLabel: '정부 비축/통제 물량',
-        min: 0,
-        max: 0.5,
-        step: 0.05,
-        formatValue: (val: number) => `${(val * 100).toFixed(0)}%`,
-        minLabel: '0%',
-        maxLabel: '50%',
-        defaultVal: 0.25,
     },
     logistics_disruption: {
         label: '물류 마비',
@@ -94,20 +70,6 @@ export interface ScenarioPreset {
 
 export const SCENARIO_PRESETS: ScenarioPreset[] = [
     {
-        id: 'ai-ess-demand',
-        name: 'AI 데이터센터발 ESS용 리튬 수요 폭발',
-        description: 'AI 데이터센터 전력망 증설 및 글로벌 ESS 설치 수요 폭증으로 인해 전 세계 배터리 제조 공장의 리튬 소모 수요가 50% 급격히 증가하는 시나리오입니다.',
-        badge: '수요',
-        config: {
-            targetType: 'node',
-            country: 'ALL',
-            nodeType: 'Factory',
-            disruptionType: 'demand_shock',
-            severity: 0.5,
-            targetId: 'ALL_NODES',
-        },
-    },
-    {
         id: 'china-export-restriction',
         name: '중국 리튬 수출 통제',
         description: '지정학적 갈등 심화 및 자원 무기화로 인해 중국 내 리튬 제련 시설의 대외 수출 가능 물량이 80% 강력히 제한되는 고위험 규제 시나리오입니다.',
@@ -123,15 +85,15 @@ export const SCENARIO_PRESETS: ScenarioPreset[] = [
     },
     {
         id: 'latin-nationalization',
-        name: '남미 리튬 삼각지대 국유화',
-        description: '남미 자원 민족주의 고조에 따라 칠레 주요 광산의 국가 비축 및 정밀 통제가 강화되어 유통 공급망에서 자원 30%가 국유화 조치되는 시나리오입니다.',
-        badge: '정책',
+        name: '남미 리튬 삼각지대 국유화 및 조업 중단',
+        description: '남미 자원 민족주의 고조에 따라 칠레 주요 광산의 국가 통제 및 조업 중단으로 유통 공급망에서 자원 공급 능력이 50% 제한되는 시나리오입니다.',
+        badge: '공급',
         config: {
             targetType: 'node',
             country: 'Chile',
             nodeType: 'Mine',
-            disruptionType: 'stockpile_policy',
-            severity: 0.3,
+            disruptionType: 'facility_closure',
+            severity: 0.5,
             targetId: 'MINE_CL_ATACAMA',
         },
     },
