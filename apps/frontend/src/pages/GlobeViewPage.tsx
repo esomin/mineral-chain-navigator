@@ -27,8 +27,6 @@ export function GlobeViewPage() {
     } = useSupplyChainStore();
 
     const [error, setError] = useState<string | null>(null);
-    // 아크 가중치 모드: volume(무역량 비례) 또는 price(거래금액 비례)
-    const [arcWeightMode, setArcWeightMode] = useState<ArcWeightMode>('volume');
 
     // 백엔드 API에서 그래프 데이터 로딩
     useEffect(() => {
@@ -173,37 +171,7 @@ export function GlobeViewPage() {
 
     return (
         <div className="w-screen h-screen flex flex-col bg-background text-foreground">
-            <AppHeader
-                currentView="globe"
-                actions={
-                    <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border" role="radiogroup" aria-label="아크 가중치 모드">
-                        <button
-                            onClick={() => setArcWeightMode('volume')}
-                            role="radio"
-                            aria-checked={arcWeightMode === 'volume'}
-                            className={`px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
-                                arcWeightMode === 'volume'
-                                    ? 'bg-primary text-primary-foreground shadow-xs'
-                                    : 'text-muted-foreground hover:text-foreground'
-                            }`}
-                        >
-                            거래량 기준
-                        </button>
-                        <button
-                            onClick={() => setArcWeightMode('price')}
-                            role="radio"
-                            aria-checked={arcWeightMode === 'price'}
-                            className={`px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
-                                arcWeightMode === 'price'
-                                    ? 'bg-primary text-primary-foreground shadow-xs'
-                                    : 'text-muted-foreground hover:text-foreground'
-                            }`}
-                        >
-                            거래금액 기준
-                        </button>
-                    </div>
-                }
-            />
+            <AppHeader currentView="globe" />
 
             {/* 필터 컨트롤 바 */}
             <FilterBar
@@ -232,7 +200,6 @@ export function GlobeViewPage() {
                         nodes={filteredNodes}
                         edges={filteredEdges}
                         riskScores={riskScoreMap}
-                        arcWeightMode={arcWeightMode}
                         selectedNodeId={selectedNodeId}
                         onNodeClick={handleNodeClick}
                     />

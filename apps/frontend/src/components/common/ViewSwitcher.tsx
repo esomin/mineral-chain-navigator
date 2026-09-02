@@ -31,7 +31,7 @@ export function ViewSwitcher({ currentView }: ViewSwitcherProps) {
             <button
                 onClick={() => handleSwitch('graph')}
                 aria-current={currentView === 'graph' ? 'page' : undefined}
-                className={`h-full flex items-center justify-center min-w-[160px] px-5 text-base tracking-wide transition-colors cursor-pointer border-b-2 -mb-[1px] ${
+                className={`h-full flex items-center justify-center min-w-[200px] px-6 text-base tracking-wide transition-colors cursor-pointer border-b-2 -mb-[1px] ${
                     currentView === 'graph'
                         ? 'text-primary font-bold border-primary'
                         : 'text-muted-foreground hover:text-foreground font-medium border-transparent'
@@ -42,7 +42,7 @@ export function ViewSwitcher({ currentView }: ViewSwitcherProps) {
             <button
                 onClick={() => handleSwitch('map')}
                 aria-current={currentView === 'map' ? 'page' : undefined}
-                className={`h-full flex items-center justify-center min-w-[160px] px-5 text-base tracking-wide transition-colors cursor-pointer border-b-2 -mb-[1px] ${
+                className={`h-full flex items-center justify-center min-w-[200px] px-6 text-base tracking-wide transition-colors cursor-pointer border-b-2 -mb-[1px] ${
                     currentView === 'map'
                         ? 'text-primary font-bold border-primary'
                         : 'text-muted-foreground hover:text-foreground font-medium border-transparent'
@@ -50,7 +50,8 @@ export function ViewSwitcher({ currentView }: ViewSwitcherProps) {
             >
                 2D Map
             </button>
-            <button
+            {/* 3D 지구본 뷰 네비게이션 버튼 (주석 처리) */}
+            {/* <button
                 onClick={() => handleSwitch('globe')}
                 aria-current={currentView === 'globe' ? 'page' : undefined}
                 className={`h-full flex items-center justify-center min-w-[160px] px-5 text-base tracking-wide transition-colors cursor-pointer border-b-2 -mb-[1px] ${
@@ -60,7 +61,7 @@ export function ViewSwitcher({ currentView }: ViewSwitcherProps) {
                 }`}
             >
                 3D Map
-            </button>
+            </button> */}
         </nav>
     );
 }

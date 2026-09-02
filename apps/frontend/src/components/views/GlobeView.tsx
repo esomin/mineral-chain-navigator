@@ -3,14 +3,10 @@ import Globe, { type GlobeInstance } from 'globe.gl';
 import type { SupplyChainNode, SupplyChainEdge } from '@navigator/shared';
 import { getNodeRadius, getRiskColor } from '../../utils/graph-helpers';
 
-// 아크 가중치 모드 타입
-export type ArcWeightMode = 'volume' | 'price';
-
 export interface GlobeViewProps {
     nodes: SupplyChainNode[];
     edges: SupplyChainEdge[];
     riskScores: Map<string, number>;
-    arcWeightMode: ArcWeightMode;
     selectedNodeId?: string | null;
     onNodeClick?: (nodeId: string) => void;
 }
@@ -62,7 +58,6 @@ export function GlobeView({
     nodes,
     edges,
     riskScores,
-    arcWeightMode,
     selectedNodeId,
     onNodeClick,
 }: GlobeViewProps) {
@@ -90,18 +85,13 @@ export function GlobeView({
         return map;
     }, [validNodes]);
 
-    // 아크 가중치 계산 (모드에 따라 volume 또는 price 비례)
+    // 아크 가중치 계산 (물동량 volume 비례)
     const computeArcWeight = useCallback(
-        (edge: SupplyChainEdge, maxVol: number, maxPrc: number): number => {
-            if (arcWeightMode === 'volume') {
-                const volume = edge.attributes?.volume || 0;
-                return Math.max(0.6, (volume / Math.max(maxVol, 1)) * 3.5);
-            } else {
-                const price = edge.attributes?.price || 0;
-                return Math.max(0.6, (price / Math.max(maxPrc, 1)) * 3.5);
-            }
+        (edge: SupplyChainEdge, maxVol: number): number => {
+            const volume = edge.attributes?.volume || 0;
+            return Math.max(0.6, (volume / Math.max(maxVol, 1)) * 3.5);
         },
-        [arcWeightMode],
+        [],
     );
 
     // 포인트 데이터 생성
@@ -134,7 +124,6 @@ export function GlobeView({
     // 아크 데이터 생성
     const arcsData: ArcData[] = useMemo(() => {
         const maxVol = Math.max(...edges.map((e) => e.attributes?.volume ?? 1), 1);
-        const maxPrc = Math.max(...edges.map((e) => e.attributes?.price ?? 1), 1);
         const maxDist = Math.max(
             ...edges.map((e) => e.attributes?.logisticsInfo?.distanceKm ?? 1000),
             20000,
@@ -157,7 +146,7 @@ export function GlobeView({
                     endLng: target.coordinates.longitude,
                     // 출발지(Cyan) -> 도착지(Orange) 물류 흐름 색상
                     color: ['rgba(0, 180, 255, 0.85)', 'rgba(255, 140, 50, 0.85)'] as [string, string],
-                    weight: computeArcWeight(edge, maxVol, maxPrc),
+                    weight: computeArcWeight(edge, maxVol),
                     altitude,
                     edgeId: edge.id,
                     sourceNodeId: edge.sourceNodeId,
