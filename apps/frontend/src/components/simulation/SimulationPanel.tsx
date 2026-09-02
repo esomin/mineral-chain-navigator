@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useEffect, useState } from 'react';
-import type { DisruptionType } from '@navigator/shared';
+import type { Disruption, DisruptionType } from '@navigator/shared';
 import { useSupplyChainStore } from '../../store/supply-chain-store';
 import { useSimulationStore } from '../../store/simulation-store';
 import { getCountryDisplayName, getNodeTypeLabel } from '../../utils/graph-helpers';
@@ -51,6 +51,7 @@ export function SimulationPanel() {
         addDisruption,
         removeDisruption,
         clearDisruptions,
+        setDisruptions,
         runSimulation,
         clearResult,
         loadHistoryResult,
@@ -85,7 +86,7 @@ export function SimulationPanel() {
         }
     }, [result]);
 
-    // 프리셋 적용 핸들러
+    // 프리셋 적용 핸들러 (프리셋 선택 시 충격 목록에 자동 등록)
     const handleApplyPreset = useCallback((preset: ScenarioPreset) => {
         setTargetType(preset.config.targetType);
 
@@ -102,11 +103,24 @@ export function SimulationPanel() {
         setDisruptionType(preset.config.disruptionType);
         setSeverity(preset.config.severity);
         setTargetId(preset.config.targetId);
-    }, [setTargetType, setDisruptionType, setSeverity, setTargetId]);
+
+        // 프리셋 조건을 적용될 충격 목록(disruptions)에 즉시 자동 큐잉
+        const presetDisruption: Disruption = {
+            targetType: preset.config.targetType,
+            targetId: preset.config.targetId,
+            disruptionType: preset.config.disruptionType,
+            severity: preset.config.severity,
+            country: preset.config.country,
+            nodeType: preset.config.nodeType,
+            sourceNodeId: preset.config.sourceNodeId,
+        };
+        setDisruptions([presetDisruption]);
+    }, [setTargetType, setDisruptionType, setSeverity, setTargetId, setDisruptions]);
 
     // 충격 시나리오 구성 초기화 핸들러 (프리셋 선택 해제 및 설정값 리셋)
     const handleResetScenario = useCallback(() => {
         setIsCustomConfigOpen(true);
+        clearDisruptions();
         setTargetType('node');
         setSelectedCountry('ALL');
         setSelectedNodeType('ALL');
@@ -114,7 +128,7 @@ export function SimulationPanel() {
         setDisruptionType('export_restriction');
         setSeverity(0.5);
         setTargetId('');
-    }, [setTargetType, setDisruptionType, setSeverity, setTargetId]);
+    }, [clearDisruptions, setTargetType, setDisruptionType, setSeverity, setTargetId]);
     const countryOptions = useMemo(() => {
         const countries = Array.from(new Set(activeNodes.map((n) => n.country)));
         return [
@@ -373,50 +387,40 @@ export function SimulationPanel() {
                                 className="p-2.5 flex flex-row items-center justify-between space-y-0 cursor-pointer hover:bg-muted/40 rounded-t-lg transition-colors select-none"
                                 onClick={() => setIsCustomConfigOpen(!isCustomConfigOpen)}
                             >
-                                <div className="flex items-center gap-1.5">
-                                    {isCustomConfigOpen ? (
-                                        <ChevronDown className="w-3.5 h-3.5 text-muted-foreground transition-transform" />
-                                    ) : (
-                                        <ChevronRight className="w-3.5 h-3.5 text-muted-foreground transition-transform" />
-                                    )}
-                                    <CardTitle className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-                                        <SlidersHorizontal className="w-3 h-3 opacity-70" />
-                                        직접 조건 구성 (커스텀 설정)
-                                    </CardTitle>
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                    {isCustomConfigOpen && (
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="xs"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleResetScenario();
-                                            }}
-                                            className="h-5 text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted font-medium cursor-pointer gap-1 px-1.5"
-                                            title="시나리오 구성 초기화"
-                                            aria-label="시나리오 구성 초기화"
-                                        >
-                                            <RotateCcw className="w-2.5 h-2.5" />
-                                            Reset
-                                        </Button>
-                                    )}
-                                    <span className="text-[10px] text-muted-foreground/80 px-1.5 py-0.5 rounded bg-muted border border-border/50 font-normal">
-                                        {isCustomConfigOpen ? '접기' : '펼치기'}
-                                    </span>
-                                </div>
+                                <CardTitle className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                                    <SlidersHorizontal className="w-3 h-3 opacity-70" />
+                                    시나리오 조건 구성(Custom Settings)
+                                </CardTitle>
+                                {isCustomConfigOpen ? (
+                                    <ChevronDown className="w-3.5 h-3.5 text-muted-foreground transition-transform" />
+                                ) : (
+                                    <ChevronRight className="w-3.5 h-3.5 text-muted-foreground transition-transform" />
+                                )}
                             </CardHeader>
                             {isCustomConfigOpen && (
                                 <CardContent className="p-2.5 pt-2 border-t border-border/40">
                                     {/* 대상 유형 선택 */}
                                     <div className="mb-2">
-                                        <label
-                                            htmlFor="sim-target-type"
-                                            className="block text-[11px] font-medium text-muted-foreground mb-1"
-                                        >
-                                            대상 유형
-                                        </label>
+                                        <div className="flex items-center justify-between mb-1">
+                                            <label
+                                                htmlFor="sim-target-type"
+                                                className="block text-[11px] font-medium text-muted-foreground"
+                                            >
+                                                대상 유형
+                                            </label>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="xs"
+                                                onClick={handleResetScenario}
+                                                className="h-5 text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted font-medium cursor-pointer gap-1 px-1.5 py-0"
+                                                title="시나리오 구성 초기화"
+                                                aria-label="시나리오 구성 초기화"
+                                            >
+                                                <RotateCcw className="w-2.5 h-2.5" />
+                                                Reset
+                                            </Button>
+                                        </div>
                                         <Select
                                             value={currentDisruption.targetType}
                                             onValueChange={(val) => {
@@ -494,11 +498,7 @@ export function SimulationPanel() {
                                         {/* [분기 1] 노드 타겟팅일 때의 노드 선택 UI */}
                                         {currentDisruption.targetType === 'node' && (
                                             <>
-                                                {targetOptions.length === 1 ? (
-                                                    <div className="p-2 bg-muted border border-border rounded-md text-xs font-semibold text-foreground shadow-xs">
-                                                        <span className="truncate">{targetOptions[0].label}</span>
-                                                    </div>
-                                                ) : targetOptions.length === 0 ? (
+                                                {targetOptions.length === 0 ? (
                                                     <div className="p-2 bg-red-950/40 border border-red-800 rounded-md text-xs font-semibold text-red-400 flex items-center gap-1.5">
                                                         <span>⚠ 조건에 일치하는 시설이 없습니다.</span>
                                                     </div>
