@@ -9,7 +9,7 @@ import type {
     SupplyChainEdge,
     DocumentChunk,
     SimulationResult,
-    AlternativeRoute,
+    AiAlternativeRoute,
     RecommendationResponse,
 } from '@navigator/shared';
 
@@ -494,7 +494,7 @@ JSON 블록 아래에 각 대안에 대한 상세 분석도 포함하세요.`;
      * LLM 응답에서 대안 경로를 파싱한다.
      * JSON 블록에서 구조화된 대안 정보를 추출한다.
      */
-    private parseAlternatives(responseText: string, graphContext: GraphContext): AlternativeRoute[] {
+    private parseAlternatives(responseText: string, graphContext: GraphContext): AiAlternativeRoute[] {
         try {
             // JSON 코드 블록에서 배열 추출
             const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/);
@@ -518,7 +518,7 @@ JSON 블록 아래에 각 대안에 대한 상세 분석도 포함하세요.`;
     /**
      * 파싱된 대안 데이터를 검증하고 정규화한다.
      */
-    private validateAlternatives(raw: unknown[]): AlternativeRoute[] {
+    private validateAlternatives(raw: unknown[]): AiAlternativeRoute[] {
         return raw
             .filter((item): item is Record<string, unknown> => item !== null && typeof item === 'object')
             .map(item => ({
@@ -535,7 +535,7 @@ JSON 블록 아래에 각 대안에 대한 상세 분석도 포함하세요.`;
     /**
      * LLM 응답 파싱 실패 시 그래프 데이터 기반 폴백 대안을 생성한다.
      */
-    private generateFallbackAlternatives(graphContext: GraphContext): AlternativeRoute[] {
+    private generateFallbackAlternatives(graphContext: GraphContext): AiAlternativeRoute[] {
         const { nodes } = graphContext;
 
         // 가용한 노드 중 생산능력이 있는 노드를 대안으로 제시
