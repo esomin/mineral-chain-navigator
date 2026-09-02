@@ -8,8 +8,6 @@
     "scripts": {
         "build": "tsc --build",
         "test": "vitest --run",
-        "etl:fetch-export": "npx tsx scripts/comtrade/fetch-export.ts",
-        "etl:fetch-import": "npx tsx scripts/comtrade/fetch-import.ts",
         "etl:merge-comtrade": "npx tsx scripts/comtrade/merge-data.ts",
         "etl:extract-prices": "npx tsx scripts/comtrade/extract-unit-prices.ts",
         "etl:extract-lithium": "npx tsx scripts/usgs/extract-lithium-production.ts"

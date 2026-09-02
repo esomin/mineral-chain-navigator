@@ -12,7 +12,6 @@
         "test:watch": "vitest",
         "lint": "eslint 'packages/*/src/**/*.{ts,tsx}'",
         "format": "prettier --write 'packages/*/src/**/*.{ts,tsx}'",
-        "fetch:comtrade": "npm --workspace=@navigator/pipeline run etl:fetch-export && npm --workspace=@navigator/pipeline run etl:fetch-import && npm --workspace=@navigator/pipeline run etl:merge-comtrade",
         "fetch:production": "npm --workspace=@navigator/pipeline run etl:extract-lithium"
     },
     "devDependencies": {
