@@ -3,18 +3,28 @@ import { useSupplyChainStore } from '../store/supply-chain-store';
 import { GlobeView, type ArcWeightMode } from '../components/views/GlobeView';
 import { FilterBar } from '../components/common/FilterBar';
 import { NodeDetailPanel } from '../components/panels/NodeDetailPanel';
-import { ViewSwitcher } from '../components/common/ViewSwitcher';
-import type { RiskScore } from '@navigator/shared/src/types/risk';
+import { AppHeader } from '../components/common/AppHeader';
+import { RiskScore } from '@navigator/shared/src/types/risk';
 
 /**
- * 3D 지구본 뷰 페이지 (Phase 2).
- * Globe.gl 기반 3D 지구본에 리튬 공급망 경로를 아크로 시각화한다.
- * 거래량/거래가격 모드 토글을 제공하여 아크 가중치를 시각화한다.
- * Requirements 10.1, 10.2, 10.3, 10.4 구현.
+ * 3D 지구본 뷰 페이지.
+ * Globe.gl 기반 3D 지구본에 리튬 공급망 노드와 물류 아크를 시각화한다.
+ * GraphView/MapView와 동일한 Zustand 스토어를 공유하여 필터, 선택 노드, 리스크 점수 상태를 동기화한다.
  */
 export function GlobeViewPage() {
-    const { nodes, edges, selectedNodeId, filters, riskScores, setNodes, setEdges, setRiskScores, selectNode, setLoading, isLoading } =
-        useSupplyChainStore();
+    const {
+        nodes,
+        edges,
+        selectedNodeId,
+        filters,
+        riskScores,
+        setNodes,
+        setEdges,
+        setRiskScores,
+        selectNode,
+        setLoading,
+        isLoading,
+    } = useSupplyChainStore();
 
     const [error, setError] = useState<string | null>(null);
     // 아크 가중치 모드: volume(무역량 비례) 또는 price(거래금액 비례)
@@ -22,7 +32,7 @@ export function GlobeViewPage() {
 
     // 백엔드 API에서 그래프 데이터 로딩
     useEffect(() => {
-        // 이미 데이터가 로드되어 있으면 건너뛰기 (뷰 전환 시 재요청 방지)
+        // 이미 데이터가 로드되어 있으면 재요청 방지
         if (nodes.length > 0) return;
 
         const fetchGraphData = async () => {
@@ -59,7 +69,7 @@ export function GlobeViewPage() {
 
     // 리스크 점수 로딩
     useEffect(() => {
-        if (nodes.length === 0) return;
+        if (nodes.length === 0 || riskScores.length > 0) return;
 
         const fetchRiskScores = async () => {
             try {
@@ -73,7 +83,7 @@ export function GlobeViewPage() {
         };
 
         fetchRiskScores();
-    }, [nodes]);
+    }, [nodes, riskScores.length, setRiskScores]);
 
     // 리스크 점수를 nodeId → score Map으로 변환
     const riskScoreMap = useMemo(() => {
@@ -84,32 +94,54 @@ export function GlobeViewPage() {
         return map;
     }, [riskScores]);
 
-    // 필터링된 노드 (HS 코드 및 국가 필터 적용)
-    const filteredNodes = useMemo(() => {
+    // HS 코드 필터 적용 시 해당 엣지에 연결된 노드 ID 집합 계산
+    const hsCodeFilteredNodeIds = useMemo(() => {
         const nodeIds = new Set<string>();
         for (const edge of edges) {
-            if (filters.hsCode.includes(edge.attributes.hsCode)) {
+            const hsCode = edge.attributes?.hsCode;
+            if (!hsCode || filters.hsCode.includes(hsCode) || filters.hsCode.length === 0) {
                 nodeIds.add(edge.sourceNodeId);
                 nodeIds.add(edge.targetNodeId);
             }
         }
-        return nodes.filter((node) => nodeIds.has(node.id) && filters.countries.includes(node.country));
-    }, [nodes, edges, filters.hsCode, filters.countries]);
+        return nodeIds;
+    }, [edges, filters.hsCode]);
+
+    // 필터링된 노드 계산
+    const filteredNodes = useMemo(() => {
+        const hasHsCodeFilter = filters.hsCode.length > 0;
+        const hasCountryFilter = filters.countries.length > 0;
+        const hasHsCodeMatch = hasHsCodeFilter && hsCodeFilteredNodeIds && hsCodeFilteredNodeIds.size > 0;
+
+        return nodes.filter((node) => {
+            if (hasHsCodeMatch && !hsCodeFilteredNodeIds.has(node.id)) {
+                return false;
+            }
+            if (hasCountryFilter && !filters.countries.includes(node.country)) {
+                return false;
+            }
+            return true;
+        });
+    }, [nodes, hsCodeFilteredNodeIds, filters.countries, filters.hsCode]);
 
     // 필터링된 엣지 (HS 코드 필터 + 양쪽 노드 표시 조건)
     const filteredEdges = useMemo(() => {
         const filteredNodeIds = new Set(filteredNodes.map((n) => n.id));
-        return edges.filter(
-            (edge) =>
-                filteredNodeIds.has(edge.sourceNodeId) &&
-                filteredNodeIds.has(edge.targetNodeId) &&
-                filters.hsCode.includes(edge.attributes.hsCode),
-        );
+        return edges.filter((edge) => {
+            if (!filteredNodeIds.has(edge.sourceNodeId) || !filteredNodeIds.has(edge.targetNodeId)) {
+                return false;
+            }
+            const hsCode = edge.attributes?.hsCode;
+            if (hsCode && filters.hsCode.length > 0 && !filters.hsCode.includes(hsCode)) {
+                return false;
+            }
+            return true;
+        });
     }, [edges, filteredNodes, filters.hsCode]);
 
     // 노드 클릭 핸들러
     const handleNodeClick = useCallback(
-        (nodeId: string) => {
+        (nodeId: string | null) => {
             selectNode(nodeId === selectedNodeId ? null : nodeId);
         },
         [selectNode, selectedNodeId],
@@ -140,60 +172,57 @@ export function GlobeViewPage() {
     );
 
     return (
-        <div className="w-screen h-screen flex flex-col">
-            <header className="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-                <div>
-                    <h1 className="m-0 text-xl font-bold text-gray-900">Lithium Supply Chain Navigator</h1>
-                    <p className="mt-1 mb-0 text-sm text-gray-500">
-                        리튬(HS 2825.20) 공급망 3D 지구본 시각화 • 노드: {filteredNodes.length}/{nodes.length} | 엣지: {filteredEdges.length}/{edges.length}
-                    </p>
-                </div>
-                <div className="flex items-center gap-3">
-                    {/* 아크 가중치 모드 토글 (Requirement 10.4) */}
-                    <div className="flex items-center gap-1" role="radiogroup" aria-label="아크 가중치 모드">
+        <div className="w-screen h-screen flex flex-col bg-background text-foreground">
+            <AppHeader
+                currentView="globe"
+                actions={
+                    <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border" role="radiogroup" aria-label="아크 가중치 모드">
                         <button
                             onClick={() => setArcWeightMode('volume')}
                             role="radio"
                             aria-checked={arcWeightMode === 'volume'}
-                            className={`px-3 py-1.5 text-xs outline-none border border-gray-300 rounded-l ${arcWeightMode === 'volume'
-                                ? 'bg-green-500 !text-white font-bold !border-green-500 cursor-default'
-                                : 'bg-white text-gray-700 cursor-pointer hover:bg-gray-100'
-                                }`}
+                            className={`px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                                arcWeightMode === 'volume'
+                                    ? 'bg-primary text-primary-foreground shadow-xs'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            }`}
                         >
-                            거래량
+                            거래량 기준
                         </button>
                         <button
                             onClick={() => setArcWeightMode('price')}
                             role="radio"
                             aria-checked={arcWeightMode === 'price'}
-                            className={`px-3 py-1.5 text-xs outline-none border border-gray-300 border-l-0 rounded-r ${arcWeightMode === 'price'
-                                ? 'bg-green-500 !text-white font-bold !border-green-500 cursor-default'
-                                : 'bg-white text-gray-700 cursor-pointer hover:bg-gray-100'
-                                }`}
+                            className={`px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                                arcWeightMode === 'price'
+                                    ? 'bg-primary text-primary-foreground shadow-xs'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            }`}
                         >
-                            거래금액
+                            거래금액 기준
                         </button>
                     </div>
-                    {/* 뷰 전환 스위처 */}
-                    {/* <ViewSwitcher currentView="globe" /> */}
-                </div>
-            </header>
+                }
+            />
 
             {/* 필터 컨트롤 바 */}
-            <FilterBar />
+            <FilterBar
+                nodeCount={filteredNodes.length}
+                totalNodeCount={nodes.length}
+            />
 
-            <main className="flex-1 relative overflow-hidden">
+            <main className="flex-1 relative overflow-hidden bg-background">
                 {/* 로딩 상태 */}
                 {isLoading && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-10">
-                        <p>지구본 데이터 로딩 중...</p>
+                    <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10 text-muted-foreground">
+                        <p>3D 지구본 데이터 로딩 중...</p>
                     </div>
                 )}
 
                 {/* 에러 상태 */}
                 {error && (
-                    <div className="absolute top-4 left-1/2 -translate-x-1/2 px-6 py-3 bg-red-50 border border-red-200 rounded z-10">
-                        <span className="text-red-700">⚠ {error}</span>
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 px-6 py-3 bg-destructive/10 border border-destructive rounded-lg z-10">
+                        <span className="text-destructive font-medium">⚠ {error}</span>
                     </div>
                 )}
 
@@ -204,6 +233,7 @@ export function GlobeViewPage() {
                         edges={filteredEdges}
                         riskScores={riskScoreMap}
                         arcWeightMode={arcWeightMode}
+                        selectedNodeId={selectedNodeId}
                         onNodeClick={handleNodeClick}
                     />
                 )}
@@ -211,7 +241,7 @@ export function GlobeViewPage() {
                 {/* 필터 결과 없음 */}
                 {!isLoading && nodes.length > 0 && filteredNodes.length === 0 && (
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <p className="text-gray-400 text-sm">
+                        <p className="text-muted-foreground text-sm">
                             필터 조건에 맞는 노드가 없습니다.
                         </p>
                     </div>
