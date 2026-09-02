@@ -1,11 +1,11 @@
 import { useState, useMemo, useCallback } from 'react';
 import DeckGL from '@deck.gl/react';
+import { MapView as DeckMapView } from '@deck.gl/core';
 import { ScatterplotLayer, ArcLayer } from '@deck.gl/layers';
 import { Map as MapGL } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { SupplyChainNode, SupplyChainEdge } from '@navigator/shared';
-import { getCountryColor, getNodeRadius, getRiskColor } from '../../utils/graph-helpers';
-import { MapLayerToggle, type MapLayerState } from './map/MapLayerToggle';
+import { getNodeRadius, getRiskColor } from '../../utils/graph-helpers';
 import { MapTooltip, type TooltipInfo } from './map/MapTooltip';
 
 // 무료 다크 지도 스타일 (Mapbox 토큰 불필요)
@@ -34,19 +34,25 @@ interface ArcData extends SupplyChainEdge {
 }
 
 /**
- * Deck.gl + Maplibre 기반 GIS 지도 뷰 컴포넌트.
- * - ScatterplotLayer로 27개 마스터 노드를 지리 좌표에 표시
- * - ArcLayer로 물류 경로(엣지) 라인 렌더링
- * - 레이어 토글 (노드 타입, 리스크 레벨, 무역량)
+ * Deck.gl + Maplibre 기반 2D GIS 지도 뷰 컴포넌트.
+ * - 27개 마스터 노드 중 지리 좌표를 가진 실제 시설 노드 렌더링 (Resource 가상 노드 제외)
+ * - 물류 경로(엣지) 대권 아크 렌더링 (wrapLongitude를 통한 날짜변경선 끊김 방지)
  * - 노드/경로 호버 시 툴팁 표시
  */
 export function MapView({ nodes, edges, riskScores, onNodeClick }: MapViewProps) {
-    // 레이어 토글 상태
-    const [layerState, setLayerState] = useState<MapLayerState>({
-        showNodeType: true,
-        showRiskLevel: true,
-        showTradeVolume: true,
-    });
+    // 유효한 지리 좌표를 가진 노드만 필터링 (Resource 노드 및 가상 좌표 제외)
+    const validNodes = useMemo(() => {
+        return nodes.filter(
+            (node) =>
+                node.country !== 'NA' &&
+                node.coordinates &&
+                typeof node.coordinates.latitude === 'number' &&
+                typeof node.coordinates.longitude === 'number' &&
+                !isNaN(node.coordinates.latitude) &&
+                !isNaN(node.coordinates.longitude) &&
+                (node.coordinates.latitude !== 0 || node.coordinates.longitude !== 0)
+        );
+    }, [nodes]);
 
     // 툴팁 상태
     const [tooltip, setTooltip] = useState<TooltipInfo | null>(null);
@@ -54,66 +60,53 @@ export function MapView({ nodes, edges, riskScores, onNodeClick }: MapViewProps)
     // 리스크 점수 기반 노드 색상 계산
     const getNodeColor = useCallback(
         (node: SupplyChainNode): [number, number, number, number] => {
-            if (layerState.showRiskLevel) {
-                // 리스크 레벨 기준 색상
-                const score = riskScores.get(node.id) ?? 0;
-                const riskColor = getRiskColor(score);
-                return parseRgba(riskColor);
-            }
-            // 국가 기준 색상
-            const countryColor = getCountryColor(node.country);
-            return parseRgba(countryColor);
+            const score = riskScores.get(node.id) ?? 0;
+            const riskColor = getRiskColor(score);
+            return parseRgba(riskColor);
         },
-        [riskScores, layerState.showRiskLevel],
+        [riskScores],
     );
 
     // 노드 반지름 계산 (production_capacity 비례)
     const getRadius = useCallback((node: SupplyChainNode): number => {
-        const baseRadius = getNodeRadius(node.metadata.productionCapacity, node.metadata.capacityUnit);
+        const baseRadius = getNodeRadius(node.metadata?.productionCapacity || 0, node.metadata?.capacityUnit || 'tons');
         // 지도에서는 km 단위로 확대 (약 50~150km)
         return baseRadius * 3000;
     }, []);
 
     // ScatterplotLayer: 노드 표시
     const nodeLayer = useMemo(() => {
-        if (!layerState.showNodeType) return null;
-
         return new ScatterplotLayer<SupplyChainNode>({
             id: 'nodes-layer',
-            data: nodes,
+            data: validNodes,
             pickable: true,
             opacity: 0.85,
             stroked: true,
             filled: true,
             radiusMinPixels: 6,
-            radiusMaxPixels: 40,
+            radiusMaxPixels: 35,
             lineWidthMinPixels: 2,
+            wrapLongitude: true,
             getPosition: (d) => [d.coordinates.longitude, d.coordinates.latitude],
             getRadius: (d) => getRadius(d),
             getFillColor: (d) => getNodeColor(d),
             getLineColor: (d) => {
-                // 리스크 레벨 테두리 색상
-                if (layerState.showRiskLevel) {
-                    const score = riskScores.get(d.id) ?? 0;
-                    if (score > 66) return [245, 34, 45, 255] as [number, number, number, number];
-                    if (score > 33) return [250, 173, 20, 255] as [number, number, number, number];
-                    return [82, 196, 26, 255] as [number, number, number, number];
-                }
-                return [100, 100, 100, 200] as [number, number, number, number];
+                const score = riskScores.get(d.id) ?? 0;
+                if (score > 66) return [245, 34, 45, 255] as [number, number, number, number];
+                if (score > 33) return [250, 173, 20, 255] as [number, number, number, number];
+                return [82, 196, 26, 255] as [number, number, number, number];
             },
             updateTriggers: {
-                getFillColor: [layerState.showRiskLevel, riskScores],
-                getLineColor: [layerState.showRiskLevel, riskScores],
+                getFillColor: [riskScores],
+                getLineColor: [riskScores],
             },
         });
-    }, [nodes, riskScores, layerState.showNodeType, layerState.showRiskLevel, getNodeColor, getRadius]);
+    }, [validNodes, riskScores, getNodeColor, getRadius]);
 
     // ArcLayer: 물류 경로 렌더링
     const arcLayer = useMemo(() => {
-        if (!layerState.showTradeVolume) return null;
-
-        // 엣지 데이터에 소스/타겟 노드 좌표 매핑
-        const nodeMap = new Map(nodes.map((n) => [n.id, n]));
+        // 유효 노드 매핑
+        const nodeMap = new Map(validNodes.map((n) => [n.id, n]));
         const edgeData: ArcData[] = edges
             .map((edge) => {
                 const source = nodeMap.get(edge.sourceNodeId);
@@ -132,16 +125,17 @@ export function MapView({ nodes, edges, riskScores, onNodeClick }: MapViewProps)
             pickable: true,
             getSourcePosition: (d) => [d.source.coordinates.longitude, d.source.coordinates.latitude],
             getTargetPosition: (d) => [d.target.coordinates.longitude, d.target.coordinates.latitude],
-            getSourceColor: [0, 128, 255, 160],
-            getTargetColor: [255, 100, 50, 160],
+            getSourceColor: [0, 180, 255, 170],
+            getTargetColor: [255, 140, 50, 170],
             getWidth: (d) => {
-                // 무역량에 비례하는 아크 두께 (1~8px)
+                // 무역량에 비례하는 아크 두께 (1~7px)
                 const volume = d.attributes?.volume ?? 1;
-                return 1 + (volume / maxVolume) * 7;
+                return 1 + (volume / maxVolume) * 6;
             },
-            greatCircle: true,
+            greatCircle: false,
+            wrapLongitude: true,
         });
-    }, [nodes, edges, layerState.showTradeVolume]);
+    }, [validNodes, edges]);
 
     // 레이어 배열 구성
     const layers = useMemo(() => {
@@ -174,8 +168,8 @@ export function MapView({ nodes, edges, riskScores, onNodeClick }: MapViewProps)
                         name: node.name,
                         nodeType: node.type,
                         country: node.country,
-                        productionCapacity: node.metadata.productionCapacity,
-                        capacityUnit: node.metadata.capacityUnit,
+                        productionCapacity: node.metadata?.productionCapacity || 0,
+                        capacityUnit: node.metadata?.capacityUnit || 'tons',
                         riskScore: score,
                     },
                 });
@@ -189,8 +183,8 @@ export function MapView({ nodes, edges, riskScores, onNodeClick }: MapViewProps)
                     data: {
                         sourceName: edge.source.name,
                         targetName: edge.target.name,
-                        volume: edge.attributes.volume,
-                        price: edge.attributes.price,
+                        volume: edge.attributes?.volume,
+                        price: edge.attributes?.price,
                     },
                 });
             }
@@ -213,6 +207,7 @@ export function MapView({ nodes, edges, riskScores, onNodeClick }: MapViewProps)
     return (
         <div className="w-full h-full relative">
             <DeckGL
+                views={new DeckMapView({ repeat: true })}
                 initialViewState={INITIAL_VIEW_STATE}
                 controller={true}
                 layers={layers}
@@ -221,9 +216,6 @@ export function MapView({ nodes, edges, riskScores, onNodeClick }: MapViewProps)
             >
                 <MapGL mapStyle={MAP_STYLE} />
             </DeckGL>
-
-            {/* 레이어 토글 컨트롤 패널 */}
-            <MapLayerToggle layerState={layerState} onChange={setLayerState} />
 
             {/* 호버 툴팁 */}
             {tooltip && <MapTooltip info={tooltip} />}

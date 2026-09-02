@@ -2,65 +2,53 @@ import { useNavigate } from 'react-router-dom';
 import { useCallback } from 'react';
 
 export interface ViewSwitcherProps {
-    currentView: 'graph' | 'map' | 'globe';
+    currentView: 'graph' | 'map';
 }
 
 /**
- * 그래프 뷰 / 지도 뷰 / 지구본 뷰 전환 스위처.
- * 헤더 영역에 위치하며, 현재 활성 뷰를 시각적으로 표시한다.
+ * 상단 헤더 네비게이션 바.
+ * 영문 표기(Graph / 2D Map) 및 확장된 폰트 사이즈(text-base) 적용.
  */
 export function ViewSwitcher({ currentView }: ViewSwitcherProps) {
     const navigate = useNavigate();
 
     const handleSwitch = useCallback(
-        (view: 'graph' | 'map' | 'globe') => {
+        (view: 'graph' | 'map') => {
             if (view === currentView) return;
             if (view === 'graph') navigate('/');
             else if (view === 'map') navigate('/map');
-            else navigate('/globe');
         },
         [currentView, navigate],
     );
 
     return (
-        <div
-            className="inline-flex rounded overflow-hidden shadow-sm"
-            role="tablist"
-            aria-label="뷰 전환"
+        <nav
+            className="h-full flex items-center gap-2"
+            role="navigation"
+            aria-label="메인 네비게이션"
         >
             <button
                 onClick={() => handleSwitch('graph')}
-                role="tab"
-                aria-selected={currentView === 'graph'}
-                className={`px-3 py-1.5 text-xs outline-none border border-gray-300 rounded-l ${currentView === 'graph'
-                    ? 'bg-blue-500 !text-white font-bold !border-blue-500 cursor-default'
-                    : 'bg-white text-gray-700 cursor-pointer hover:bg-gray-100'
-                    }`}
+                aria-current={currentView === 'graph' ? 'page' : undefined}
+                className={`h-full flex items-center justify-center min-w-[200px] px-6 text-base tracking-wide transition-colors cursor-pointer border-b-2 -mb-[1px] ${
+                    currentView === 'graph'
+                        ? 'text-primary font-bold border-primary'
+                        : 'text-muted-foreground hover:text-foreground font-medium border-transparent'
+                }`}
             >
-                그래프
+                Graph
             </button>
             <button
                 onClick={() => handleSwitch('map')}
-                role="tab"
-                aria-selected={currentView === 'map'}
-                className={`px-3 py-1.5 text-xs outline-none border border-gray-300 border-l-0 ${currentView === 'map'
-                    ? 'bg-blue-500 !text-white font-bold !border-blue-500 cursor-default'
-                    : 'bg-white text-gray-700 cursor-pointer hover:bg-gray-100'
-                    }`}
+                aria-current={currentView === 'map' ? 'page' : undefined}
+                className={`h-full flex items-center justify-center min-w-[200px] px-6 text-base tracking-wide transition-colors cursor-pointer border-b-2 -mb-[1px] ${
+                    currentView === 'map'
+                        ? 'text-primary font-bold border-primary'
+                        : 'text-muted-foreground hover:text-foreground font-medium border-transparent'
+                }`}
             >
-                지도
+                2D Map
             </button>
-            <button
-                onClick={() => handleSwitch('globe')}
-                role="tab"
-                aria-selected={currentView === 'globe'}
-                className={`px-3 py-1.5 text-xs outline-none border border-gray-300 border-l-0 rounded-r ${currentView === 'globe'
-                    ? 'bg-blue-500 !text-white font-bold !border-blue-500 cursor-default'
-                    : 'bg-white text-gray-700 cursor-pointer hover:bg-gray-100'
-                    }`}
-            >
-                지구본
-            </button>
-        </div>
+        </nav>
     );
 }

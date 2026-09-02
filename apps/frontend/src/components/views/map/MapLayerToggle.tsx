@@ -26,40 +26,43 @@ export function MapLayerToggle({ layerState, onChange }: MapLayerToggleProps) {
 
     return (
         <div
-            className="absolute top-4 right-4 bg-white/95 border border-gray-200 rounded-lg p-3 text-xs z-10 shadow-md min-w-[160px]"
+            className="absolute top-4 right-4 bg-card/90 backdrop-blur-md border border-border text-foreground rounded-lg p-3 text-xs z-10 shadow-lg min-w-[160px]"
             role="group"
             aria-label="지도 레이어 토글"
         >
-            <div className="font-bold mb-2 text-gray-700">
+            <div className="font-bold mb-2 text-foreground">
                 레이어
             </div>
 
-            <label className="flex items-center gap-2 mb-1.5 cursor-pointer">
+            <label className="flex items-center gap-2 mb-1.5 cursor-pointer text-muted-foreground hover:text-foreground">
                 <input
                     type="checkbox"
                     checked={layerState.showNodeType}
                     onChange={() => handleToggle('showNodeType')}
                     aria-label="노드 표시 토글"
+                    className="accent-primary cursor-pointer"
                 />
-                <span>노드 타입</span>
+                <span>노드 표시</span>
             </label>
 
-            <label className="flex items-center gap-2 mb-1.5 cursor-pointer">
+            <label className="flex items-center gap-2 mb-1.5 cursor-pointer text-muted-foreground hover:text-foreground">
                 <input
                     type="checkbox"
                     checked={layerState.showRiskLevel}
                     onChange={() => handleToggle('showRiskLevel')}
                     aria-label="리스크 레벨 색상 토글"
+                    className="accent-primary cursor-pointer"
                 />
-                <span>리스크 레벨</span>
+                <span>리스크 레벨 색상</span>
             </label>
 
-            <label className="flex items-center gap-2 cursor-pointer">
+            <label className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-foreground">
                 <input
                     type="checkbox"
                     checked={layerState.showTradeVolume}
                     onChange={() => handleToggle('showTradeVolume')}
                     aria-label="무역량 경로 토글"
+                    className="accent-primary cursor-pointer"
                 />
                 <span>무역량 경로</span>
             </label>

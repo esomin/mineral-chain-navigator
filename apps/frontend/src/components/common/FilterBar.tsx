@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useSupplyChainStore } from '../../store/supply-chain-store';
 import { Checkbox } from '../ui/checkbox';
 
@@ -41,13 +41,52 @@ const COUNTRY_OPTIONS = [
     { value: 'Poland', label: '폴란드' },
 ] as const;
 
+export interface FilterBarProps {
+    nodeCount?: number;
+    totalNodeCount?: number;
+}
+
 /**
  * 그래프 및 대시보드 필터 컨트롤 바.
  * - 품목명 (HS 코드) 다중 필터
  * - 국가별 다중 필터
+ * - 현재 필터링된 노드 수/전체 노드 수 표시
  */
-export function FilterBar() {
-    const { filters, setFilters } = useSupplyChainStore();
+export function FilterBar({ nodeCount, totalNodeCount }: FilterBarProps) {
+    const { nodes, edges, filters, setFilters } = useSupplyChainStore();
+
+    // HS 코드 필터 적용 시 해당 엣지에 연결된 노드 ID 집합 계산
+    const hsCodeFilteredNodeIds = useMemo(() => {
+        const nodeIds = new Set<string>();
+        for (const edge of edges) {
+            const hsCode = edge.attributes?.hsCode;
+            if (!hsCode || filters.hsCode.includes(hsCode) || filters.hsCode.length === 0) {
+                nodeIds.add(edge.sourceNodeId);
+                nodeIds.add(edge.targetNodeId);
+            }
+        }
+        return nodeIds;
+    }, [edges, filters.hsCode]);
+
+    // 필터링된 노드 계산
+    const filteredNodes = useMemo(() => {
+        const hasHsCodeFilter = filters.hsCode.length > 0;
+        const hasCountryFilter = filters.countries.length > 0;
+        const hasHsCodeMatch = hasHsCodeFilter && hsCodeFilteredNodeIds && hsCodeFilteredNodeIds.size > 0;
+
+        return nodes.filter((node) => {
+            if (hasHsCodeMatch && !hsCodeFilteredNodeIds.has(node.id)) {
+                return false;
+            }
+            if (hasCountryFilter && !filters.countries.includes(node.country)) {
+                return false;
+            }
+            return true;
+        });
+    }, [nodes, hsCodeFilteredNodeIds, filters.countries, filters.hsCode]);
+
+    const displayNodeCount = nodeCount ?? filteredNodes.length;
+    const displayTotalCount = totalNodeCount ?? nodes.length;
 
     const handleHsCodeChange = useCallback(
         (hsCode: string) => {
@@ -89,71 +128,81 @@ export function FilterBar() {
 
     return (
         <div
-            className="flex flex-col gap-3 px-4 py-3 border-b border-border bg-card"
+            className="flex items-center justify-between px-6 py-3 border-b border-border bg-card flex-wrap gap-4"
             role="toolbar"
             aria-label="공급망 필터 바"
         >
-            {/* 품목 필터 */}
-            <div className="flex items-center gap-3 flex-wrap">
-                <span className="text-xs font-bold text-muted-foreground mr-2 w-12 shrink-0">품목명</span>
-                <div className="flex items-center gap-5 flex-wrap">
-                    {HS_CODE_OPTIONS.map(({ value, label, badges, description }) => {
-                        const isActive = filters.hsCode.includes(value);
-                        const id = `hs-code-${value}`;
-                        return (
-                            <div
-                                key={value}
-                                className="flex items-center gap-1.5 group relative"
-                                title={description}
-                            >
-                                <Checkbox
-                                    id={id}
-                                    checked={isActive}
-                                    onCheckedChange={() => handleHsCodeChange(value)}
-                                />
-                                <label
-                                    htmlFor={id}
-                                    className="text-xs font-semibold text-foreground cursor-pointer select-none flex items-center gap-1.5"
+            <div className="flex flex-col gap-2.5">
+                {/* 품목 필터 */}
+                <div className="flex items-center gap-3 flex-wrap">
+                    <span className="text-xs font-bold text-muted-foreground mr-2 w-12 shrink-0">품목명</span>
+                    <div className="flex items-center gap-5 flex-wrap">
+                        {HS_CODE_OPTIONS.map(({ value, label, badges, description }) => {
+                            const isActive = filters.hsCode.includes(value);
+                            const id = `hs-code-${value}`;
+                            return (
+                                <div
+                                    key={value}
+                                    className="flex items-center gap-1.5 group relative"
+                                    title={description}
                                 >
-                                    <span>{label}</span>
-                                    {badges.map((b, idx) => (
-                                        <span
-                                            key={idx}
-                                            className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${b.color}`}
-                                        >
-                                            {b.text}
-                                        </span>
-                                    ))}
-                                </label>
-                            </div>
-                        );
-                    })}
+                                    <Checkbox
+                                        id={id}
+                                        checked={isActive}
+                                        onCheckedChange={() => handleHsCodeChange(value)}
+                                    />
+                                    <label
+                                        htmlFor={id}
+                                        className="text-xs font-semibold text-foreground cursor-pointer select-none flex items-center gap-1.5"
+                                    >
+                                        <span>{label}</span>
+                                        {badges.map((b, idx) => (
+                                            <span
+                                                key={idx}
+                                                className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${b.color}`}
+                                            >
+                                                {b.text}
+                                            </span>
+                                        ))}
+                                    </label>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* 국가 필터 */}
+                <div className="flex items-center gap-3 flex-wrap">
+                    <span className="text-xs font-bold text-muted-foreground mr-2 w-12 shrink-0">국가</span>
+                    <div className="flex items-center gap-4 flex-wrap">
+                        {COUNTRY_OPTIONS.map(({ value, label }) => {
+                            const isActive = filters.countries.includes(value);
+                            const id = `country-${value}`;
+                            return (
+                                <div key={value} className="flex items-center gap-1.5">
+                                    <Checkbox
+                                        id={id}
+                                        checked={isActive}
+                                        onCheckedChange={() => handleCountryChange(value)}
+                                    />
+                                    <label
+                                        htmlFor={id}
+                                        className="text-xs font-semibold text-foreground cursor-pointer select-none"
+                                    >
+                                        {label}
+                                    </label>
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
 
-            {/* 국가 필터 */}
-            <div className="flex items-center gap-3 flex-wrap">
-                <span className="text-xs font-bold text-muted-foreground mr-2 w-12 shrink-0">국가</span>
-                <div className="flex items-center gap-4 flex-wrap">
-                    {COUNTRY_OPTIONS.map(({ value, label }) => {
-                        const isActive = filters.countries.includes(value);
-                        const id = `country-${value}`;
-                        return (
-                            <div key={value} className="flex items-center gap-1.5">
-                                <Checkbox
-                                    id={id}
-                                    checked={isActive}
-                                    onCheckedChange={() => handleCountryChange(value)}
-                                />
-                                <label
-                                    htmlFor={id}
-                                    className="text-xs font-semibold text-foreground cursor-pointer select-none"
-                                >
-                                    {label}
-                                </label>
-                            </div>
-                        );
-                    })}
+            {/* 노드 카운트 표시 배지 */}
+            <div className="flex items-center self-center shrink-0">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/80 border border-border/80 rounded-md text-xs select-none">
+                    <span className="text-muted-foreground font-medium">노드:</span>
+                    <span className="font-bold text-foreground">{displayNodeCount}/{displayTotalCount}</span>
                 </div>
             </div>
         </div>

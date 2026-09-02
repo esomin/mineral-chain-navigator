@@ -7,10 +7,10 @@ import { NodeDetailPanel } from '../components/panels/NodeDetailPanel';
 import { TraceabilityPanel } from '../components/panels/TraceabilityPanel';
 import { SimulationPanel } from '../components/simulation/SimulationPanel';
 import { AIInsightPanel } from '../components/panels/AIInsightPanel';
-import { GiDiamonds } from 'react-icons/gi';
-import { Play, Pause } from 'lucide-react';
+import { Play, Pause, Cuboid } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { toast } from 'sonner';
+import { AppHeader } from '../components/common/AppHeader';
 // 공급망 그래프 시각화 페이지 (Phase 1 메인 뷰)
 export function GraphView() {
     const { nodes, edges, selectedNodeId, filters, riskScores, setNodes, setEdges, setRiskScores, selectNode, setLoading, isLoading } =
@@ -210,18 +210,14 @@ export function GraphView() {
 
     return (
         <div className="w-screen h-screen flex flex-col bg-background text-foreground">
-            <header className="px-4 py-3 border-b border-border bg-card flex items-center justify-between">
-                <div className="flex items-end gap-3.5">
-                    <div>
-                        <h1 className="m-0 text-xl font-bold text-foreground">Lithium Supply Chain Navigator</h1>
-                        <p className="mt-1 mb-0 text-sm text-muted-foreground">
-                            리튬 공급망 그래프 시각화 • 노드: {filteredNodes.length}/{nodes.length} | 엣지: {filteredEdges.length}/{edges.length}
-                        </p>
-                    </div>
+            <AppHeader
+                currentView="graph"
+                actions={
                     <Button
+                        id="tour-sim-button"
                         onClick={() => setShowSimulation(!showSimulation)}
                         variant={showSimulation ? "secondary" : "default"}
-                        className="font-semibold shadow-xs flex items-center gap-1.5 transition-all duration-200 cursor-pointer ml-4 rounded px-8"
+                        className="font-semibold shadow-xs flex items-center gap-1.5 transition-all duration-200 cursor-pointer rounded px-4"
                         aria-label={showSimulation ? "충격 시뮬레이션 패널 닫기" : "충격 시뮬레이션 패널 열기"}
                         aria-pressed={showSimulation}
                     >
@@ -232,15 +228,16 @@ export function GraphView() {
                         )}
                         충격 시뮬레이션
                     </Button>
-                </div>
-                {/* 우측 도구 및 뷰 전환 스위처 */}
-                <div className="flex items-center gap-3">
-                    {/* <ViewSwitcher currentView="graph" /> */}
-                </div>
-            </header>
+                }
+            />
 
             {/* 필터 컨트롤 바 (시뮬레이션 제어 패널이 열려있지 않을 때만 표시) */}
-            {!showSimulation && <FilterBar />}
+            {!showSimulation && (
+                <FilterBar
+                    nodeCount={filteredNodes.length}
+                    totalNodeCount={nodes.length}
+                />
+            )}
 
             <main className="flex-1 relative overflow-hidden bg-background">
                 {/* 로딩 상태 */}

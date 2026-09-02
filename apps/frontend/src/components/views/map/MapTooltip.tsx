@@ -40,9 +40,9 @@ function getRiskLabel(score: number): string {
 
 // 리스크 등급 색상 클래스
 function getRiskLabelClass(score: number): string {
-    if (score <= 33) return 'text-green-500';
-    if (score <= 66) return 'text-yellow-500';
-    return 'text-red-500';
+    if (score <= 33) return 'text-emerald-400';
+    if (score <= 66) return 'text-amber-400';
+    return 'text-rose-400';
 }
 
 export interface MapTooltipProps {
@@ -60,7 +60,7 @@ export function MapTooltip({ info }: MapTooltipProps) {
 
     return (
         <div
-            className="absolute bg-white/[0.97] border border-gray-300 rounded-md px-3 py-2 text-xs leading-relaxed z-20 pointer-events-none shadow-md max-w-[260px]"
+            className="absolute bg-card/95 backdrop-blur-md border border-border text-foreground rounded-lg px-3.5 py-2.5 text-xs leading-relaxed z-20 pointer-events-none shadow-xl max-w-[280px]"
             style={{ left: x + 12, top: y + 12 }}
             role="tooltip"
         >
@@ -77,19 +77,21 @@ export function MapTooltip({ info }: MapTooltipProps) {
 function NodeTooltipContent({ data }: { data: NodeTooltipData }) {
     return (
         <>
-            <div className="font-bold mb-1 text-gray-800">
+            <div className="font-semibold text-sm mb-1.5 text-foreground border-b border-border/50 pb-1">
                 {data.name}
             </div>
-            <div>타입: {NODE_TYPE_KO[data.nodeType] ?? data.nodeType}</div>
-            <div>국가: {getCountryDisplayName(data.country)}</div>
-            <div>
-                생산 용량: {data.productionCapacity.toLocaleString()} {data.capacityUnit}
-            </div>
-            <div>
-                리스크:{' '}
-                <span className={`${getRiskLabelClass(data.riskScore)} font-bold`}>
-                    {data.riskScore.toFixed(1)} ({getRiskLabel(data.riskScore)})
-                </span>
+            <div className="space-y-0.5 text-muted-foreground">
+                <div><span className="text-foreground/70">타입:</span> {NODE_TYPE_KO[data.nodeType] ?? data.nodeType}</div>
+                <div><span className="text-foreground/70">국가:</span> {getCountryDisplayName(data.country)}</div>
+                <div>
+                    <span className="text-foreground/70">생산 용량:</span> {data.productionCapacity.toLocaleString()} {data.capacityUnit}
+                </div>
+                <div>
+                    <span className="text-foreground/70">리스크:</span>{' '}
+                    <span className={`${getRiskLabelClass(data.riskScore)} font-semibold`}>
+                        {data.riskScore.toFixed(1)} ({getRiskLabel(data.riskScore)})
+                    </span>
+                </div>
             </div>
         </>
     );
@@ -99,15 +101,17 @@ function NodeTooltipContent({ data }: { data: NodeTooltipData }) {
 function EdgeTooltipContent({ data }: { data: EdgeTooltipData }) {
     return (
         <>
-            <div className="font-bold mb-1 text-gray-800">
+            <div className="font-semibold text-sm mb-1.5 text-foreground border-b border-border/50 pb-1">
                 {data.sourceName} → {data.targetName}
             </div>
-            {data.volume != null && (
-                <div>무역량: {data.volume.toLocaleString()} kg</div>
-            )}
-            {data.price != null && (
-                <div>거래액: ${data.price.toLocaleString()}</div>
-            )}
+            <div className="space-y-0.5 text-muted-foreground">
+                {data.volume != null && (
+                    <div><span className="text-foreground/70">무역량:</span> {data.volume.toLocaleString()} kg</div>
+                )}
+                {data.price != null && (
+                    <div><span className="text-foreground/70">거래액:</span> ${data.price.toLocaleString()}</div>
+                )}
+            </div>
         </>
     );
 }

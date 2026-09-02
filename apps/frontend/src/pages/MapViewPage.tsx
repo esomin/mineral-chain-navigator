@@ -3,23 +3,34 @@ import { useSupplyChainStore } from '../store/supply-chain-store';
 import { MapView } from '../components/views/MapView';
 import { FilterBar } from '../components/common/FilterBar';
 import { NodeDetailPanel } from '../components/panels/NodeDetailPanel';
-import { ViewSwitcher } from '../components/common/ViewSwitcher';
+import { AppHeader } from '../components/common/AppHeader';
 import { RiskScore } from '@navigator/shared/src/types/risk';
 
 /**
- * GIS 지도 뷰 페이지 (Phase 2).
- * Deck.gl 기반 세계 지도에 27개 마스터 노드와 물류 경로를 시각화한다.
- * GraphView와 동일한 Zustand 스토어를 공유하여 상태 동기화를 유지한다.
+ * 2D GIS 지도 뷰 페이지.
+ * Deck.gl + MapLibre 기반 세계 지도에 공급망 노드와 물류 경로를 시각화한다.
+ * GraphView와 동일한 Zustand 스토어를 공유하여 필터, 선택 노드, 리스크 점수 상태를 동기화한다.
  */
 export function MapViewPage() {
-    const { nodes, edges, selectedNodeId, filters, riskScores, setNodes, setEdges, setRiskScores, selectNode, setLoading, isLoading } =
-        useSupplyChainStore();
+    const {
+        nodes,
+        edges,
+        selectedNodeId,
+        filters,
+        riskScores,
+        setNodes,
+        setEdges,
+        setRiskScores,
+        selectNode,
+        setLoading,
+        isLoading,
+    } = useSupplyChainStore();
 
     const [error, setError] = useState<string | null>(null);
 
     // 백엔드 API에서 그래프 데이터 로딩
     useEffect(() => {
-        // 이미 데이터가 로드되어 있으면 건너뛰기 (뷰 전환 시 재요청 방지)
+        // 이미 데이터가 로드되어 있으면 재요청 방지
         if (nodes.length > 0) return;
 
         const fetchGraphData = async () => {
@@ -56,7 +67,7 @@ export function MapViewPage() {
 
     // 리스크 점수 로딩
     useEffect(() => {
-        if (nodes.length === 0) return;
+        if (nodes.length === 0 || riskScores.length > 0) return;
 
         const fetchRiskScores = async () => {
             try {
@@ -70,7 +81,7 @@ export function MapViewPage() {
         };
 
         fetchRiskScores();
-    }, [nodes]);
+    }, [nodes, riskScores.length, setRiskScores]);
 
     // 리스크 점수를 nodeId → score Map으로 변환
     const riskScoreMap = useMemo(() => {
@@ -81,8 +92,8 @@ export function MapViewPage() {
         return map;
     }, [riskScores]);
 
-    // 필터링된 노드 (HS 코드 및 국가 필터 적용)
-    const filteredNodes = useMemo(() => {
+    // HS 코드 필터 적용 시 해당 엣지에 연결된 노드 ID 집합 계산
+    const hsCodeFilteredNodeIds = useMemo(() => {
         const nodeIds = new Set<string>();
         for (const edge of edges) {
             const hsCode = edge.attributes?.hsCode;
@@ -91,10 +102,25 @@ export function MapViewPage() {
                 nodeIds.add(edge.targetNodeId);
             }
         }
-        // hsCode 필터링 조건에 부합하는 nodeIds가 비어있는 경우(예: 시드 엣지에 hsCode 속성이 없을 경우) 전체 노드를 fallback으로 검토
-        const matchedNodes = nodeIds.size > 0 ? nodes.filter((node) => nodeIds.has(node.id)) : nodes;
-        return matchedNodes.filter((node) => filters.countries.length === 0 || filters.countries.includes(node.country));
-    }, [nodes, edges, filters.hsCode, filters.countries]);
+        return nodeIds;
+    }, [edges, filters.hsCode]);
+
+    // 필터링된 노드 계산
+    const filteredNodes = useMemo(() => {
+        const hasHsCodeFilter = filters.hsCode.length > 0;
+        const hasCountryFilter = filters.countries.length > 0;
+        const hasHsCodeMatch = hasHsCodeFilter && hsCodeFilteredNodeIds && hsCodeFilteredNodeIds.size > 0;
+
+        return nodes.filter((node) => {
+            if (hasHsCodeMatch && !hsCodeFilteredNodeIds.has(node.id)) {
+                return false;
+            }
+            if (hasCountryFilter && !filters.countries.includes(node.country)) {
+                return false;
+            }
+            return true;
+        });
+    }, [nodes, hsCodeFilteredNodeIds, filters.countries, filters.hsCode]);
 
     // 필터링된 엣지 (HS 코드 필터 + 양쪽 노드 표시 조건)
     const filteredEdges = useMemo(() => {
@@ -113,7 +139,7 @@ export function MapViewPage() {
 
     // 노드 클릭 핸들러
     const handleNodeClick = useCallback(
-        (nodeId: string) => {
+        (nodeId: string | null) => {
             selectNode(nodeId === selectedNodeId ? null : nodeId);
         },
         [selectNode, selectedNodeId],
@@ -145,19 +171,13 @@ export function MapViewPage() {
 
     return (
         <div className="w-screen h-screen flex flex-col bg-background text-foreground">
-            <header className="px-4 py-3 border-b border-border bg-card flex items-center justify-between">
-                <div>
-                    <h1 className="m-0 text-xl font-bold text-foreground">Lithium Supply Chain Navigator</h1>
-                    <p className="mt-1 mb-0 text-sm text-muted-foreground">
-                        리튬(HS 2825.20) 공급망 GIS 지도 시각화 • 노드: {filteredNodes.length}/{nodes.length} | 엣지: {filteredEdges.length}/{edges.length}
-                    </p>
-                </div>
-                {/* 뷰 전환 스위처 */}
-                {/* <ViewSwitcher currentView="map" /> */}
-            </header>
+            <AppHeader currentView="map" />
 
             {/* 필터 컨트롤 바 */}
-            <FilterBar />
+            <FilterBar
+                nodeCount={filteredNodes.length}
+                totalNodeCount={nodes.length}
+            />
 
             <main className="flex-1 relative overflow-hidden bg-background">
                 {/* 로딩 상태 */}
@@ -174,7 +194,7 @@ export function MapViewPage() {
                     </div>
                 )}
 
-                {/* 지도 렌더러 */}
+                {/* 2D GIS 지도 렌더러 */}
                 {filteredNodes.length > 0 && (
                     <MapView
                         nodes={filteredNodes}
